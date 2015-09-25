@@ -1,7 +1,6 @@
 # NXPAndroidDTA
 
 
-
 ####Git Repository
 
 | DESCRIPTION        | CHECKOUT COMMAND          |
