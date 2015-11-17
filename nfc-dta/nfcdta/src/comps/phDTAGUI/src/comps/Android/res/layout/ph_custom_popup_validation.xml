@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                    Copyright (c), NXP Semiconductors
+
+                       (C)NXP Semiconductors B.V.2014
+         All rights are reserved. Reproduction in whole or in part is
+        prohibited without the written consent of the copyright owner.
+    NXP reserves the right to make changes without notice at any time.
+   NXP makes no warranty, expressed, implied or statutory, including but
+   not limited to any implied warranty of merchantability or fitness for any
+  particular purpose, or that the use will not infringe any third party patent,
+   copyright or trademark. NXP must not be liable for any loss or damage
+                            arising from its use.
+-->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/ph_border_different_color_one"
+    android:padding="15dp" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#111111"
+        android:textSize="25sp" />
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp" >
+
+        <Button
+            android:id="@+id/yesexit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ph_border_different_color_two"
+            android:onClick="onClick"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:text="@string/ok"
+            android:textSize="25sp" />
+    </RelativeLayout>
+
+</RelativeLayout>

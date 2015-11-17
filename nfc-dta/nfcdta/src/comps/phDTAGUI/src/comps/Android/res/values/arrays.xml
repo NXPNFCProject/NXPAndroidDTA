@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                    Copyright (c), NXP Semiconductors
+
+                       (C)NXP Semiconductors B.V.2014
+         All rights are reserved. Reproduction in whole or in part is
+        prohibited without the written consent of the copyright owner.
+    NXP reserves the right to make changes without notice at any time.
+   NXP makes no warranty, expressed, implied or statutory, including but
+   not limited to any implied warranty of merchantability or fitness for any
+  particular purpose, or that the use will not infringe any third party patent,
+   copyright or trademark. NXP must not be liable for any loss or damage
+                            arising from its use.
+-->
+
+<resources>
+    <string-array name="pattern_number_llcp">
+        <item >1200</item>
+        <item >1240</item>
+        <item >1280</item>
+    </string-array>
+    <string-array name="snep_client_test_cases">
+        <item>Select Client Test Case</item>
+        <item>TC_C_BIT_BV_01</item>
+        <item>TC_C_BIT_BI_01_0</item>
+        <item>TC_C_BIT_BI_01_1</item>
+        <item>TC_C_PUT_BV_01</item>
+        <item>TC_C_PUT_BV_02</item>
+        <item>TC_C_PUT_BI_01</item>
+        <item>TC_C_GET_BV_01</item>
+        <item>TC_C_GET_BV_02</item>
+        <item>TC_C_GET_BV_03</item>
+    </string-array>
+        <string-array name="snep_server_test_cases">
+        <item>Select Server Test Case</item>
+        <item>Other Test Cases</item>
+        <item>TC_S_RET_BI_01</item>
+    </string-array>
+    <string-array name="clean_pattern_numbers">
+        <item ></item>
+    </string-array>
+</resources>

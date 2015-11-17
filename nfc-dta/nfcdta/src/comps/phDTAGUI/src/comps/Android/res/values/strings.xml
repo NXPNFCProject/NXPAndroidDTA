@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                    Copyright (c), NXP Semiconductors
+
+                       (C)NXP Semiconductors B.V.2014
+         All rights are reserved. Reproduction in whole or in part is
+        prohibited without the written consent of the copyright owner.
+    NXP reserves the right to make changes without notice at any time.
+   NXP makes no warranty, expressed, implied or statutory, including but
+   not limited to any implied warranty of merchantability or fitness for any
+  particular purpose, or that the use will not infringe any third party patent,
+   copyright or trademark. NXP must not be liable for any loss or damage
+                            arising from its use.
+-->
+
+<resources>
+
+    <string name="app_name">NXP Device Test Application</string>
+    <string name="dta_test_app">Device Test Application</string>
+    <string name="nfcUserLabel">Nfc</string>
+    <string name="execution_mode">Execution Mode</string>
+    <string name="auto">Auto</string>
+    <string name="manual">Manual</string>
+    <string name="run">Run</string>
+    <string name="stop">Stop</string>
+    <string name="current_status">Current Status: </string>
+    <string name="status_result">Stopped</string>
+    <string name="rf_technology">RF Technology</string>
+    <string name="poll">Poll (Passive)</string>
+    <string name="listen">Listen (Passive)</string>
+    <string name="pattern">Pattern Number</string>
+    <string name="exit">Exit</string>
+    <string name="uicc">UICC</string>
+    <string name="hce">HCE </string>
+    <string name="llcp">LLCP</string>
+    <string name="snep">SNEP</string>
+    <string name="other_selection">Other Selections</string>
+    <string name="ipaddress_et">IP Address: </string>
+    <string name="port_number_et_txt">1024-65535</string>
+    <string name="ipaddress">127.0.0.1</string>
+    <string name="port_number_txt">Port Number: </string>
+    <string name="server_settings">Client/Server Settings</string>
+    <string name="custom_msg">Custom Message</string>
+    <string name="custom">Custom</string>
+    <string name="utilities">Utilities</string>
+    <string name="log_to_file">Log to file</string>
+    <string name="firmare_version">UI Version: XX.X  \nFirmWare Version: XX.X  \nMiddleWare Version: XX.X  \nDTA Lib Version: XX.X</string>
+    <string name="ui_views">UI Version Number</string>
+    <string name="role_change">Role Change</string>
+    <string name="server_txt">Server (DUT)</string>
+    <string name="client_txt">Client (DUT)</string>
+    <string name="log_client">Log DUT Messages</string>
+    <string name="log_server">Log LT Messages</string>
+    <string name="client_server_txt">TCP/IP Logging Utilities</string>
+    <string name="simulate_client_txt">Simulate Client (LT)</string>
+    <string name="simulate_server_txt">Simulate Server (LT)</string>
+    <string name="file_name">File Name</string>
+    <string name="result">Result</string>
+    <string name="execute">Execute</string>
+    <string name="test_case_id">Test Case ID</string>
+    <string name="status">Status</string>
+    <string name="status_ce">Status/Card Emulation Mode</string>
+    <string name="status_card_emulation">Status/Card Emulation</string>
+    <string name="pattern_number">Pattern Number</string>
+    <string name="rfu_1">RFU 1</string>
+    <string name="rfu_2">RFU 2</string>
+    <string name="tcp_ip_status"> TCP/IP Status: Closed</string>
+    <string name="auto_mode_msg">Auto Mode Messages</string>
+    <string name="input_text"> Input Text</string>
+    <string name="file_txt">File</string>
+    <string name="console_txt">Console</string>
+    <string name="log_messages">Log Messages</string>
+    <string name="enter_file_path">Enter File Name</string>
+    <string name="card_emulation">Card Emulation</string>
+    <string name="p2p">Wave-II</string>
+    <string name="p2p_text">P2P </string>
+    <string name="read_write">RD/WR</string>
+    <string name="show_msg">Show Message</string>
+    <string name="msg_in">Message Inbox</string>
+    <string name="msg">Message</string>
+    <string name="clear_msg">Clear Message</string>
+    <string name="msg_out">Message Outbox</string>
+    <string name="result_execution">Result/Execute</string>
+    <string name="content">Content</string>
+    <string name="ok_string">OK</string>
+    <string name="back_string">Back To Main Menu</string>
+    <string name="snep_settings_string">SNEP</string>
+    <!-- default snep server strings -->
+    <string name="nfc_service_string">Server</string>
+    <!-- Extended SNEP Server strings -->
+    <string name="snep_server_string">Extended SNEP Server</string>
+    <string name="start_string">Start</string>
+    <string name="stop_string">Stop</string>
+    <string name="technology_error">Please Select Poll/Listen RF Technology and then Run</string>
+    <string name="short_reccord_layout">Short Record Layout</string>
+    <string name="client_msg">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at lorem nunc, ut venenatis quam. Etiam id dolor quam, at viverra dolor. Phasellus eu lacus ligula, quis euismod erat. Sed feugiat, ligula at  mollis aliquet, justo lacus condimentum eros, non tincidunt neque ipsum eu risus. Sed adipiscing dui euismod tellus ullamcorper ornare. Phasellus mattis risus et lectus euismod eu fermentum sem cursus Phasellus tristique consectetur mauris eu porttitor. Sed lobortis porttitor orci.</string>
+    <!-- SNEP Client strings -->
+    <color name="green">#006600</color>
+    <color name="red">#FF0000</color>
+    <color name="grey">#C0C0C0</color>
+    <color name="orange">#FF6633</color>
+
+    <string-array name="multi_text_array">
+        <item>00</item>
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>0A</item>
+        <item>0B</item>
+        <item>0C</item>
+        <item>0D</item>
+        <item>0E</item>
+        <item>0F</item>
+    </string-array>
+    <string name="copyright_nxp_semiconductors">Copyright NXP Semiconductors</string>
+    <string name="log_cat">Console</string>
+    <string name="back">Back</string>
+    <!-- Rename the version number to info -->
+    <!-- <string name="version_number">Version Number</string> -->
+    <string name="version_number"> Info</string>
+    <!-- Rename the Device Selection to Device -->
+    <!-- <string name="device_selection">Device Selection</string> -->
+    <string name="device_selection">Selection</string>
+    <string name="confirm_exit">Confirm Exit ?</string>
+    <string name="warning">Can not enter beyond 4 characters</string>
+    <string name="warning_for_wrong_key">Only Hexa Decimal Numbers are Allowed (Without the Prefix 0x)</string>
+    <string name="lib_error">DTA Library is not available  \n Do you want to exit?</string>
+    <string name="path_error">Path mismatch \n Do you want to exit?</string>
+    <string name="version_error">Can\'t show the device info due to DTA Library issue \n Do you want to exit?</string>
+    <string name="device">Device</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="done">Done</string>
+    <string name="ok">OK</string>
+    <string name="reset_selection">Clear</string>
+    <string name="rtd_data">SNEP Settings</string>
+    <string name="server">Server</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_either_server_client">Select either Server/Client</string>
+    <string name="select_client_test_case">Select Client Test Case</string>
+    <string name="select_server_test_case">Select Server Test Case</string>
+    <string name="other_test_case">Other Test Cases</string>
+    <string name="tc_s_ret_bi_01">TC_S_RET_BI_01</string>
+    <string name="client">Client</string>
+    <string name="number_of_retries">Number of Retries:</string>
+    <string name="no_of_retries">No. of retries</string>
+    <string name="snep_client_test_cases">Client</string>
+    <string name="ese_check_box">ESE</string>
+    <string name="dummyradio">DUM</string>
+    <string name="c_pdu_params">CONNECT PDU Params</string>
+</resources>
