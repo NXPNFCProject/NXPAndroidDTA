@@ -154,6 +154,8 @@ typedef enum phMwIf_eNciSetConfig
     PHMWIF_NCI_CONFIG_TOTAL_DURATION     = 0x00,    /**<Total Poll duration+Listen duration of discovery*/
     PHMWIF_NCI_CON_DEVICES_LIMIT         = 0x01,    /**<Number of devices for collission resolution*/
     PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED   = 0x28,    /**< Poll NFC-DEP : Highest Available Bit Rates */
+    PHMWIF_NCI_CONFIG_PN_ATR_REQ_GEN_BYTES_CFG  = 0x29,    /**< ATR Request general bytes configuration*/
+    PHMWIF_NCI_CONFIG_PN_ATR_RES_GEN_BYTES_CFG  = 0x61,    /**< ATR Response general bytes configuration*/
     PHMWIF_NCI_CONFIG_PN_ATR_REQ_CFG     = 0x2A,    /**< ATR Request Configuration*/
     PHMWIF_NCI_CONFIG_PI_BIT_RATE        = 0x21,    /**< Poll NFC-ISO : Maximum allowed bit rate */
     PHMWIF_NCI_CONFIG_LA_BIT_FRAME_SDD   = 0x30,    /**< Listen A : Bit Frame SDD value to be sent in Byte 1 of SENS_RES */

@@ -1121,6 +1121,10 @@ void phDtaLibi_SetMwIfConfig()
     phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG, 0x01, abConfigIDData);
 
     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf SetConfig\n");
+    gs_paramBuffer[0] = 0x00;
+    phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PN_ATR_REQ_GEN_BYTES_CFG, 0, gs_paramBuffer);//ATR_REQ General bytes
+    gs_paramBuffer[0] = 0x00;
+    phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PN_ATR_RES_GEN_BYTES_CFG, 0, gs_paramBuffer);//ATR_RES General bytes
     abConfigIDData[0] = 0x30;
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PN_ATR_REQ_CFG, 1, abConfigIDData);
     abConfigIDData[0] = 0x01;
