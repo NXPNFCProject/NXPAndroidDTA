@@ -32,7 +32,7 @@ Logically RWT should be larger than LTO*/
 #define PHMWIF_LLCP_LTO_VALUE           1000 /*1000ms*/
 #define PHMWIF_LLCP_WAITING_TIME        12   /*(256*16/Fc)*2^WT*/
 #define PHMWIF_LLCP_DELAY_RESP_TIME     100  /*100ms*/
-#define L_OSP_ENABLE                    0 /*Enable L-OSP specific API updates*/
+#define OSP_ENABLE                      0 /*Enable L-OSP specific API updates*/
 #define ENABLE_AGC_DEBUG                0
 #define FREQ_AGC_CMD                    500  /*AGC Debug command is sent every 500ms*/
 

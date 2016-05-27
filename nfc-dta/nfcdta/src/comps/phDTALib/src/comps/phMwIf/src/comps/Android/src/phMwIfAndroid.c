@@ -68,6 +68,7 @@ EE events*/
 #define  NCI_RSP_EVT 0x42
 #define  NCI_AGC_DBG_RSP_EVT 0x73
 #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
+#define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
 
 uint8_t gs_paramBuffer[400];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
@@ -1015,7 +1016,7 @@ tNFA_STATUS phMwIfi_ConfigureDriver(phMwIf_sHandle_t *mwIfHdl)
     ALOGD ("MwIf> Getting function pointers for HAL entry functions\n");
     mwIfHdl->halentrypoint = NfcAdaptation_GetHalEntryFuncs(mwIfHdl->nfcAdapter);
     ALOGD ("MwIf> NFA_Init\n");
-#if L_OSP_ENABLE
+#if OSP_ENABLE
     {
         //Here parameter nfc init is NORMAL_BOOT
         //halFunCntxt contains  boot_mode and halFuncEntries
@@ -1858,13 +1859,15 @@ void phMwIfi_PrintNfaProtocolCode (tNFC_PROTOCOL xprotocol)
         case NFC_PROTOCOL_B_PRIME:
             ALOGD ("NFC_PROTOCOL_B_PRIME\n");
         break;
-*/
+
         case NFC_PROTOCOL_15693:
             ALOGD ("NFC_PROTOCOL_15693\n");
         break;
+
         case NFC_PROTOCOL_KOVIO:
             ALOGD ("NFC_PROTOCOL_KOVIO\n");
         break;
+*/
         default:
             ALOGD ("Unknown Protocol\n");
         break;
@@ -1897,10 +1900,11 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_POLL_B_PRIME:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_B_PRIME\n");
         break;
-*/
+
         case NFC_DISCOVERY_TYPE_POLL_KOVIO:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_KOVIO\n");
         break;
+*/
         case NFC_DISCOVERY_TYPE_LISTEN_A:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_A\n");
         break;
@@ -1916,12 +1920,14 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_LISTEN_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_F_ACTIVE\n");
         break;
+/*
         case NFC_DISCOVERY_TYPE_LISTEN_ISO15693:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_ISO15693\n");
         break;
         case NFC_DISCOVERY_TYPE_LISTEN_B_PRIME:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_B_PRIME\n");
         break;
+*/
         default:
             ALOGD ("Unknown discovery type\n");
         break;
@@ -2736,10 +2742,13 @@ void phMwIfi_MapRfInterface(UINT8* protocol, int *rf_interface)
         *rf_interface = NFC_INTERFACE_ISO_DEP;
         ALOGE("ISO-DEP interface");
         break;
+/*
     case NFC_PROTOCOL_MIFARE:
         *rf_interface = NFC_INTERFACE_FRAME;
         ALOGE("FRAME RF interface");
         break;
+*/
+
     default:
         ALOGE("No matching protocol");
         break;
@@ -2768,7 +2777,7 @@ MWIFSTATUS phMwIf_LlcpInit(void*                     pvMwIfHandle,
     NFA_EnableDtamode(NFA_DTA_LLCP_MODE);
 
     /*Set LLCP params in MW Stack*/
-    bNfaStatus = NFA_P2pSetLLCPConfig (LLCP_MAX_MIU,
+    bNfaStatus = NFA_P2pSetLLCPConfig (PHMWIF_LLCP_MAX_MIU/*LLCP_MAX_MIU*/,
                                        LLCP_OPT_VALUE,
                                        PHMWIF_LLCP_WAITING_TIME,
                                        PHMWIF_LLCP_LTO_VALUE,

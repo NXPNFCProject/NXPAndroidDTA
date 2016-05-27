@@ -37,9 +37,9 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
-#define PHDTALIB_SERVER_MIU ((uint16_t)0x87F) /*IUT srever Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
+#define PHDTALIB_SERVER_MIU ((uint16_t)0x87E) /*IUT srever Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
 #define PHDTALIB_SERVER_RW  ((uint8_t)01)
-#define PHDTALIB_CLIENT_MIU ((uint16_t)0x87F)/*IUT client Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
+#define PHDTALIB_CLIENT_MIU ((uint16_t)0x87E)/*IUT client Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
 #define PHDTALIB_CLIENT_RW  ((uint8_t)01)
 #define PHDTALIB_CLIENT_MIU_DEFAULT ((uint16_t)128)/*IUT client default MIU.*/
 #define PHDTALIB_SERVER_MIU_DEFAULT ((uint16_t)128)/*IUT Server default MIU.*/

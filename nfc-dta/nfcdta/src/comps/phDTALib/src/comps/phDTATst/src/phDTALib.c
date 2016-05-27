@@ -52,7 +52,7 @@ uint8_t gs_paramBuffer[400]; /**< Buffer for passing Data during operations */
 
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLCP magic bytes */
                                                               0x01,0x01,0x11, /**< major, minor Version TLV*/
-                                                              0x02,0x02,0x07,0xFF, /**< MIUX TLV*/
+                                                              0x02,0x02,0x07,0xFE, /**< MIUX TLV*/
                                                               0x03,0x02,0x00,0x03, /**< WKS TLV*/
                                                               0x04,0x01,0x64}; /**< LTO TLV*/
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x11,0x03,0x02,0x00,0x03,0x04,0x01,0x64};

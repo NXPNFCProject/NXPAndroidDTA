@@ -19,9 +19,9 @@
 
 #include "phDTAOSAL.h"
 
-#define DTALIB_VERSION_STR "NFCDTA_08.08"
-#define DTALIBVERSION_MAJOR 8
-#define DTALIBVERSION_MINOR 8
+#define DTALIB_VERSION_STR "NFCDTA_08.0A"
+#define DTALIBVERSION_MAJOR (0x08)
+#define DTALIBVERSION_MINOR (0x0A)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */

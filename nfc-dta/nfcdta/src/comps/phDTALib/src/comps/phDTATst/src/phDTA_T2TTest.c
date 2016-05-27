@@ -149,7 +149,6 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
         break;
         case 0x0001:
         {
-          T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x00)
           T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03)
 
           memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
@@ -179,16 +178,16 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
         break;
         case 0x0002:
         {
-          T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x00)
+          T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03)
 
           memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
           gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
 
           T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
 
-          if( gs_miscBuffer[4*3+2] == 0x06 )
+          if( gs_miscBuffer[2] == 0x06 )
           {
-            if(gs_miscBuffer[4*3+3] == 0x0F )
+            if(gs_miscBuffer[3] == 0x0F )
             {
               phOsal_LogError((const uint8_t*)"DTALib>T2T:Read Only Static Memory Layout \n");
               break;
@@ -202,7 +201,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_T2TStaticLayout5)
             phOsal_Delay(200); /*for last sending packet!!! we have to wait until UT3 recognized the last packet of test!!*/
           }
-          else if( gs_miscBuffer[4*3+2] == 0xFE )
+          else if( gs_miscBuffer[2] == 0xFE )
           {
             phOsal_LogDebug((const uint8_t*)"DTALib>T2T Initialized Dynamic Memory Layout \n");
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_T2TDynamicLayout1)
@@ -212,7 +211,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_T2TDynamicLayout5)
             phOsal_Delay(200); /*for last sending packet!!! we have to wait until UT3 recognized the last packet of test!!*/
           }
-          else if( gs_miscBuffer[4*3+2] == 0x12 )
+          else if( gs_miscBuffer[2] == 0x12 )
           {
 
             phOsal_LogDebug((const uint8_t*)"DTALib>T2T: Initialized Dynamic Memory Layout with Lock control TLV\n");
@@ -234,12 +233,12 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
         break;
         case 0x0003:
         {
-          T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x00)
+          T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03)
 
           memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
           gui_miscBufferLength = (uint16_t)psTagParams->sBuffParams.dwBuffLength;
 
-          if( gs_miscBuffer[4*3+2] == 0x06 ) /* 48 bytes*/
+          if( gs_miscBuffer[2] == 0x06 ) /* 48 bytes*/
           {
 
             phOsal_LogDebug((const uint8_t*)"DTALib>T2T:Initialized Static Memory Layout \n");
@@ -248,10 +247,11 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x02,gs_T2TStaticIntlzMemoryLayout2)
             phOsal_Delay(200); /*for last sending packet!!! we have to wait until UT3 recognized the last packet of test!!*/
           }
-          else if( gs_miscBuffer[4*3+2] == 0xFE )
+          else if( gs_miscBuffer[2] == 0xFE )
           {
             phOsal_LogDebug((const uint8_t*)"DTALib>T2T:Dynamic Memory Layout without lock control TLV \n");
             T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
+            T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x07)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03,gs_T2TStaticInlzMemCapabilityContainer)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x02,gs_T2TStaticInlzMemLockBytes)
             T2T_SECTOR_SELECT(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,2)
@@ -267,6 +267,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
                 else
                 {
                     gs_T2TStaticInlzMemWrite[1] = dwBlkNum;
+                    gs_T2TStaticInlzMemWrite[5]  = 0xFF;
                 }
 
                 /*Transceive is causing timeouts, Need to debug. As of now using raw frame*/
@@ -281,10 +282,11 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
             }
             phOsal_Delay(200); /*for last sending packet!!! we have to wait until UT3 recognized the last packet of test!!*/
           }
-          else if( gs_miscBuffer[4*3+2] == 0x12 ) /* for LT */
+          else if( gs_miscBuffer[2] == 0x12 ) /* for LT */
           {
             phOsal_LogDebug((const uint8_t*)"DTALib>T2T:Initialized Dynamic Memory Layout with Lock control TLV\n");
             T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
+            T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x28)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03,gs_T2TDynamicIntlzMemoryLayoutwithTLV1)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x02,gs_T2TDynamicIntlzMemoryLayoutwithTLV2)
             T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x28,gs_T2TDynamicIntlzMemoryLayoutwithTLV3)
