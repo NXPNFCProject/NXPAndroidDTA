@@ -84,7 +84,7 @@ public class PhDTAUIMainActivity extends Activity implements
         android.widget.CompoundButton.OnCheckedChangeListener,
         android.widget.AdapterView.OnItemSelectedListener {
     /*Pattern number related view elements*/
-    private Spinner spinnerPatterNum;
+    private Spinner spinnerPatterNum, certificationVersion;
     private EditText editTextCustomPatternNum;
 
     /*Test execution view elements*/
@@ -143,7 +143,7 @@ public class PhDTAUIMainActivity extends Activity implements
      */
     public static InetAddress inetAddress;
     public static int portNumber;
-    public final static String DTA_GUI_VERSION = "08.00";
+    public final static String DTA_GUI_VERSION = "08.02";
 
     /**
      * TO know whether Run button or Stop button is clicked
@@ -292,7 +292,9 @@ public class PhDTAUIMainActivity extends Activity implements
 
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
+        certificationVersion.setEnabled(true);
         spinnerPatterNum.setOnItemSelectedListener(PhDTAUIMainActivity.this);
+        certificationVersion.setOnItemSelectedListener(PhDTAUIMainActivity.this);
         adapterPatternNumberDefault = ArrayAdapter
                 .createFromResource(PhDTAUIMainActivity.this,
                      R.array.multi_text_array,
@@ -597,6 +599,7 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setHint("Custom");
         editTextCustomPatternNum.setEnabled(false);
         spinnerPatterNum.setEnabled(false);
+        certificationVersion.setEnabled(false);
         if (PhUtilities.CLIENT_SELECTED) {
             if (PhUtilities.SIMULATED_SERVER_SELECTED) {
                 Log.d(PhUtilities.TCPSRV_TAG,
@@ -653,6 +656,7 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxSnep.setEnabled(true);
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
+        certificationVersion.setEnabled(true);
 
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
@@ -675,6 +679,7 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxSnep.setEnabled(true);
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
+        certificationVersion.setEnabled(true);
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
@@ -694,6 +699,7 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxSnep.setChecked(false);
         chkBoxLogToFile.setEnabled(false);
         spinnerPatterNum.setEnabled(false);
+        certificationVersion.setEnabled(false);
              /** enable mode */
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
@@ -742,6 +748,7 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setEnabled(false);
         chkBoxLogCat.setFocusable(false);
         spinnerPatterNum.setEnabled(false);
+        certificationVersion.setEnabled(false);
         radioBtnAutoMode.setEnabled(false);
         radioBtnManualMode.setEnabled(false);
         chkBoxLogToFile.setEnabled(false);
@@ -880,6 +887,7 @@ public class PhDTAUIMainActivity extends Activity implements
                 radioBtnAutoMode.setEnabled(false);
                 radioBtnManualMode.setEnabled(true);
                 spinnerPatterNum.setEnabled(false);
+                certificationVersion.setEnabled(false);
                 selectionMode(true);
             }
             break;
@@ -1010,10 +1018,21 @@ public class PhDTAUIMainActivity extends Activity implements
     @Override
     public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2,
             long arg3) {
-        Log.d(PhUtilities.UI_TAG,
-                "get pattern number" + spinnerPatterNum.getSelectedItem().toString());
+        switch(arg0.getId()){
+        case R.id.spinner_text:
+            Log.d(PhUtilities.UI_TAG,
+                    "get pattern number" + spinnerPatterNum.getSelectedItem().toString());
 
-        nxpHelperMainActivity.setsPatternnumber(spinnerPatterNum.getSelectedItem().toString());
+            nxpHelperMainActivity.setsPatternnumber(spinnerPatterNum.getSelectedItem().toString());
+            break;
+        case R.id.certification_version:
+            Log.d(PhUtilities.UI_TAG,
+                    "get certification version" + certificationVersion.getSelectedItem().toString());
+            nxpHelperMainActivity.setsCertificationVersion(certificationVersion.getSelectedItem().toString());
+            break;
+
+        }
+
 
     }
 
@@ -1094,6 +1113,7 @@ public class PhDTAUIMainActivity extends Activity implements
         phDtaLibStructureObj.enableLlcp    = chkBoxLlcp.isChecked();
         phDtaLibStructureObj.enableSnep    = chkBoxSnep.isChecked();
         phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
+        phDtaLibStructureObj.certificationVerNum = nxpHelperMainActivity.getsCertificationVersion();
         phDtaLibStructureObj.enableParamsInLlcpConnectPdu =
                 chkBoxLlcpConnectPduPrms.isChecked();
 
@@ -1216,6 +1236,7 @@ public class PhDTAUIMainActivity extends Activity implements
          * Calling all the Spinner id's
          */
         spinnerPatterNum = (Spinner) findViewById(R.id.spinner_text);
+        certificationVersion = (Spinner) findViewById(R.id.certification_version);
         /**
          * Calling all the Button id's
          */
@@ -1528,6 +1549,7 @@ public class PhDTAUIMainActivity extends Activity implements
                                 .getString(R.color.orange)));
                         onClickColoringRunning = false;
                         spinnerPatterNum.setSelection(0);
+                        certificationVersion.setSelection(0);
                         dialog.cancel();
                                 Log.v(PhUtilities.UI_TAG, "calling phDtaLibDisableDiscovery");
                                 phNXPJniHelper.phDtaLibDisableDiscovery();
@@ -1561,6 +1583,8 @@ public class PhDTAUIMainActivity extends Activity implements
                 editTextCustomPatternNum.setEnabled(false);
                 if(null != spinnerPatterNum)
                 spinnerPatterNum.setEnabled(false);
+                if(certificationVersion != null)
+                certificationVersion.setEnabled(false);
             }
 
             /**
@@ -1778,6 +1802,7 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxLlcpConnectPduPrms.setChecked(true);
             Log.e(PhUtilities.UI_TAG, "llcp is selected");
             spinnerPatterNum.setEnabled(true);
+            certificationVersion.setEnabled(true);
             editTextCustomPatternNum.setText("");
             spinnerPatterNum.setAdapter(adapterPatternNumberLlcp);
             editTextCustomPatternNum.setEnabled(false);

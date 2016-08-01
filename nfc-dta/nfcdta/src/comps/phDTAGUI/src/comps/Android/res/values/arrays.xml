@@ -40,4 +40,8 @@
     <string-array name="clean_pattern_numbers">
         <item ></item>
     </string-array>
+    <string-array name="multi_certification_array">
+        <item>CR8</item>
+        <item>CR9</item>
+    </string-array>
 </resources>

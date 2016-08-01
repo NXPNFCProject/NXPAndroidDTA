@@ -29,7 +29,7 @@
             android:id="@+id/nxp_img"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@null"
+            android:contentDescription="@string/iv_nxp_logo"
             android:src="@drawable/nxp_img" />
 
         <TextView
@@ -39,6 +39,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:layout_margin="2dp"
+            android:contentDescription="@string/tv_app_name"
             android:text="@string/dta_test_app"
             android:textColor="@android:color/black"
             android:textSize="25sp"
@@ -53,15 +54,54 @@
 
         <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingBottom="3dp" >
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ph_border_different_color_one"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="5dp"
+                android:id="@+id/certification_release_layout"
+                android:layout_centerHorizontal="true">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp">
+
+                <TextView
+                    android:id="@+id/certification_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/certification"
+                    android:layout_centerVertical="true"
+                    android:textColor="@android:color/black"
+                    android:contentDescription="@string/tv_cr"
+                    android:textSize="20sp"/>
+
+                <Spinner
+                    android:id="@+id/certification_version"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/multi_certification_array"
+                    android:contentDescription="@string/sp_cr"
+                    android:layout_marginLeft="5dp"
+                    android:popupBackground="#111111"
+                    android:layout_toRightOf="@+id/certification_text"
+                    android:spinnerMode="dropdown"/>
+
+                </RelativeLayout>
+
+            </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/parent_execution_pattern_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:padding="2dp" >
+                android:layout_below="@+id/certification_release_layout"
+                android:layout_marginTop="15dp">
 
                 <RelativeLayout
                     android:id="@+id/execution_layout"
@@ -80,6 +120,7 @@
                         android:layout_centerHorizontal="true"
                         android:gravity="center"
                         android:text="@string/execution_mode"
+                        android:contentDescription="@string/tv_exe_mode"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -94,8 +135,11 @@
 
                         <RadioButton
                             android:id="@+id/auto_radio_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:checked="false"
+                            android:contentDescription="@string/rb_auto"
                             android:text="@string/auto" />
 
                         <RadioButton
@@ -103,10 +147,25 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="95dp"
+                            android:contentDescription="@string/rb_manual"
                             android:layout_marginTop="5dp"
                             android:checked="true"
                             android:text="@string/manual" />
                     </RadioGroup>
+
+                    <RelativeLayout
+                        android:id="@+id/certification_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="101dp"
+                        android:background="@drawable/ph_border_different_color_one"
+                        android:padding="5dp"
+                        android:layout_above="@+id/auto_manual_rb"
+                        android:layout_alignLeft="@+id/auto_manual_rb"
+                        android:layout_alignStart="@+id/auto_manual_rb"
+                        android:layout_marginStart="101dp">
+
+                    </RelativeLayout>
                 </RelativeLayout>
 
                 <View
@@ -136,27 +195,17 @@
                         android:layout_alignParentLeft="true"
                         android:gravity="center"
                         android:text="@string/pattern"
+                        android:contentDescription="@string/tv_pn_num"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/custom"
-                        android:layout_width="100dp"
-                        android:layout_height="50dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_marginTop="20dp"
-                        android:cursorVisible="true"
-                        android:ems="10"
-                        android:hint="@string/custom"
-                        android:singleLine="true" >
-                    </EditText>
 
                     <Spinner
                         android:id="@+id/spinner_text"
                         android:layout_width="100dp"
                         android:layout_height="50dp"
                         android:layout_marginTop="30dp"
+                        android:contentDescription="@string/sp_pn_num"
                         android:entries="@array/multi_text_array"
                         android:popupBackground="#111111"
                         android:spinnerMode="dropdown" />
@@ -174,7 +223,22 @@
                         android:textColor="@android:color/black"
                         android:textSize="18sp" />
                     -->
+
+                    <EditText
+                        android:id="@+id/custom"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:contentDescription="@string/tf_pn_num"
+                        android:cursorVisible="true"
+                        android:ems="10"
+                        android:hint="@string/custom"
+                        android:singleLine="true" />
+
                 </RelativeLayout>
+
+
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/rf_main_layout"
@@ -190,6 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="2dp"
+                    android:contentDescription="@string/tv_rf_tech"
                     android:gravity="center"
                     android:text="@string/rf_technology"
                     android:textColor="@android:color/black"
@@ -217,6 +282,7 @@
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
                             android:text="@string/poll"
+                            android:contentDescription="@string/tv_rf_poll"
                             android:textColor="@android:color/black"
                             android:textSize="15sp" />
 
@@ -237,7 +303,8 @@
                                 android:text="A"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_poll_tech_a" />
 
                             <TextView
                                 android:id="@+id/b_poll_technology_name"
@@ -248,7 +315,8 @@
                                 android:text="B"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_poll_tech_b" />
 
                             <TextView
                                 android:id="@+id/f_poll_technology_name"
@@ -259,7 +327,8 @@
                                 android:text="F"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_poll_tech_f" />
 
                             <RelativeLayout
                                 android:id="@+id/p2p_poll__layout"
@@ -275,6 +344,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:contentDescription="@string/cb_poll_p2p"
                                     android:checked="true"
                                     android:text="@string/p2p_text"
                                     android:textSize="15sp" />
@@ -284,6 +354,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_p2p_tech_a"
                                     android:layout_marginLeft="35dp"
                                     android:layout_toRightOf="@id/p2p_poll_check_box" />
 
@@ -292,6 +363,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_p2p_tech_b"
                                     android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/a_p2p_poll_check_box" />
 
@@ -300,6 +372,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_p2p_tech_f"
                                     android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/b_p2p_poll_check_box"
                                     android:paddingRight="10dp" />
@@ -321,6 +394,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
                                     android:checked="true"
+                                    android:contentDescription="@string/cb_poll_rd_wr"
                                     android:text="@string/read_write"
                                     android:textSize="15sp" />
 
@@ -329,6 +403,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_rd_wr_tech_a"
                                     android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/rd_wt_poll_check_box" />
 
@@ -337,6 +412,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_rd_wr_tech_b"
                                     android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/a_rdwt_poll_check_box" />
 
@@ -345,6 +421,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_poll_rd_wr_tech_f"
                                     android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/b_rdwt_poll_check_box" />
                             </RelativeLayout>
@@ -363,6 +440,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
+                            android:contentDescription="@string/tv_rf_lstn"
                             android:text="@string/listen"
                             android:textColor="@android:color/black"
                             android:textSize="15sp" />
@@ -383,7 +461,8 @@
                                 android:text="A"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_lstn_tech_a" />
 
                             <TextView
                                 android:id="@+id/b_listen_technology_name"
@@ -394,7 +473,8 @@
                                 android:text="B"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_lstn_tech_b" />
 
                             <TextView
                                 android:id="@+id/f_listen_technology_name"
@@ -405,7 +485,8 @@
                                 android:text="F"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_lstn_tech_f" />
 
                             <RelativeLayout
                                 android:id="@+id/p2p_listen__layout"
@@ -423,6 +504,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
                                     android:checked="true"
+                                    android:contentDescription="@string/cb_lstn_p2p"
                                     android:text="@string/p2p_text"
                                     android:textSize="15sp" />
 
@@ -431,6 +513,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_p2p_tech_a"
                                     android:layout_marginLeft="35dp"
                                     android:layout_toRightOf="@id/p2p_listen_check_box" />
 
@@ -439,6 +522,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_p2p_tech_b"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/a_p2p_listen_check_box" />
 
@@ -447,6 +531,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_p2p_tech_f"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/b_p2p_listen_check_box" />
                             </RelativeLayout>
@@ -466,6 +551,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:contentDescription="@string/cb_lstn_uicc"
                                     android:text="@string/uicc"
                                     android:textSize="15sp" />
 
@@ -474,6 +560,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_uicc_tech_a"
                                     android:layout_marginLeft="27dp"
                                     android:layout_toRightOf="@id/uicc_listen_check_box" />
 
@@ -482,6 +569,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_uicc_tech_b"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/a_uicc_listen_check_box" />
 
@@ -490,6 +578,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_uicc_tech_f"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/b_uicc_listen_check_box" />
                             </RelativeLayout>
@@ -509,6 +598,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:contentDescription="@string/cb_lstn_hce"
                                     android:text="@string/hce"
                                     android:textSize="15sp" />
 
@@ -517,6 +607,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_hce_tech_a"
                                     android:layout_marginLeft="32dp"
                                     android:layout_toRightOf="@id/hce_listen_check_box" />
 
@@ -525,6 +616,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_hce_tech_b"
                                     android:layout_marginLeft="7dp"
                                     android:layout_toRightOf="@id/a_hce_listen_check_box" />
 
@@ -533,6 +625,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_hce_tech_f"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/b_hce_listen_check_box" />
                             </RelativeLayout>
@@ -553,6 +646,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
                                     android:text="@string/ese_check_box"
+                                    android:contentDescription="@string/cb_lstn_ese"
                                     android:textSize="15sp" />
 
                                 <CheckBox
@@ -560,6 +654,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_ese_tech_a"
                                     android:layout_marginLeft="34dp"
                                     android:layout_toRightOf="@id/ese_listen_check_box" />
 
@@ -568,6 +663,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_ese_tech_b"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/a_ese_listen_check_box" />
 
@@ -576,6 +672,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_lstn_ese_tech_f"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/b_ese_listen_check_box" />
                             </RelativeLayout>
@@ -606,7 +703,7 @@
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:contentDescription="@string/tv_other_sels"/>
                 </RelativeLayout>
 
                 <RelativeLayout
@@ -628,7 +725,8 @@
                             android:layout_height="wrap_content"
                             android:text="@string/card_emulation"
                             android:textColor="@android:color/black"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:contentDescription="@string/cb_card_emul"/>
                     </RelativeLayout>
                 </RelativeLayout>
 
@@ -650,7 +748,8 @@
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        android:contentDescription="@string/tv_othr_sel"/>
 
                     <RelativeLayout
                         android:id="@+id/llcp_snep_layout"
@@ -681,6 +780,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:padding="2dp"
+                                    android:contentDescription="@string/cb_llcp"
                                     android:text="@string/llcp"
                                     android:textSize="15sp" />
 
@@ -690,6 +790,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_centerHorizontal="true"
                                     android:layout_toRightOf="@id/llcp_check_box"
+                                    android:contentDescription="@string/cb_conn_pdu_parm"
                                     android:text="@string/c_pdu_params"
                                     android:enabled="false"
                                     android:textSize="15sp" />
@@ -700,6 +801,7 @@
                                 android:layout_width="140dp"
                                 android:layout_height="60dp"
                                 android:layout_marginLeft="15dp"
+                                android:contentDescription="@string/cb_snep"
                                 android:background="@drawable/ph_rectangular_border"
                                 android:padding="2dp"
                                 android:text="@string/snep"
@@ -726,6 +828,7 @@
                     android:layout_height="25dp"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:contentDescription="@string/tv_utls"
                     android:gravity="center"
                     android:text="@string/utilities"
                     android:textColor="@android:color/black"
@@ -747,6 +850,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
+                        android:contentDescription="@string/tv_utls_log_msgs"
                         android:text="@string/log_messages"
                         android:textColor="@android:color/black"
                         android:textSize="15sp" />
@@ -756,6 +860,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
+                        android:contentDescription="@string/cb_utls_log_msgs_file"
                         android:layout_below="@id/log_msg"
                         android:layout_marginTop="2dp"
                         android:enabled="false"
@@ -765,6 +870,7 @@
                         android:id="@+id/logcat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/cb_utls_log_cat_cnsl"
                         android:layout_below="@id/logtofile"
                         android:text="@string/console_txt" />
 
@@ -776,6 +882,7 @@
                         android:layout_marginLeft="5dp"
                         android:layout_marginRight="5dp"
                         android:layout_marginTop="2dp"
+                        android:contentDescription="@string/tf_utls_log_msgs_file_name"
                         android:layout_toRightOf="@+id/logtofile"
                         android:ems="10"
                         android:gravity="center"
@@ -800,6 +907,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
+                        android:contentDescription="@string/tv_utls_devc"
                         android:text="@string/device"
                         android:textColor="@android:color/black"
                         android:textSize="15sp" />
@@ -821,7 +929,8 @@
                             android:text="@string/device_selection"
                             android:textAppearance="?android:attr/textAppearanceLarge"
                             android:textColor="#111111"
-                            android:textSize="15sp" />
+                            android:textSize="15sp"
+                            android:contentDescription="@string/tv_devc_sel"/>
 
                         <Spinner
                             android:id="@+id/device_selector"
@@ -831,7 +940,8 @@
                             android:layout_toRightOf="@id/deviceselection"
                             android:gravity="right"
                             android:popupBackground="#111111"
-                            android:spinnerMode="dropdown" />
+                            android:spinnerMode="dropdown"
+                            android:contentDescription="@string/sp_dev_sel"/>
                     </RelativeLayout>
 
                     <RelativeLayout
@@ -844,6 +954,7 @@
                             android:id="@+id/versionnumber"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:contentDescription="@string/cb_utls_devc_info"
                             android:layout_alignParentLeft="true"
                             android:text="@string/version_number" />
 
@@ -854,7 +965,8 @@
                             android:layout_marginLeft="20dp"
                             android:layout_toRightOf="@+id/versionnumber"
                             android:textAppearance="?android:attr/textAppearanceMedium"
-                            android:textSize="12sp" />
+                            android:textSize="12sp"
+                            android:contentDescription="@string/tv_firm_ware_vrsn"/>
                     </RelativeLayout>
                 </RelativeLayout>
 
@@ -872,6 +984,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="50dp"
                         android:layout_marginTop="15dp"
+                        android:contentDescription="@string/tv_utls_at_mod_msgs"
                         android:text="@string/auto_mode_msg"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
@@ -882,6 +995,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/auto_mode_messages"
+                        android:contentDescription="@string/cb_utls_at_mod_msgs_cstm_msg"
                         android:layout_marginLeft="10dp"
                         android:text="@string/custom_msg" />
 
@@ -890,6 +1004,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/auto_mode_messages"
+                        android:contentDescription="@string/cb_utls_at_mod_msgs_show_msg"
                         android:layout_toRightOf="@id/custom_msg"
                         android:text="@string/show_msg" />
                 </RelativeLayout>
@@ -901,6 +1016,7 @@
                     android:layout_below="@+id/log_msg_layout"
                     android:layout_marginLeft="50dp"
                     android:layout_marginTop="15dp"
+                    android:contentDescription="@string/tv_utls_tcp_stat"
                     android:layout_toRightOf="@id/auto_mode_custom_show_msg"
                     android:text="@string/tcp_ip_status"
                     android:textColor="@android:color/black"
@@ -921,6 +1037,7 @@
                     android:layout_height="50dp"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
+                    android:contentDescription="@string/bt_stop"
                     android:background="@color/grey"
                     android:padding="5dp"
                     android:paddingLeft="40dp"
@@ -937,6 +1054,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_marginRight="72dp"
                     android:layout_toLeftOf="@+id/stop"
+                    android:contentDescription="@string/bt_run"
                     android:background="@color/green"
                     android:padding="5dp"
                     android:text="@string/run"
@@ -952,6 +1070,7 @@
                     android:layout_marginLeft="72dp"
                     android:layout_toRightOf="@+id/stop"
                     android:background="@color/orange"
+                    android:contentDescription="@string/bt_exit"
                     android:padding="5dp"
                     android:paddingLeft="40dp"
                     android:paddingRight="40dp"
@@ -983,7 +1102,8 @@
                 android:layout_below="@id/run_layout"
                 android:layout_marginLeft="10dp"
                 android:text="@string/copyright_nxp_semiconductors"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:contentDescription="@string/tv_copy_right"/>
         </RelativeLayout>
     </ScrollView>
 

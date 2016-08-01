@@ -30,7 +30,8 @@
         android:text="@string/lib_error"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#111111"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:contentDescription="@string/tv_dta_lib_not_avlb"/>
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -48,7 +49,8 @@
             android:background="@drawable/ph_border_different_color_two"
             android:onClick="onClick"
             android:text="@string/yes"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:contentDescription="@string/bt_dta_lib_not_avlb_yes"/>
 
         <Button
             android:id="@+id/noexit"
@@ -59,7 +61,8 @@
             android:background="@drawable/ph_border_different_color_two"
             android:onClick="onClick"
             android:text="@string/no"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:contentDescription="@string/bt_dta_lib_not_avlb_no"/>
     </RelativeLayout>
 
 </RelativeLayout>

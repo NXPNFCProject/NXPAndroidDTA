@@ -35,18 +35,27 @@ import android.util.Log;
 public class PhNXPHelperMainActivity {
 
     public String sPatternnumber;
+    public String sCertificationVersion;
 
     public String getsPatternnumber() {
-        Log.d(PhUtilities.UI_TAG, "Get Pattern Number" + sPatternnumber);
+        Log.d(PhUtilities.UI_TAG, "Get Pattern Number = " + sPatternnumber);
         return sPatternnumber;
     }
 
     public void setsPatternnumber(String sPatternnumber) {
         this.sPatternnumber = sPatternnumber;
-        Log.d(PhUtilities.UI_TAG, "Set Pattern Number" + sPatternnumber);
-
+        Log.d(PhUtilities.UI_TAG, "Set Pattern Number = " + sPatternnumber);
     }
 
+    public String getsCertificationVersion(){
+        Log.d(PhUtilities.UI_TAG, "Get Certification Version = " + sCertificationVersion);
+        return sCertificationVersion;
+    }
+
+    public void setsCertificationVersion(String sCertificationVersion){
+        this.sCertificationVersion = sCertificationVersion;
+        Log.d(PhUtilities.UI_TAG, "Set Certification Version = " + this.sCertificationVersion);
+    }
     /**
      * This method creates a new file with given file name if file already
      * exists in the specified directory then file writes data into it

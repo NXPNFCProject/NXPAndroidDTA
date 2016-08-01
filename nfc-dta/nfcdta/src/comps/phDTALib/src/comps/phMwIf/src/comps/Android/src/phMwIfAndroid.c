@@ -1074,11 +1074,11 @@ tNFA_STATUS phMwIfi_StackDeInit()
     return MWIFSTATUS_SUCCESS;
 }
 
-void* phMwIfi_IntegrationThread(void *arg)
+void phMwIfi_IntegrationThread(void *arg)
 {
     OSALSTATUS dwOsalStatus;
+    MWIFSTATUS dwMwifStatus;
     phMwIf_sHandle_t *mwIfHdl = &g_mwIfHandle;
-    phMwIf_sDiscCfgPrms_t sPrevdiscCfgParams;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     ALOGD("MwIf>arg: %p",arg);
     while(1)
@@ -1096,29 +1096,49 @@ void* phMwIfi_IntegrationThread(void *arg)
             ALOGD("MwIf>%s:Stopping thread",__FUNCTION__);
             break;
         }
-        if(gb_discovery_notify)
-        {
-            int rfInterface;
-            UINT8 protocol = gx_discovery_result.discovery_ntf.protocol;
-            gb_discovery_notify = FALSE;
-            ALOGD("MwIf>%s:Handling Discovery Notification",__FUNCTION__);
-            phMwIfi_MapRfInterface(&protocol, &rfInterface);
 
-            gx_status = NFA_Select(gx_discovery_result.discovery_ntf.rf_disc_id,
-                                   gx_discovery_result.discovery_ntf.protocol,
-                                   rfInterface);
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SELECT_RESULT_EVT,5000,
-                    "MwIf> ERROR NFA Select",&(mwIfHdl->sLastQueueData));
+        if(phMwIfi_SelectDevice() == MWIFSTATUS_FAILED){
+            return;
         }
-
-
-        /*Restart the discovery*/
-        sPrevdiscCfgParams = mwIfHdl->sDiscCfg;
-        phMwIf_DisableDiscovery(mwIfHdl);
-        phMwIf_EnableDiscovery(mwIfHdl,&sPrevdiscCfgParams);
     }
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
-    return NULL;
+    return;
+}
+
+/**
+ * \Function Select Device
+ *
+ * \Description      Select one from detected devices during discovery
+ *                  (from NFA_DISC_RESULT_EVTs). The application should wait for
+ *                  the final NFA_DISC_RESULT_EVT before selecting.
+ *
+ * /return NFA_STATUS_SUCCESS - if the discovery configuration was successful
+ *         MWIFSTATUS_FAILED - in case of errors
+ */
+tNFA_STATUS phMwIfi_SelectDevice(){
+    ALOGD("MwIf>%s:Enter",__FUNCTION__);
+    phMwIf_sDiscCfgPrms_t sPrevdiscCfgParams;
+    phMwIf_sHandle_t *mwIfHdl = &g_mwIfHandle;
+    if(gb_discovery_notify)
+    {
+        int rfInterface;
+        UINT8 protocol = gx_discovery_result.discovery_ntf.protocol;
+        gb_discovery_notify = FALSE;
+        ALOGD("MwIf>%s:Handling Discovery Notification",__FUNCTION__);
+        phMwIfi_MapRfInterface(&protocol, &rfInterface);
+
+        gx_status = NFA_Select(gx_discovery_result.discovery_ntf.rf_disc_id,
+                               gx_discovery_result.discovery_ntf.protocol,
+                               rfInterface);
+        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SELECT_RESULT_EVT,5000,
+                "MwIf> ERROR NFA Select",&(mwIfHdl->sLastQueueData));
+    }
+    /*Restart the discovery*/
+    sPrevdiscCfgParams = mwIfHdl->sDiscCfg;
+    phMwIf_DisableDiscovery(mwIfHdl);
+    phMwIf_EnableDiscovery(mwIfHdl,&sPrevdiscCfgParams);
+    ALOGD("MwIf>%s:Exit",__FUNCTION__);
+    return MWIFSTATUS_SUCCESS;
 }
 
 /**

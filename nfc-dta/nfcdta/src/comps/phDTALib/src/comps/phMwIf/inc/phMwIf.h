@@ -145,6 +145,7 @@ typedef enum phMwIf_eNciSetConfigProp
     PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG       = 0xA05F,    /**< NXP PN547-PN548 */
     PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG        = 0xA05E,    /**< NXP PN547-PN548 */
     PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG      = 0xA081,    /**< NXP PN547-PN548 */
+    PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG       = 0xA03F,    /**< NXP for All the chips */
 }phMwIf_eNciSetConfigProp_t;
 
 /** \ingroup grp_mwif_lib

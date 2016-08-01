@@ -29,7 +29,8 @@
         android:text="@string/confirm_exit"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#111111"
-        android:textSize="25sp" />
+        android:textSize="25sp"
+        android:contentDescription="@string/tv_cnfm_exit"/>
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -46,7 +47,8 @@
             android:background="@drawable/ph_border_different_color_two"
             android:onClick="onClick"
             android:text="@string/yes"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:contentDescription="BT_CNFM_EXIT_YES"/>
 
         <Button
             android:id="@+id/noexit"
@@ -57,7 +59,8 @@
             android:background="@drawable/ph_border_different_color_two"
             android:onClick="onClick"
             android:text="@string/no"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:contentDescription="BT_CNFM_EXIT_NO"/>
     </RelativeLayout>
 
 </RelativeLayout>

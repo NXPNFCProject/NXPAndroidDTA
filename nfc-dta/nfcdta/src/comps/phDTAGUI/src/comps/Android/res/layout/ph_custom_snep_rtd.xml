@@ -28,7 +28,8 @@
         android:text="@string/snep_settings_string"
         android:textColor="@android:color/black"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:contentDescription="@string/tv_snep"/>
 
     <ScrollView
         android:id="@+id/server_client_scroll_view"
@@ -63,8 +64,10 @@
                     android:text="@string/nfc_service_string"
                     android:textColor="@android:color/black"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
-                <Spinner
+                    android:textStyle="bold"
+                    android:contentDescription="@string/tv_snep_srvr"/>
+
+                 <Spinner
                     android:id="@+id/server_test_case_id"
                     android:layout_width="240dp"
                     android:layout_height="wrap_content"
@@ -72,7 +75,8 @@
                     android:layout_marginTop="15dp"
                     android:layout_centerHorizontal="true"
                     android:entries="@array/snep_server_test_cases"
-                    android:spinnerMode="dropdown" />
+                    android:spinnerMode="dropdown"
+                     android:contentDescription="@string/sp_snep_srvr"/>
 
                 <Button
                     android:id="@+id/run_server"
@@ -83,7 +87,8 @@
                     android:layout_marginTop="120dp"
                     android:text="@string/run"
                     android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:contentDescription="@string/bt_snep_srvr_run"/>
 
                 <Button
                     android:id="@+id/stop_server"
@@ -95,7 +100,8 @@
                     android:text="@string/stop"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:visibility="invisible" />
+                    android:visibility="invisible"
+                    android:contentDescription="@string/bt_snep_srvr_stop"/>
 
                 <RelativeLayout
                     android:id="@+id/server_msg_layout"
@@ -114,7 +120,8 @@
                         android:textColor="@android:color/black"
                         android:textSize="20sp"
                         android:layout_marginTop="15dp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:contentDescription="@string/tv_snep_srvr_msg"/>
 
                     <Button
                         android:id="@+id/server_clear_msg_button"
@@ -126,7 +133,8 @@
                         android:layout_toRightOf="@+id/server_message"
                         android:text="@string/clear_msg"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:contentDescription="@string/bt_snep_srvr_clr_msg"/>
 
                     <TextView
                         android:id="@+id/server_ndef_message"
@@ -162,7 +170,8 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/black"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:contentDescription="@string/tv_snep_clnt"/>
 
                 <Spinner
                     android:id="@+id/client_test_case_id"
@@ -172,7 +181,8 @@
                     android:layout_marginTop="15dp"
                     android:layout_centerHorizontal="true"
                     android:entries="@array/snep_client_test_cases"
-                    android:spinnerMode="dropdown" />
+                    android:spinnerMode="dropdown"
+                    android:contentDescription="@string/sp_snep_clnt"/>
 
                 <CheckBox
                     android:id="@+id/short_record_layout"
@@ -183,7 +193,8 @@
                     android:text="@string/short_reccord_layout"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:visibility="visible" />
+                    android:visibility="visible"
+                    android:contentDescription="@string/cb_snep_clnt_shrt_rcrd"/>
 
                 <Button
                     android:id="@+id/run_client"
@@ -207,7 +218,8 @@
                     android:text="@string/stop"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:visibility="invisible" />
+                    android:visibility="invisible"
+                    android:contentDescription="@string/bt_snep_clnt_stop"/>
 
                 <RelativeLayout
                     android:id="@+id/client_msg_layout"
@@ -226,7 +238,8 @@
                         android:textColor="@android:color/black"
                         android:textSize="20sp"
                         android:layout_marginTop="15dp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:contentDescription="@string/tv_snep_clnt_msg"/>
 
                     <Button
                         android:id="@+id/client_clear_msg_button"
@@ -238,7 +251,9 @@
                         android:layout_toRightOf="@+id/client_message"
                         android:text="@string/clear_msg"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:contentDescription="@string/bt_snep_clnt_clr_msg"/>
+
                     <TextView
                     android:id="@+id/client_ndef_message"
                     android:layout_width="wrap_content"
@@ -272,7 +287,8 @@
             android:layout_centerVertical="true"
             android:text="@string/back_string"
             android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="@string/bt_snep_bck_to_main_scrn"/>
     </RelativeLayout>
 
 </RelativeLayout>

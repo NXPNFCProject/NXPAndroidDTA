@@ -28,7 +28,7 @@
             android:id="@+id/nxp_img"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@null"
+            android:contentDescription="@string/iv_nxp_logo"
             android:src="@drawable/nxp_img" />
 
         <TextView
@@ -41,7 +41,8 @@
             android:text="@string/dta_test_app"
             android:textColor="@android:color/black"
             android:textSize="32sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="@string/tv_app_name"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -65,7 +66,8 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#111111"
             android:textSize="25sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="TV_LOG_CAT_CNSL"/>
 
         <Button
             android:id="@+id/back"
@@ -78,7 +80,8 @@
             android:gravity="center"
             android:text="@string/back"
             android:textSize="20dp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:contentDescription="BT_LOG_CAT_BACK"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -99,7 +102,8 @@
                 android:text=""
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="#111111"
-                android:textSize="15sp" />
+                android:textSize="15sp"
+                android:contentDescription="TV_LOG_CAT_CNSL_TEXT"/>
         </ScrollView>
     </RelativeLayout>
 

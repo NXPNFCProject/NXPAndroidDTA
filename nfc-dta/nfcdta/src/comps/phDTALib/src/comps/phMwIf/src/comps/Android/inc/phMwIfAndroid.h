@@ -227,10 +227,11 @@ typedef struct phMwIf_sHandle
 
 typedef void (tNFA_NXP_NCI_RSP_CBACK) (UINT8 event, UINT16 param_len, UINT8 *p_param);
 
-void*       phMwIfi_IntegrationThread(void *arg);
+void        phMwIfi_IntegrationThread(void *arg);
 void        phMwIfi_IncreaseStackSize(void);
 void        phMwIfi_GlobalDtaModeInit(void);
 tNFA_STATUS phMwIfi_StackInit(phMwIf_sHandle_t *mwIfHdl);
+tNFA_STATUS phMwIfi_SelectDevice();
 tNFA_STATUS phMwIfi_StackDeInit();
 tNFA_STATUS phMwIfi_ConfigureDriver(phMwIf_sHandle_t *mwIfHdl);
 tNFA_STATUS phMwIfi_DeConfigureDriver();

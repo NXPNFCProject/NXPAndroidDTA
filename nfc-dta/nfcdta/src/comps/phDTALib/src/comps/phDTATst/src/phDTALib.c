@@ -1113,6 +1113,18 @@ void phDtaLibi_SetMwIfConfig()
         }
     }
 
+    if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR8") == 0x00)
+    {
+        abConfigIDData[0] = 0x01;
+        phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
+    }
+    else if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00)
+    {
+        abConfigIDData[0] = 0x03;
+        phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
+    }
+
+
     abConfigIDData[0] = 0x03;
     phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;

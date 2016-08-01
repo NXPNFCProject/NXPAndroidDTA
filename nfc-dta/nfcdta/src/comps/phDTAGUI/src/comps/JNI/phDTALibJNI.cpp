@@ -164,6 +164,14 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     jfieldID patternNumberId = env->GetFieldID(phdtaclass, "patternNum","I");
     jint patternNumber = env->GetIntField(phDtaLibsDiscParamst, patternNumberId);
     sTestProfile.Pattern_Number = patternNumber;
+
+    jfieldID certVerNumberId = env->GetFieldID(phdtaclass, "certificationVerNum","Ljava/lang/String;");
+    jstring certString = (jstring)env->GetObjectField(phDtaLibsDiscParamst, certVerNumberId);
+    const char *str = env->GetStringUTFChars(certString,NULL);
+    strcpy(sTestProfile.Certification_Release, str);
+    phOsal_LogDebugString((const uint8_t*)"DTAJni DEBUG> Certification_Release = ",(const uint8_t*)sTestProfile.Certification_Release);
+    env->ReleaseStringUTFChars( certString, str);
+
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni> TestProfile Pattern Number = ",sTestProfile.Pattern_Number);
     phDtaLib_SetTestProfile(sTestProfile);
 

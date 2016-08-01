@@ -120,6 +120,7 @@ typedef struct phDtaLib_sIUTInfo
 typedef struct phDtaLib_sTestProfile
 {
     uint32_t Pattern_Number;    /**< Pattern Number*/
+    char Certification_Release[10];
     /*RFU*/         /**< Test Case ID and other parameters in Auto Mode*/
 }phDtaLib_sTestProfile_t;
 

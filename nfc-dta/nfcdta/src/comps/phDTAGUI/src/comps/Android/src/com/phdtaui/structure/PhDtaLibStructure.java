@@ -31,6 +31,8 @@ public class PhDtaLibStructure
     public boolean enableSnep;
     /* pattern number*/
     public int patternNum;
+    /* Ceritifcation version */
+    public String certificationVerNum;
     /*Enable Polling modes*/
     public boolean pollP2P;
     public boolean pollRdWt;
