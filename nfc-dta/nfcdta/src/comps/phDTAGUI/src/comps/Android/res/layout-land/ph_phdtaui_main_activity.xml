@@ -59,47 +59,124 @@
             android:layout_height="match_parent" >
 
             <RelativeLayout
-                android:id="@+id/certification_layout"
+                android:id="@+id/certification_conf"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/ph_border_different_color_one">
-
+                android:layout_marginTop="15dp">
                 <RelativeLayout
+                    android:id="@+id/certification_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp">
+                    android:background="@drawable/ph_border_different_color_one"
+                    android:layout_alignParentTop="true">
 
-                    <TextView
-                        android:id="@+id/certification_text"
+                    <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="@string/certification"
-                        android:contentDescription="@string/tv_cr"
-                        android:textColor="@android:color/black"
-                        android:textSize="20sp"/>
+                        android:padding="2dp">
 
-                    <Spinner
-                        android:id="@+id/certification_version"
-                        android:layout_width="200dp"
+                        <TextView
+                            android:id="@+id/certification_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="@string/certification"
+                            android:contentDescription="@string/tv_cr"
+                            android:textColor="@android:color/black"
+                            android:textSize="20sp"/>
+
+                        <Spinner
+                            android:id="@+id/certification_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/certification_array"
+                            android:contentDescription="@string/sp_cr"
+                            android:popupBackground="#111111"
+                            android:layout_toRightOf="@+id/certification_text"
+                            android:spinnerMode="dropdown" />
+
+                    </RelativeLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/timeslotnumber_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/certification_layout"
+                    android:background="@drawable/ph_border_different_color_one">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:entries="@array/multi_certification_array"
-                        android:contentDescription="@string/sp_cr"
-                        android:popupBackground="#111111"
-                        android:layout_toRightOf="@+id/certification_text"
-                        android:spinnerMode="dropdown" />
+                        android:padding="2dp">
 
+                        <TextView
+                            android:id="@+id/timeslotnumber_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="@string/time_slot_number"
+                            android:contentDescription="@string/tv_tsn"
+                            android:textColor="@android:color/black"
+                            android:textSize="20sp"/>
+
+                        <Spinner
+                            android:id="@+id/timeslotnumber_options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/timeslotnumber_array"
+                            android:contentDescription="@string/sp_tsn"
+                            android:popupBackground="#111111"
+                            android:layout_toRightOf="@+id/timeslotnumber_text"
+                            android:spinnerMode="dropdown" />
+
+                    </RelativeLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/condevicelimit_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_toRightOf="@+id/timeslotnumber_layout"
+                    android:background="@drawable/ph_border_different_color_one">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="2dp">
+
+                         <TextView
+                            android:id="@+id/condevicelimit_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:text="@string/con_device_limit"
+                            android:contentDescription="@string/tv_cdl"
+                            android:textColor="@android:color/black"
+                            android:textSize="20sp"/>
+
+                        <Spinner
+                            android:id="@+id/condevicelimit_options"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/condevicelimit_array"
+                            android:contentDescription="@string/sp_cdl"
+                            android:popupBackground="#111111"
+                            android:layout_toRightOf="@+id/condevicelimit_text"
+                            android:spinnerMode="dropdown" />
                 </RelativeLayout>
             </RelativeLayout>
+        </RelativeLayout>
 
 
             <RelativeLayout
                 android:id="@+id/parent_execution_pattern_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/certification_layout"
+                android:layout_below="@+id/certification_conf"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="15dp">
 
@@ -177,11 +254,12 @@
                         android:id="@+id/custom"
                         android:layout_width="100dp"
                         android:layout_height="50dp"
-                        android:layout_alignParentRight="true"
                         android:ems="10"
                         android:contentDescription="@string/tf_pn_num"
-                        android:layout_marginTop="17dp"
-                        android:hint="Custom" >
+                        android:hint="Custom"
+                        android:layout_alignTop="@+id/spinner_text"
+                        android:layout_alignRight="@+id/pattern_text"
+                        android:layout_alignEnd="@+id/pattern_text">
                     </EditText>
 
                     <Spinner
@@ -312,6 +390,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:checked="true"
                                     android:contentDescription="@string/cb_poll_p2p"
                                     android:text="@string/p2p_text"
                                     android:textSize="20sp" />
@@ -353,6 +432,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:checked="true"
                                     android:contentDescription="@string/cb_poll_rd_wr"
                                     android:text="@string/read_write"
                                     android:textSize="20sp" />
@@ -391,8 +471,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="5dp"
-                        android:layout_toRightOf="@id/poll_layout"
-                        android:padding="5dp" >
+                        android:layout_toRightOf="@id/poll_layout">
 
                         <TextView
                             android:id="@+id/listen_text"
@@ -459,6 +538,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
+                                    android:checked="true"
                                     android:contentDescription="@string/cb_lstn_p2p"
                                     android:text="@string/p2p_text"
                                     android:textSize="20sp" />
@@ -622,8 +702,8 @@
                         android:id="@+id/p2p_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="0dp"
                         android:layout_below="@id/rf_main_layout"
+                        android:layout_centerHorizontal="true"
                         android:background="@drawable/ph_border_different_color_three"
                         android:paddingLeft="10dp"
                         android:layout_margin="5dp"
@@ -633,6 +713,7 @@
                             android:id="@+id/other_selection_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:visibility="invisible"
                             android:text="@string/p2p"
                             android:layout_centerHorizontal="true"
                             android:textSize="15sp"
@@ -735,8 +816,7 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/ph_border_different_color_three"
-                    android:gravity="right"
-                    android:padding="2dp" >
+                    android:gravity="right">
 
                     <TextView
                         android:id="@+id/log_msg"

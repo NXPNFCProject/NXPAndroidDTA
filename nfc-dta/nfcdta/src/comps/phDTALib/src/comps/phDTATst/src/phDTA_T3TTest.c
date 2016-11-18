@@ -283,6 +283,8 @@ DTASTATUS phDtaLibi_T3TOperations(phDtaLib_sTestProfile_t sTestProfile,
         {
           phOsal_LogDebug ((const uint8_t*)"DTALib>T3T: Perform x_NFC_FelicaMinBlockCheck \n");
           phDtaLibi_T3TMinBlockCheck();
+        }else{
+            phDtaLibi_T3TPoll(0x12FC,00,00);
         }
       break;
       case 0x0004:

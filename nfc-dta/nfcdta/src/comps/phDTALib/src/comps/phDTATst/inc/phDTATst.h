@@ -19,9 +19,9 @@
 
 #include "phDTAOSAL.h"
 
-#define DTALIB_VERSION_STR "NFCDTA_08.0C"
-#define DTALIBVERSION_MAJOR (0x08)
-#define DTALIBVERSION_MINOR (0x0C)
+#define DTALIB_VERSION_STR "NFCDTA_09.03"
+#define DTALIBVERSION_MAJOR (0x09)
+#define DTALIBVERSION_MINOR (0x03)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -226,6 +226,20 @@ extern DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd,
  *
  */
 extern DTASTATUS phDtaLibi_HceOperations();
+
+/**
+ * \ingroup grp_dta_lib internal function
+ * \brief Function To Handle Host card emulation related operations
+ *
+ * Function To handle Host card emulation for felica related operations
+ *
+ * \param[in]                           None
+ *
+ * \retval #DTASTATUS_SUCCESS           Handling of Host card emulation for felica related operations is successful
+ * \retval #DTASTATUS_FAILED            Handling of Host card emulation for felica related operations is Unsuccessful.
+ *
+ */
+extern DTASTATUS phDtaLibi_HceFOperations();
 
 /**
  * \ingroup grp_dta_lib internal function

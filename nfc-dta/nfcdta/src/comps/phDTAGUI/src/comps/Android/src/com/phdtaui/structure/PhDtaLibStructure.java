@@ -33,6 +33,12 @@ public class PhDtaLibStructure
     public int patternNum;
     /* Ceritifcation version */
     public String certificationVerNum;
+    /*Flag to handle debug configurations*/
+    public boolean dtaDebugFlag;
+    /* Time slot number */
+    public int timeSlotNumberF;
+    /* Connection device limit */
+    public int connectionDeviceLimit;
     /*Enable Polling modes*/
     public boolean pollP2P;
     public boolean pollRdWt;

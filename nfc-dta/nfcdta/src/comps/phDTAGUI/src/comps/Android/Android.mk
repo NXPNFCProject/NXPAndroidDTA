@@ -19,11 +19,18 @@ LOCAL_PATH := $(call my-dir)
 # Build DTA.apk
 include $(CLEAR_VARS)
 # Build all java files in the java subdirectory
- 
+
 # Name of the APK to build
 LOCAL_PACKAGE_NAME := NxpDTA
 LOCAL_CERTIFICATE := platform
 LOCAL_MODULE_TAGS := tests
+LOCAL_ARM_MODE := arm
+ifeq (true,$(TARGET_IS_64_BIT))
+LOCAL_MULTILIB := 64
+else
+LOCAL_MULTILIB := 32
+endif
+
 
 $(warning PLATFORM_SDK_VERSION is $(PLATFORM_SDK_VERSION))
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 20; echo $$?),0)

@@ -24,6 +24,12 @@ D_CFLAGS := -DANDROID -DBUILDCFG=1
 include $(CLEAR_VARS)
 DTALIB_PATH:= $(LOCAL_PATH)/../../../../../phDTALib/
 LOCAL_ARM_MODE := arm
+ifeq (true,$(TARGET_IS_64_BIT))
+LOCAL_MULTILIB := 64
+else
+LOCAL_MULTILIB := 32
+endif
+
 
 LOCAL_MODULE_TAGS:= optional
 
@@ -35,13 +41,11 @@ $(patsubst ./%,%, \
  )
 endef
 
-
 LOCAL_SRC_FILES += ../phDTALibJNI.cpp
 
 #NXP PN547 Enable
 D_CFLAGS += -DNXP_EXTNS=TRUE
 D_CFLAGS += -DNFC_NXP_NOT_OPEN_INCLUDED=TRUE
-
 
 LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/../ \

@@ -86,6 +86,8 @@
     <string name="back_string">Back To Main Menu</string>
     <string name="snep_settings_string">SNEP</string>
     <string name="certification">Cert.Rel</string>
+    <string name="time_slot_number">TSN-F</string>
+    <string name="con_device_limit">Con.Dev</string>
     <!-- default snep server strings -->
     <string name="nfc_service_string">Server</string>
     <!-- Extended SNEP Server strings -->
@@ -279,4 +281,8 @@
     <string name="sp_dev_sel">SP_DEV_SEL</string>
     <string name="tv_other_sels">TV_OTHER_SELS</string>
     <string name="tv_vers_num">TV_VERS_NUM</string>
+    <string name="tv_tsn">TV_TSN</string>
+    <string name="sp_tsn">SP_TSN</string>
+    <string name="tv_cdl">TV_CDL</string>
+    <string name="sp_cdl">SP_CDL</string>
 </resources>

@@ -34,6 +34,12 @@ include $(CLEAR_VARS)
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_ARM_MODE := arm
+ifeq (true,$(TARGET_IS_64_BIT))
+LOCAL_MULTILIB := 64
+else
+LOCAL_MULTILIB := 32
+endif
+
 LOCAL_MODULE := libdta
 LOCAL_MODULE_TAGS := optional
 #LOCAL_SHARED_LIBRARIES := libhardware_legacy libcutils liblog libdl libstlport libhardware

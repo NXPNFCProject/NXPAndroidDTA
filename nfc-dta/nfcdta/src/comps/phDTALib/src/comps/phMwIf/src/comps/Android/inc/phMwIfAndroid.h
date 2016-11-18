@@ -27,10 +27,12 @@ extern "C" {
 
 #define MAX_NUM_EE 8
 #define MAX_NXPCFG_RSP_DATA 32
+#define NFCID_LEN       8
+
 /* Default LTO is 100ms. It should be sufficiently larger than RWT
 Logically RWT should be larger than LTO*/
 #define PHMWIF_LLCP_LTO_VALUE           1000 /*1000ms*/
-#define PHMWIF_LLCP_WAITING_TIME        12   /*(256*16/Fc)*2^WT*/
+#define PHMWIF_LLCP_WAITING_TIME        10   /*(256*16/Fc)*2^WT*/
 #define PHMWIF_LLCP_DELAY_RESP_TIME     100  /*100ms*/
 #define OSP_ENABLE                      0 /*Enable L-OSP specific API updates*/
 #define ENABLE_AGC_DEBUG                0
@@ -185,12 +187,16 @@ typedef struct phMwIf_sHandle
     void*                       pvQueueHdl;
     phMwIf_sLlcpPrms_t          sLlcpPrms;
     phMwIf_sQueueData_t         sLastQueueData;       /**< Last data fetched from queue*/
-    void*                       pvSemIntgrnThrd;       /**< Semaphore to sync between Integration and MW callback */
+    void*                       pvSemIntgrnThrd;      /**< Semaphore to sync between Integration and MW callback */
     pthread_t                   sIntegrationThrdHdl;  /**< Integration thread handles the required functionality after discovery and before activation*/
     BOOLEAN                     blStopIntegrationThrd;/**< Set to TRUE to stop Integration thread*/
     eDtaDeviceState_t           eDeviceState;
-    pthread_t                   sAgcDbgThrdHdl;  /**< Debug thread gets the AgcDebug Values periodically*/
-    BOOLEAN                     blStopAgcDbgThrd;/**< Set to TRUE to stop Agc thread */
+    pthread_t                   sAgcDbgThrdHdl;       /**< Debug thread gets the AgcDebug Values periodically*/
+    BOOLEAN                     blStopAgcDbgThrd;     /**< Set to TRUE to stop Agc thread */
+    UINT16                      systemCode;           /**< System code used ofr HCE-F command/response */
+    uint8_t                     nfcid2[NFCID_LEN];    /**< NFCID2 */
+    uint16_t                    nfcHceFHandle;        /**< Handle used for HCEF operations */
+    uint32_t                    routingProtocols;         /**< Contains the details of protocols routing */
 }phMwIf_sHandle_t;
 
 #define NCI_MSG_TYPE_MASK         0xE0
@@ -316,6 +322,7 @@ void*       phMwIfi_DbgAgcThread(void *arg);
 MWIFSTATUS phMwIfi_P2pRoutingConfigure(void* mwIfHandle,
                                phMwIf_RfTechMask   dwRfTechMask);
 MWIFSTATUS phMwIfi_InitRouting(void* mwIfHandle);
+MWIFSTATUS phMwIfi_RoutingUpdate(void* mwIfHandle);
 #ifdef __cplusplus
 }
 #endif

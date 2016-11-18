@@ -23,6 +23,7 @@ public class PhUtilities {
     public static boolean isExitChecked = false;
     public static String exitValue = "exit not clicked";
     public static boolean NDK_IMPLEMENTATION = true;
+    public static boolean DTA_DEBUG_MODE = true;
     public static String UI_TAG = "UIDTA>";
     public static String TCPCNT_TAG = "TCPCLIENT>";
     public static String TCPSRV_TAG = "TCPSERVER>";

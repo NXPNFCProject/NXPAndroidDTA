@@ -56,51 +56,129 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ph_border_different_color_one"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="5dp"
-                android:id="@+id/certification_release_layout"
-                android:layout_centerHorizontal="true">
-
                 <RelativeLayout
+                    android:id="@+id/certification_conf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp">
+                    android:layout_centerHorizontal="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="15dp">
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ph_border_different_color_one"
+                        android:layout_alignParentTop="true"
+                        android:id="@+id/certification_layout">
 
-                <TextView
-                    android:id="@+id/certification_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/certification"
-                    android:layout_centerVertical="true"
-                    android:textColor="@android:color/black"
-                    android:contentDescription="@string/tv_cr"
-                    android:textSize="20sp"/>
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="2dp">
 
-                <Spinner
-                    android:id="@+id/certification_version"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/multi_certification_array"
-                    android:contentDescription="@string/sp_cr"
-                    android:layout_marginLeft="5dp"
-                    android:popupBackground="#111111"
-                    android:layout_toRightOf="@+id/certification_text"
-                    android:spinnerMode="dropdown"/>
+                        <TextView
+                            android:id="@+id/certification_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/certification"
+                            android:textColor="@android:color/black"
+                            android:contentDescription="@string/tv_cr"
+                            android:textSize="20sp"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"/>
 
+                        <Spinner
+                            android:id="@+id/certification_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:entries="@array/certification_array"
+                            android:contentDescription="@string/sp_cr"
+                            android:popupBackground="#111111"
+                            android:spinnerMode="dropdown"
+                            android:layout_below="@+id/certification_text"
+                            android:layout_centerHorizontal="true"/>
+
+                        </RelativeLayout>
+
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:id="@+id/timeslotnumber_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="20dp"
+                        android:layout_toRightOf="@+id/certification_layout"
+                        android:background="@drawable/ph_border_different_color_one">
+
+                        <RelativeLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="2dp">
+
+                            <TextView
+                                android:id="@+id/timeslotnumber_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/time_slot_number"
+                                android:contentDescription="@string/tv_tsn"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:layout_alignParentTop="true"
+                                android:layout_centerHorizontal="true" />
+
+                            <Spinner
+                                android:id="@+id/timeslotnumber_options"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:entries="@array/timeslotnumber_array"
+                                android:contentDescription="@string/sp_tsn"
+                                android:popupBackground="#111111"
+                                android:spinnerMode="dropdown"
+                                android:layout_below="@+id/timeslotnumber_text"
+                                android:layout_centerHorizontal="true" />
+
+                        </RelativeLayout>
+                   </RelativeLayout>
+                   <RelativeLayout
+                       android:id="@+id/condevicelimit_layout"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_marginLeft="20dp"
+                       android:layout_toRightOf="@+id/timeslotnumber_layout"
+                       android:background="@drawable/ph_border_different_color_one">
+
+                       <RelativeLayout
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:padding="2dp">
+
+                            <TextView
+                               android:id="@+id/condevicelimit_text"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                                android:text="@string/con_device_limit"
+                               android:contentDescription="@string/tv_cdl"
+                               android:textColor="@android:color/black"
+                               android:textSize="20sp"
+                                android:layout_centerHorizontal="true" />
+
+                           <Spinner
+                               android:id="@+id/condevicelimit_options"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:entries="@array/condevicelimit_array"
+                               android:contentDescription="@string/sp_cdl"
+                               android:popupBackground="#111111"
+                               android:layout_below="@+id/condevicelimit_text"
+                               android:spinnerMode="dropdown" />
+                       </RelativeLayout>
+                   </RelativeLayout>
                 </RelativeLayout>
-
-            </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/parent_execution_pattern_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_below="@+id/certification_release_layout"
+                android:layout_below="@+id/certification_conf"
                 android:layout_marginTop="15dp">
 
                 <RelativeLayout
@@ -154,7 +232,7 @@
                     </RadioGroup>
 
                     <RelativeLayout
-                        android:id="@+id/certification_layout"
+                        android:id="@+id/certification_layout2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="101dp"

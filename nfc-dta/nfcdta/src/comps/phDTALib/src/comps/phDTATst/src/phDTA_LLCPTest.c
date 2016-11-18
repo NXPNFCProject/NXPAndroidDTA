@@ -176,7 +176,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
         phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:ConnectionOrientedServerParams:");
         phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Client SAP=",(uint32_t)puLlcpEvtInfo->sLlcpConnOrientedData.bRemoteSap);
         phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:ConnOrientedRemoteHandle=",(uint32_t)puLlcpEvtInfo->sLlcpConnOrientedData.wConnOrientedHandle);
-        phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:psDtaLibHdl->pvCORemoteClientConnHandle=",psDtaLibHdl->pvCORemoteClientConnHandle);
+        phOsal_LogDebugPtrh((const uint8_t*)"DTALib>LLCP:psDtaLibHdl->pvCORemoteClientConnHandle=",psDtaLibHdl->pvCORemoteClientConnHandle);
         psDtaLibHdl->pvCOServerHandle = (void *)(((char*)0)+(puLlcpEvtInfo->sConnReq.wServerHandle));
 
         phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:Waiting for Data from Remote Client");

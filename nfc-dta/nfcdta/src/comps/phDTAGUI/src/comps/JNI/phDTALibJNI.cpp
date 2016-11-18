@@ -172,7 +172,22 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebugString((const uint8_t*)"DTAJni DEBUG> Certification_Release = ",(const uint8_t*)sTestProfile.Certification_Release);
     env->ReleaseStringUTFChars( certString, str);
 
+    jfieldID jFidDtaDebugFlag = env->GetFieldID(phdtaclass, "dtaDebugFlag", "Z");
+    jboolean dtaDebugFlag     = env->GetBooleanField(phDtaLibsDiscParamst, jFidDtaDebugFlag);
+    sTestProfile.DtaDebugFlag = dtaDebugFlag;
+
+    jfieldID jFidTimeSlotNumberF = env->GetFieldID(phdtaclass, "timeSlotNumberF", "I");
+    jboolean timeSlotNumberF     = env->GetIntField(phDtaLibsDiscParamst, jFidTimeSlotNumberF);
+    sTestProfile.TimeSlotNumber = timeSlotNumberF;
+
+    jfieldID jFidConnDevLimit = env->GetFieldID(phdtaclass, "connectionDeviceLimit", "I");
+    jboolean connectionDeviceLimit     = env->GetIntField(phDtaLibsDiscParamst, jFidConnDevLimit);
+    sTestProfile.ConnDeviceLimit = connectionDeviceLimit;
+
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni> TestProfile Pattern Number = ",sTestProfile.Pattern_Number);
+    phOsal_LogDebugU32h((const uint8_t*)"DTAJni> TestProfile DTA debug Flag = ",sTestProfile.DtaDebugFlag);
+    phOsal_LogDebugU32h((const uint8_t*)"DTAJni> Time Slot NUmber = ",sTestProfile.TimeSlotNumber);
+    phOsal_LogDebugU32h((const uint8_t*)"DTAJni> Connection device limit = ",sTestProfile.ConnDeviceLimit);
     phDtaLib_SetTestProfile(sTestProfile);
 
     jfieldID jFidPollP2p    = env->GetFieldID(phdtaclass,"pollP2P", "Z");
@@ -341,7 +356,9 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebug((const uint8_t*)"DTAJni>Calling DTALib Configure P2P LLCP & SENP \n");
     phDtaLib_ConfigureP2p((phDtaLib_eP2PType_t)p2pType);
 
-    phDtaLib_EnableDiscovery(&discParams);
+    if(phDtaLib_EnableDiscovery(&discParams) != DTASTATUS_SUCCESS){
+        return DTASTATUS_FAILED;
+    }
     LOG_FUNC_EXIT;
     return DTASTATUS_SUCCESS;
 }

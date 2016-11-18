@@ -770,6 +770,17 @@ void phOsal_LogDebugU32h(const uint8_t* pbMsg, uint32_t wValue);
 void phOsal_LogDebugU32d(const uint8_t* pbMsg, uint32_t wValue);
 
 /**
+ * Log Debug Information
+ * This function prints the Debug log message specified along with pointer value in hex
+ * appropriate log level for debug needs to be enabled from phOsal_SetLogLevel
+ *
+ * \param[in] pbMsg defines log message to be printed
+ * \param[in] pValue defines value to be printed
+ *
+ */
+void phOsal_LogDebugPtrh(const uint8_t* pbMsg, void* pValue);
+
+/**
  * Log Debug Information specified along with the string
  * This function prints the Debug log message specified along with 32bit value in decimal
  * appropriate log level for debug needs to be enabled from phOsal_SetLogLevel

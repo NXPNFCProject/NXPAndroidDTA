@@ -49,13 +49,15 @@ uint8_t gx_status = FALSE;   /**<(Check) change the type def.... also NFA_STATUS
 uint8_t gs_paramBuffer[400]; /**< Buffer for passing Data during operations */
 
 #define PHMWIF_THREAD_DELETE_DUMMY_EVT 0xFF /**<Dummy event to exit thread*/
+#define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
+#define P2P_DISABLED    0
 
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLCP magic bytes */
-                                                              0x01,0x01,0x11, /**< major, minor Version TLV*/
+                                                              0x01,0x01,0x12, /**< major, minor Version TLV*/
                                                               0x02,0x02,0x07,0xFE, /**< MIUX TLV*/
                                                               0x03,0x02,0x00,0x03, /**< WKS TLV*/
                                                               0x04,0x01,0x64}; /**< LTO TLV*/
-static const uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x11,0x03,0x02,0x00,0x03,0x04,0x01,0x64};
+static const uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x12,0x03,0x02,0x00,0x03,0x04,0x01,0x64};
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_INITIATOR = 0x11;
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_TARGET = 0x0D;
 
@@ -314,7 +316,6 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
 
     if((dtaLibHdl->sTestProfile.Pattern_Number == 0x06) ||
        (dtaLibHdl->sTestProfile.Pattern_Number == 0x08) ||
-       (dtaLibHdl->sTestProfile.Pattern_Number == 0x09) ||
        (dtaLibHdl->sTestProfile.Pattern_Number == 0x0A))
     {
         /*Configure TypeF Polling Bitrate to 424 for pattern 0x06,0x08,0x0A as per DTA Spec*/
@@ -322,6 +323,11 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, gs_paramBuffer);
         phOsal_LogDebugString ((const uint8_t*)"DTALib>Configured TypeF Poll Bitrate to 424Kbps for pattern number 0x06,0x08,0x09 & 0x0A",
                                 (const uint8_t*)__FUNCTION__);
+    }
+    if(dtaLibHdl->sTestProfile.Pattern_Number == 0x09)
+    {
+        gs_paramBuffer[0] = 0x00;
+        phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 1, gs_paramBuffer);
     }
 
     if((dtaLibHdl->sTestProfile.Pattern_Number == 0x0A) ||
@@ -353,7 +359,7 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
     {
         uint8_t abConfigIDData[8]={0};
         phMwIf_sLlcpInitParams_t sLlcpInitPrms;
-        abConfigIDData[0] = 0x0B;
+        abConfigIDData[0] = 0x0A;
         phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_LN_WT, 0x01, abConfigIDData);
         abConfigIDData[0] = 0x0F;
         phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_NFCDEP_OP, 0x01, abConfigIDData);
@@ -395,23 +401,40 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
                                                           &(dtaLibHdl->pvCLServerHandle));
         dtaLibHdl->bLlcpInitialized = TRUE;
     }
-
+    phOsal_LogDebugU32h((const uint8_t*)"DEBUG> DTALib> :ESE Enabled",discParams->dwListenHCE);
     if(discParams->dwListenHCE)
     {/*Conigure Card Emulation from Host*/
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :HCE Enabled",(const uint8_t*)__FUNCTION__);
-        dwMwIfStatus = phMwIf_HceInit(dtaLibHdl->mwIfHdl);
-        if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
-        {
-            phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in Initializing HCE",(const uint8_t*)__FUNCTION__);
-            return MWIFSTATUS_FAILED;
+
+/***********************HCE(A & B) Configuration************************/
+        if( (discParams->dwListenHCE & DTALIB_RFTECHNOLOGY_MASK_A) || (discParams->dwListenHCE & DTALIB_RFTECHNOLOGY_MASK_B)){
+                dwMwIfStatus = phMwIf_HceInit(dtaLibHdl->mwIfHdl);
+                if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
+                {
+                        phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in Initializing HCE",(const uint8_t*)__FUNCTION__);
+                        return MWIFSTATUS_FAILED;
+                }
+                dwMwIfStatus = phMwIf_HceConfigure(dtaLibHdl->mwIfHdl, discParams->dwListenHCE);
+                if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
+                {
+                        phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in configuring HCE",(const uint8_t*)__FUNCTION__);
+                        return MWIFSTATUS_FAILED;
+                }
         }
-        dwMwIfStatus = phMwIf_HceConfigure(dtaLibHdl->mwIfHdl,
-                                           discParams->dwListenHCE);
-        if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
-        {
-            phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in configuring HCE",(const uint8_t*)__FUNCTION__);
-            return MWIFSTATUS_FAILED;
+/***********************HCE(A & B) Configuration END************************/
+
+/***********************HCE(F) Configuration************************/
+        if(discParams->dwListenHCE & DTALIB_RFTECHNOLOGY_MASK_F){
+            if(phMwIf_HceFInit(dtaLibHdl->mwIfHdl) != MWIFSTATUS_SUCCESS){
+                phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in Initializing HCE",(const uint8_t*)__FUNCTION__);
+                return MWIFSTATUS_FAILED;
+            }
+            if((phMwIf_HceFConfigure(dtaLibHdl->mwIfHdl,discParams->dwListenHCE)) != MWIFSTATUS_SUCCESS){
+                phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in configuring HCE",(const uint8_t*)__FUNCTION__);
+                return MWIFSTATUS_FAILED;
+            }
         }
+/***********************HCE(F) Configuration END************************/
     }
 
     if(discParams->dwListenUICC)
@@ -458,7 +481,7 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         return DTASTATUS_FAILED;
     }
 
-    dtaLibHdl->sPrevMwIfDiscCfgParams =sMwIfDiscCfgParams;
+    dtaLibHdl->sPrevMwIfDiscCfgParams = sMwIfDiscCfgParams;
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
@@ -474,6 +497,10 @@ DTASTATUS phDtaLib_DisableDiscovery() {
     if(dtaLibHdl->sAppDiscCfgParams.dwListenHCE)
     {
         dwMwIfStatus |= phMwIf_HceDeInit(dtaLibHdl->mwIfHdl);
+    }
+    if(dtaLibHdl->sAppDiscCfgParams.dwListenHCE & DTALIB_RFTECHNOLOGY_MASK_F)
+    {
+        dwMwIfStatus |= phMwIf_HceFDeInit(dtaLibHdl->mwIfHdl);
     }
     if(dtaLibHdl->sAppDiscCfgParams.dwListenUICC ||
        dtaLibHdl->sAppDiscCfgParams.dwListenESE)
@@ -594,6 +621,10 @@ void phDtaLibi_EvtCb(void* mwIfHandle,
     case PHMWIF_NFCDEP_ACTIVATED_EVT:
         break;
     case PHMWIF_CE_ACTIVATED_EVT:
+        break;
+    case PHMWIF_CE_NDEF_WRITE_START_EVT:
+        break;
+    case PHMWIF_CE_NDEF_WRITE_CPLT_EVT:
         break;
     case PHMWIF_DEACTIVATED_EVT:
         break;
@@ -825,6 +856,13 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                 dwDtaStatus = phDtaLibi_UICCOperations();
                 if(dwDtaStatus != DTASTATUS_SUCCESS)
                     phOsal_LogError((const uint8_t*)"DTALib>Unable to complete UICC Operations");
+            }
+            else if(eProtocolype == PHMWIF_PROTOCOL_T3T)
+            {
+                phOsal_LogDebug((const uint8_t*)"DTALib>HCE with T3T activated");
+                dwDtaStatus = phDtaLibi_HceFOperations();
+                if(dwDtaStatus != DTASTATUS_SUCCESS)
+                    phOsal_LogError((const uint8_t*)"DTALib>Unable to complete HCE Operations");
             }
             else
             {
@@ -1117,16 +1155,33 @@ void phDtaLibi_SetMwIfConfig()
     {
         abConfigIDData[0] = 0x01;
         phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
+#ifdef NFC_NXP_CHIP_PN548AD
+    /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
+    abConfigIDData[0] = 0x01;
+    phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT, 0x01, abConfigIDData);
+#endif
+    abConfigIDData[0] = 0x03;
+    phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     }
     else if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00)
     {
         abConfigIDData[0] = 0x03;
         phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
+        if(dtaLibHdl->sTestProfile.DtaDebugFlag == TRUE){
+            /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
+            abConfigIDData[0] = dtaLibHdl->sTestProfile.ConnDeviceLimit;
+            phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT, 0x01, abConfigIDData);
+            abConfigIDData[0] = dtaLibHdl->sTestProfile.TimeSlotNumber;
+            phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
+        }
+        else if(dtaLibHdl->sTestProfile.DtaDebugFlag == FALSE){
+            abConfigIDData[0] = 0x02;
+            phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT, 0x01, abConfigIDData);
+            abConfigIDData[0] = 0xF3;
+            phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
+        }
     }
 
-
-    abConfigIDData[0] = 0x03;
-    phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;
     phMwIf_SetConfigProp(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;
@@ -1156,7 +1211,10 @@ void phDtaLibi_SetMwIfConfig()
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_LA_NFCID1, 0x04, abConfigIDData);
     abConfigIDData[0] = 0x06;
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_LF_CON_BITR_F, 0x01, abConfigIDData);
-    abConfigIDData[0] = 0x02;
+    if(dtaLibHdl->sAppDiscCfgParams.dwListenP2P == P2P_DISABLED)
+        abConfigIDData[0] = 0x00;
+    else
+        abConfigIDData[0] = 0x02;
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_LF_PROTOCOL_TYPE, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x02;
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_LI_BIT_RATE, 0x01, abConfigIDData);
@@ -1175,11 +1233,6 @@ void phDtaLibi_SetMwIfConfig()
     abConfigIDData[0] = 0xE8;
     abConfigIDData[1] = 0x03;
     phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_TOTAL_DURATION, 0x02, abConfigIDData);
-#ifdef NFC_NXP_CHIP_PN548AD
-    /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
-    abConfigIDData[0] = 0x01;
-    phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT, 0x01, abConfigIDData);
-#endif
     LOG_FUNCTION_EXIT;
 }
 

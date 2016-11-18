@@ -179,7 +179,7 @@ void phOsal_LogDebug(const uint8_t* pbMsg)
 void phOsal_LogDebugU32h(const uint8_t* pbMsg, uint32_t wValue)
 {
     if(geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
-        ALOGD("%s:0x%x",pbMsg,wValue);
+        ALOGD("%s:0x%X",pbMsg,wValue);
 }
 
 /**
@@ -195,6 +195,21 @@ void phOsal_LogDebugU32d(const uint8_t* pbMsg, uint32_t wValue)
 {
     if(geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
         ALOGD("%s:%d",pbMsg,wValue);
+}
+
+/**
+ * Log Debug Information
+ * This function prints the Debug log message specified along with pointer value in hex
+ * appropriate log level for debug needs to be enabled from phOsal_SetLogLevel
+ *
+ * \param[in] pbMsg defines log message to be printed
+ * \param[in] pValue defines value to be printed
+ *
+ */
+void phOsal_LogDebugPtrh(const uint8_t* pbMsg, void* pValue)
+{
+    if(geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
+        ALOGD("%s:0x%p",pbMsg,pValue);
 }
 
 /**
@@ -231,7 +246,7 @@ void phOsal_LogBuffer(const uint8_t*     pbBuffer,
         uint32_t i=0;
         ALOGD("%s:BufSize=%d:",pbMsg,dwSizeOfBuffer);
         for(i=0;i<dwSizeOfBuffer;i++)
-            ALOGD("0x%x",pbBuffer[i]);
+            ALOGD("0x%0.2X",pbBuffer[i]);
     }
 }
 

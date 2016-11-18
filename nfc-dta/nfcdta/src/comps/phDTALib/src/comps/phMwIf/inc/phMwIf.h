@@ -284,6 +284,8 @@ typedef enum phMWIf_eEvtType
     PHMWIF_P2P_DATA_EVT,
     PHMWIF_CE_DATA_EVT,
     PHMWIF_DEACTIVATED_EVT,
+    PHMWIF_CE_NDEF_WRITE_START_EVT,
+    PHMWIF_CE_NDEF_WRITE_CPLT_EVT,
 }phMWIf_eEvtType_t;
 
 /** \ingroup grp_mwif_lib
@@ -835,6 +837,20 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceInit(void* mwIfHandle);
 
 /**
  * \ingroup grp_mwif_lib
+ * \brief Intitialize the card emulation for felica over Host
+ *
+ * This function register the card emulation for felica over host
+ *
+ * \param[in] mwIfHandle          Middleware Interface Handle provided during HCE-F init
+ *
+ * \retval #MWIFSTATUS_SUCCESS    MWIF LIB HCE-F init successfully
+ * \retval #MWIFSTATUS_FAILED     MWIF LIB HCE-F init failed
+ *
+ */
+MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceFInit(void* mwIfHandle);
+
+/**
+ * \ingroup grp_mwif_lib
  * \brief Configures the controller for card emulation over Host
  *
  * This function configures the NFCC to work as card emulation over host
@@ -852,6 +868,23 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceConfigure(void* mwIfHandle,
 
 /**
  * \ingroup grp_mwif_lib
+ * \brief Configures the controller for card emulation for felica over Host
+ *
+ * This function configures the NFCC to work as card emulation for felica over host
+ *
+ * \param[in] mwIfHandle          Middleware Interface Handle provided during HCE-F config
+ * \param[in] dwRfTech            Specifies Listen F for technology based routing for specified device
+ *                                Poll Types are ignored
+ *
+ * \retval #MWIFSTATUS_SUCCESS    MWIF LIB HCE config successfully
+ * \retval #MWIFSTATUS_FAILED     MWIF LIB HCE config failed
+ *
+ */
+MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceFConfigure(void* mwIfHandle,
+                                               phMwIf_RfTechMask   dwRfTechMask);
+
+/**
+ * \ingroup grp_mwif_lib
  * \brief De-Initialization of card emulation over Host
  *
  * This function De-Initialize the card emulation over host
@@ -863,6 +896,20 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceConfigure(void* mwIfHandle,
  *
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceDeInit(void* mwIfHandle);
+
+/**
+ * \ingroup grp_mwif_lib
+ * \brief De-Initialization of card emulation for felica over Host
+ *
+ * This function De-Initialize the card emulation for felica over host
+ *
+ * \param[in] mwIfHandle          Middleware Interface Handle provided during HCE-F init
+ *
+ * \retval #MWIFSTATUS_SUCCESS    MWIF LIB HCE-F De-init successfully
+ * \retval #MWIFSTATUS_FAILED     MWIF LIB HCE-F De-init failed
+ *
+ */
+MWIF_LIB_EXTEND MWIFSTATUS phMwIf_HceFDeInit(void* mwIfHandle);
 
 /**
  * \ingroup grp_mwif_lib

@@ -69,6 +69,7 @@ EE events*/
 #define  NCI_AGC_DBG_RSP_EVT 0x73
 #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
 #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
+#define  PHMWIF_DEFAULT_PROTO_ROUTING 00
 
 uint8_t gs_paramBuffer[400];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
@@ -389,8 +390,12 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle,
     if(discCfgParams->discParams.dwListenP2P != P2P_DISABLED)
     {
         ALOGD ("MwIf> configuring Routing for P2P \n");
-        phMwIfi_P2pRoutingConfigure(mwIfHandle, PHMWIF_RFTECHNOLOGY_MASK_A | PHMWIF_RFTECHNOLOGY_MASK_F);
+        phMwIfi_P2pRoutingConfigure(mwIfHandle, NFA_PROTOCOL_MASK_NFC_DEP);
     }
+
+    /*** Since NFA_EeUpdateNow() function was called from different functions some of the routing was overwriting
+     * So, removed all other calls and after all the routing configuration is done this function has been called to avoid overwrite ***/
+    phMwIfi_RoutingUpdate(mwIfHdl);
     /*Save the configuration*/
     mwIfHdl->sDiscCfg = *discCfgParams;
     phMwIfi_SetDiscoveryConfig(discCfgParams, DISCOVERY_LOOP_DURATION_IN_MILLISEC);
@@ -489,6 +494,7 @@ MWIFSTATUS phMwIf_DisableDiscovery(void* mwIfHandle)
     ALOGD ("MwIf>%s:Exit\n",__FUNCTION__);
     return dwMwStatus;
 }
+
 /**
 * Initialize secure execution environment.
 */
@@ -560,12 +566,13 @@ MWIFSTATUS phMwIf_EeConfigure(void* mwIfHandle,
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT,5000,
             "MwIf> ERROR in EeSetDefaultProtoRouting",&(mwIfHdl->sLastQueueData));
-
+#if 0
     ALOGD("MwIf> Going for EE Update now \n");
     gx_status = NFA_EeUpdateNow();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
             "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
+#endif
 
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
@@ -615,6 +622,40 @@ MWIFSTATUS phMwIf_HceInit(void* mwIfHandle)
 }
 
 /**
+* Initialize Host Card Emulation
+*/
+MWIFSTATUS phMwIf_HceFInit(void* mwIfHandle)
+{
+    phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
+    ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
+    gx_status = NFA_STATUS_FAILED;
+
+    /*Initializing NfcID*/
+    mwIfHdl->nfcid2[0] = 0x02;
+    mwIfHdl->nfcid2[1] = 0xFE;
+    mwIfHdl->nfcid2[2] = 0x00;
+    mwIfHdl->nfcid2[3] = 0x01;
+    mwIfHdl->nfcid2[4] = 0x02;
+    mwIfHdl->nfcid2[5] = 0x03;
+    mwIfHdl->nfcid2[6] = 0x04;
+    mwIfHdl->nfcid2[7] = 0x05;
+
+    /*Initializing System code*/
+    mwIfHdl->systemCode = 16388;
+
+    /*Register Callback for NFCEE Events*/
+    gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
+    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf>ERROR EE Register !!\n");
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT,5000,
+            "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
+    mwIfHdl->nfcHceFHandle = mwIfHdl->sLastQueueData.uEvtData.sConnCbData.ce_deregistered.handle;
+
+    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
+    return MWIFSTATUS_SUCCESS;
+}
+
+
+/**
 * Default routing and params configuration
 */
 MWIFSTATUS phMwIfi_InitRouting(void* mwIfHandle)
@@ -659,25 +700,70 @@ MWIFSTATUS phMwIf_HceConfigure(void* mwIfHandle,
     ALOGD("MwIf> Going for configure NCI params for HCE\n");
     phMwIfi_HceConfigNciParams(mwIfHdl);
 
+#if 0
+    /** Masking F technology as routing for F technology is done using different handle with same API **/
+    if(technologiesSwitchOn & NFA_TECHNOLOGY_MASK_F){
+        technologiesSwitchOn &= (~technologiesSwitchOn);
+    }
     ALOGD("MwIf> Going for Tech Route Set\n");
     gx_status = phMwIfi_EeSetDefaultTechRouting(NfaHostHandle,technologiesSwitchOn,0x0,0x0);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Tech Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_SET_TECH_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultTechRouting",&(mwIfHdl->sLastQueueData));
+#endif
 
     ALOGD("MwIf> Going for Proto Route Set\n");
-    gx_status = phMwIfi_EeSetDefaultProtoRouting(NfaHostHandle,NFA_PROTOCOL_MASK_ISO_DEP,0x0,0x0);
+    gx_status = phMwIfi_EeSetDefaultProtoRouting(NfaHostHandle, NFA_PROTOCOL_MASK_ISO_DEP, 0x0, 0x0);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultProtoRouting ",&(mwIfHdl->sLastQueueData));
-
+    mwIfHdl->routingProtocols |= NFA_PROTOCOL_MASK_ISO_DEP;
+#if 0
     ALOGD("MwIf> Going for EE Update Now\n");
     gx_status = NFA_EeUpdateNow();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
             "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
+#endif
 
+    return MWIFSTATUS_SUCCESS;
+}
+
+/**
+* Configure routing and params for Host Card Emulation
+*/
+MWIFSTATUS phMwIfi_RoutingUpdate(void* mwIfHandle)
+{
+    phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
+    ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
+    ALOGD("MwIf> Going for EE Update Now\n");
+    gx_status = NFA_EeUpdateNow();
+    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
+    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
+            "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
+    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
+    return MWIFSTATUS_SUCCESS;
+}
+
+/**
+* Configure routing and params for Host Card Emulation
+*/
+MWIFSTATUS phMwIf_HceFConfigure(void* mwIfHandle,
+                               phMwIf_RfTechMask   dwRfTechMask)
+{
+    phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
+    //tNFA_TECHNOLOGY_MASK technologiesSwitchOn;
+    ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
+    gx_status = NFA_STATUS_FAILED;
+    //technologiesSwitchOn = dwRfTechMask;
+
+    ALOGD("MwIf> Going for Proto Route Set\n");
+    gx_status = phMwIfi_EeSetDefaultProtoRouting(mwIfHdl->nfcHceFHandle, NFA_PROTOCOL_MASK_T3T,0x0,0x0);
+    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT),5000,
+            "MwIf> ERROR in EeSetDefaultProtoRouting ",&(mwIfHdl->sLastQueueData));
 
     return MWIFSTATUS_SUCCESS;
 }
@@ -686,27 +772,36 @@ MWIFSTATUS phMwIf_HceConfigure(void* mwIfHandle,
 * Configure routing and params for P2P and for LLCP
 */
 MWIFSTATUS phMwIfi_P2pRoutingConfigure(void* mwIfHandle,
-                               phMwIf_RfTechMask   dwRfTechMask)
+                                             phMwIf_eProtocolType_t   eProtocolType)
 {
     phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
-    tNFA_TECHNOLOGY_MASK technologiesSwitchOn;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     gx_status = NFA_STATUS_FAILED;
-    technologiesSwitchOn = dwRfTechMask;
+
+    /**
+     * If HCE-F and Listen P2P both are enabled.
+     * The NFA_EeSetDefaultProtoRouting will override the HCE-F routing entry.
+     * So, To avoid HCE-F routing entry below logic is implemented.
+     */
+    if(mwIfHdl->routingProtocols & NFA_PROTOCOL_MASK_ISO_DEP){
+        eProtocolType |= NFA_PROTOCOL_MASK_ISO_DEP;
+    }
 
     ALOGD("MwIf> Going for Tech Route Set\n");
-    gx_status = phMwIfi_EeSetDefaultTechRouting(NfaHostHandle,technologiesSwitchOn,0x0,0x0);
+    gx_status = phMwIfi_EeSetDefaultProtoRouting(NfaHostHandle,eProtocolType,0x0,0x0);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Tech Route !!\n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_SET_TECH_CFG_EVT),5000,
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_SET_PROTO_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultTechRouting",&(mwIfHdl->sLastQueueData));
 
     /* In case of P2P NFC_DEP protocol routing is handled by default in NFA_EeUpdateNow() API */
+#if 0
     ALOGD("MwIf> Going for EE Update Now\n");
     gx_status = NFA_EeUpdateNow();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
             "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
+#endif
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
 
     return MWIFSTATUS_SUCCESS;
@@ -722,12 +817,43 @@ MWIFSTATUS phMwIf_HceDeInit(void* mwIfHandle)
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     gx_status = NFA_STATUS_FAILED;
 
+    mwIfHdl->routingProtocols = PHMWIF_DEFAULT_PROTO_ROUTING;
+
+    /*Disable AID registered for Card Emulation from HCE*/
+    if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
+    {
+        ALOGD ("MwIf> HCE AID Handle De-registration =0x%x\n",NfaAidHandle);
+        gx_status = NFA_CeDeregisterAidOnDH(NfaAidHandle);
+        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"NFA CE_AID De-registration Fail!! \n");
+        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT,5000,
+                "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
+    }
+
     /*DERegister Callback for NFCEE Events*/
     gx_status = NFA_EeDeregister(phMwIfi_NfaEeCallback);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE DeRegister");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_DEREGISTER_EVT), 5000,
             "MwIf> ERROR in EeDeregister",&(mwIfHdl->sLastQueueData));
 
+    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
+    return MWIFSTATUS_SUCCESS;
+}
+
+/**
+* DeInitialize Host Card Emulation for felica
+*/
+MWIFSTATUS phMwIf_HceFDeInit(void* mwIfHandle)
+{
+    phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
+    ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
+    gx_status = NFA_STATUS_FAILED;
+
+    /*DERegister Callback for NFCEE Events*/
+    gx_status = NFA_CeDeregisterFelicaSystemCodeOnDH (mwIfHdl->nfcHceFHandle);
+    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE DeRegister");
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT, 5000,
+            "MwIf> ERROR in EeDeregister",&(mwIfHdl->sLastQueueData));
+    mwIfHdl->nfcHceFHandle = 0;
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -1319,15 +1445,6 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
                 "MwIf> ERROR Disable ConfigureEseListen",&(mwIfHdl->sLastQueueData));
     }
 
-    /*Disable AID registered for Card Emulation from HCE*/
-    if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
-    {
-        ALOGD ("MwIf> HCE AID Handle De-registration =0x%x\n",NfaAidHandle);
-        gx_status = NFA_CeDeregisterAidOnDH(NfaAidHandle);
-        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"NFA CE_AID De-registration Fail!! \n");
-        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT,5000,
-                "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
-    }
     ALOGD ("MwIf> %s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -1692,8 +1809,14 @@ void phMwIfi_NfaConnCallback (UINT8 uevent, tNFA_CONN_EVT_DATA *px_data)
             case NFA_CE_LOCAL_TAG_CONFIGURED_EVT:
             break;
             case NFA_CE_NDEF_WRITE_START_EVT:
+                ALOGD ("MwIf> *******NFA_CE_NDEF_WRITE_START_EVT *******\n");
+                bCallbackReqd = TRUE;
+                eMwIfEvtType = PHMWIF_CE_NDEF_WRITE_START_EVT;
             break;
             case NFA_CE_NDEF_WRITE_CPLT_EVT:
+                ALOGD ("MwIf> *******NFA_CE_NDEF_WRITE_CPLT_EVT *******\n");
+                bCallbackReqd = TRUE;
+                eMwIfEvtType = PHMWIF_CE_NDEF_WRITE_CPLT_EVT;
             break;
             case NFA_CE_UICC_LISTEN_CONFIGURED_EVT:
             break;

@@ -26,6 +26,38 @@ endef
 LOCAL_PATH:= $(call my-dir)/../../../../
 D_CFLAGS := -DANDROID -DBUILDCFG=1
 #NXP PN547 Enable
+#Chip selection
+#variables for NFC_NXP_CHIP_TYPE
+PN547C2 := 1
+PN548AD := 2
+PN551   := 3
+PN553   := 4
+
+ifeq ($(PN547C2),1)
+D_CFLAGS += -DPN547C2=1
+endif
+ifeq ($(PN548AD),2)
+D_CFLAGS += -DPN548AD=2
+endif
+ifeq ($(PN551),3)
+D_CFLAGS += -DPN551=3
+endif
+ifeq ($(PN553),4)
+D_CFLAGS += -DPN553=4
+endif
+#### Select the CHIP ####
+NXP_CHIP_TYPE := $(PN553)
+
+ifeq ($(NXP_CHIP_TYPE),$(PN547C2))
+D_CFLAGS += -DNFC_NXP_CHIP_TYPE=PN547C2
+else ifeq ($(NXP_CHIP_TYPE),$(PN548AD))
+D_CFLAGS += -DNFC_NXP_CHIP_TYPE=PN548AD
+else ifeq ($(NXP_CHIP_TYPE),$(PN551))
+D_CFLAGS += -DNFC_NXP_CHIP_TYPE=PN551
+else ifeq ($(NXP_CHIP_TYPE),$(PN553))
+D_CFLAGS += -DNFC_NXP_CHIP_TYPE=PN553
+endif
+#end
 D_CFLAGS += -DNXP_EXTNS=TRUE
 D_CFLAGS += -DNFC_NXP_NOT_OPEN_INCLUDED=TRUE
 ######################################
@@ -41,6 +73,11 @@ UDRV := src/udrv
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_ARM_MODE := arm
+ifeq (true,$(TARGET_IS_64_BIT))
+LOCAL_MULTILIB := 64
+else
+LOCAL_MULTILIB := 32
+endif
 LOCAL_MODULE := libmwif
 LOCAL_MODULE_TAGS := optional
 #LOCAL_SHARED_LIBRARIES := libhardware_legacy libcutils liblog libdl libstlport libhardware
@@ -66,10 +103,10 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(MW_IF)/inc \
     $(LIBNFC_NCI_PATH)/src/hal/include \
     $(LIBNFC_NCI_PATH)/src/hal/int \
     $(LOCAL_PATH)/phDTAOSAL/src/comps/Android/inc
-    
+
 LOCAL_SRC_FILES := \
     $(call all-c-files-under, $(MW_IF)/src/comps/Android/src) \
-    $(call all-cpp-files-under, $(MW_IF)/src/comps/Android/src) 
+    $(call all-cpp-files-under, $(MW_IF)/src/comps/Android/src)
 
 LOCAL_SHARED_LIBRARIES := \
     libnativehelper \

@@ -36,6 +36,9 @@ public class PhNXPHelperMainActivity {
 
     public String sPatternnumber;
     public String sCertificationVersion;
+    public String sTimeSlotNumberF;
+    public String sConnectionDeviceLimit;
+    public boolean dtaDebugFlag;
 
     public String getsPatternnumber() {
         Log.d(PhUtilities.UI_TAG, "Get Pattern Number = " + sPatternnumber);
@@ -55,6 +58,36 @@ public class PhNXPHelperMainActivity {
     public void setsCertificationVersion(String sCertificationVersion){
         this.sCertificationVersion = sCertificationVersion;
         Log.d(PhUtilities.UI_TAG, "Set Certification Version = " + this.sCertificationVersion);
+    }
+
+    public String getsTimeSlotNumberF(){
+        Log.d(PhUtilities.UI_TAG, "Get time slot number = " + sTimeSlotNumberF);
+        return sTimeSlotNumberF;
+    }
+
+    public void setsTimeSlotNumberF(String sTimeSlotNumberF){
+        this.sTimeSlotNumberF = sTimeSlotNumberF;
+        Log.d(PhUtilities.UI_TAG, "Set time slot number = " + this.sTimeSlotNumberF);
+    }
+
+    public String getsConnectionDeviceLimit(){
+        Log.d(PhUtilities.UI_TAG, "Get connection device limit = " + sConnectionDeviceLimit);
+        return sConnectionDeviceLimit;
+    }
+
+    public void setsConnectionDeviceLimit(String sConnectionDeviceLimit){
+        this.sConnectionDeviceLimit = sConnectionDeviceLimit;
+        Log.d(PhUtilities.UI_TAG, "Set connection device limit = " + this.sConnectionDeviceLimit);
+    }
+
+    public boolean getdtaDebugFlag(){
+        Log.d(PhUtilities.UI_TAG, "Get DTA debug flag = " + dtaDebugFlag);
+        return dtaDebugFlag;
+    }
+
+    public void setdtaDebugFlag(boolean dtaDebugFlag){
+        this.dtaDebugFlag = dtaDebugFlag;
+        Log.d(PhUtilities.UI_TAG, "Set DTA debug flag = " + this.dtaDebugFlag);
     }
     /**
      * This method creates a new file with given file name if file already

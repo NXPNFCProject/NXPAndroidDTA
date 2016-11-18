@@ -84,7 +84,8 @@ public class PhDTAUIMainActivity extends Activity implements
         android.widget.CompoundButton.OnCheckedChangeListener,
         android.widget.AdapterView.OnItemSelectedListener {
     /*Pattern number related view elements*/
-    private Spinner spinnerPatterNum, certificationVersion;
+    private Spinner spinnerPatterNum, certificationVersion, timeSlotNumberF, connectionDeviceLimit;
+    private RelativeLayout tsnRelativeLyt, connDevRelativeLyt;
     private EditText editTextCustomPatternNum;
 
     /*Test execution view elements*/
@@ -143,7 +144,7 @@ public class PhDTAUIMainActivity extends Activity implements
      */
     public static InetAddress inetAddress;
     public static int portNumber;
-    public final static String DTA_GUI_VERSION = "08.02";
+    public final static String DTA_GUI_VERSION = "09.00";
 
     /**
      * TO know whether Run button or Stop button is clicked
@@ -201,10 +202,24 @@ public class PhDTAUIMainActivity extends Activity implements
          */
         setContentView(R.layout.ph_phdtaui_main_activity);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setFindViewByID();
         /*Disable Technologies not supported*/
         chkBoxListenP2PB.setEnabled(false);
         chkBoxPollP2PB.setEnabled(false);
+        if(PhUtilities.DTA_DEBUG_MODE){
+            nxpHelperMainActivity.setdtaDebugFlag(true);
+            tsnRelativeLyt.setVisibility(View.VISIBLE);
+            connDevRelativeLyt.setVisibility(View.VISIBLE);
+        }else{
+            tsnRelativeLyt.setVisibility(View.GONE);
+            connDevRelativeLyt.setVisibility(View.GONE);
+            nxpHelperMainActivity.setdtaDebugFlag(false);
+            /*When view is invisible, initializing the variables with 00
+             * to avoid Number format exception*/
+            nxpHelperMainActivity.setsTimeSlotNumberF("00");
+            nxpHelperMainActivity.setsConnectionDeviceLimit("00");
+        }
         /**
          * Error Pop up start /
          */
@@ -293,8 +308,12 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
         certificationVersion.setEnabled(true);
+        timeSlotNumberF.setEnabled(true);
+        connectionDeviceLimit.setEnabled(true);
         spinnerPatterNum.setOnItemSelectedListener(PhDTAUIMainActivity.this);
         certificationVersion.setOnItemSelectedListener(PhDTAUIMainActivity.this);
+        timeSlotNumberF.setOnItemSelectedListener(PhDTAUIMainActivity.this);
+        connectionDeviceLimit.setOnItemSelectedListener(PhDTAUIMainActivity.this);
         adapterPatternNumberDefault = ArrayAdapter
                 .createFromResource(PhDTAUIMainActivity.this,
                      R.array.multi_text_array,
@@ -461,9 +480,13 @@ public class PhDTAUIMainActivity extends Activity implements
             break;
 
         case R.id.a_hce_listen_check_box:
+            handleListenHceATechCheckBoxEvent();
+            break;
         case R.id.b_hce_listen_check_box:
+            handleListenHceBTechCheckBoxEvent();
+            break;
         case R.id.f_hce_listen_check_box:
-            handleListenHceTechCheckBoxEvent();
+            handleListenHceFTechCheckBoxEvent();
             break;
 
         case R.id.a_ese_listen_check_box:
@@ -514,6 +537,7 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenHCEF.setChecked(false);
             chkBoxListenHCEA.setEnabled(true);
             chkBoxListenHCEB.setEnabled(true);
+            chkBoxListenHCEF.setEnabled(true);
 
             chkBoxListenUICCA.setChecked(false);
             chkBoxListenUICCB.setChecked(false);
@@ -600,6 +624,8 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setEnabled(false);
         spinnerPatterNum.setEnabled(false);
         certificationVersion.setEnabled(false);
+        timeSlotNumberF.setEnabled(false);
+        connectionDeviceLimit.setEnabled(false);
         if (PhUtilities.CLIENT_SELECTED) {
             if (PhUtilities.SIMULATED_SERVER_SELECTED) {
                 Log.d(PhUtilities.TCPSRV_TAG,
@@ -657,6 +683,8 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
         certificationVersion.setEnabled(true);
+        timeSlotNumberF.setEnabled(true);
+        connectionDeviceLimit.setEnabled(true);
 
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
@@ -680,6 +708,8 @@ public class PhDTAUIMainActivity extends Activity implements
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
         certificationVersion.setEnabled(true);
+        timeSlotNumberF.setEnabled(true);
+        connectionDeviceLimit.setEnabled(true);
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
@@ -700,6 +730,8 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxLogToFile.setEnabled(false);
         spinnerPatterNum.setEnabled(false);
         certificationVersion.setEnabled(false);
+        timeSlotNumberF.setEnabled(false);
+        connectionDeviceLimit.setEnabled(false);
              /** enable mode */
         radioBtnAutoMode.setEnabled(true);
         radioBtnManualMode.setEnabled(true);
@@ -749,6 +781,8 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxLogCat.setFocusable(false);
         spinnerPatterNum.setEnabled(false);
         certificationVersion.setEnabled(false);
+        timeSlotNumberF.setEnabled(false);
+        connectionDeviceLimit.setEnabled(false);
         radioBtnAutoMode.setEnabled(false);
         radioBtnManualMode.setEnabled(false);
         chkBoxLogToFile.setEnabled(false);
@@ -888,6 +922,8 @@ public class PhDTAUIMainActivity extends Activity implements
                 radioBtnManualMode.setEnabled(true);
                 spinnerPatterNum.setEnabled(false);
                 certificationVersion.setEnabled(false);
+                timeSlotNumberF.setEnabled(false);
+                connectionDeviceLimit.setEnabled(false);
                 selectionMode(true);
             }
             break;
@@ -1021,14 +1057,24 @@ public class PhDTAUIMainActivity extends Activity implements
         switch(arg0.getId()){
         case R.id.spinner_text:
             Log.d(PhUtilities.UI_TAG,
-                    "get pattern number" + spinnerPatterNum.getSelectedItem().toString());
+                    "get pattern number " + spinnerPatterNum.getSelectedItem().toString());
 
             nxpHelperMainActivity.setsPatternnumber(spinnerPatterNum.getSelectedItem().toString());
             break;
         case R.id.certification_version:
             Log.d(PhUtilities.UI_TAG,
-                    "get certification version" + certificationVersion.getSelectedItem().toString());
+                    "get certification version " + certificationVersion.getSelectedItem().toString());
             nxpHelperMainActivity.setsCertificationVersion(certificationVersion.getSelectedItem().toString());
+            break;
+        case R.id.timeslotnumber_options:
+            Log.d(PhUtilities.UI_TAG,
+                    "get timeslot number " + timeSlotNumberF.getSelectedItem().toString());
+            nxpHelperMainActivity.setsTimeSlotNumberF(timeSlotNumberF.getSelectedItem().toString());
+            break;
+        case R.id.condevicelimit_options:
+            Log.d(PhUtilities.UI_TAG,
+                    "get Connection device limit " + connectionDeviceLimit.getSelectedItem().toString());
+            nxpHelperMainActivity.setsConnectionDeviceLimit(connectionDeviceLimit.getSelectedItem().toString());
             break;
 
         }
@@ -1114,6 +1160,9 @@ public class PhDTAUIMainActivity extends Activity implements
         phDtaLibStructureObj.enableSnep    = chkBoxSnep.isChecked();
         phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
         phDtaLibStructureObj.certificationVerNum = nxpHelperMainActivity.getsCertificationVersion();
+        phDtaLibStructureObj.timeSlotNumberF = Integer.parseInt(nxpHelperMainActivity.getsTimeSlotNumberF(), 16);
+        phDtaLibStructureObj.connectionDeviceLimit = Integer.parseInt(nxpHelperMainActivity.getsConnectionDeviceLimit(),16);
+        phDtaLibStructureObj.dtaDebugFlag = nxpHelperMainActivity.getdtaDebugFlag();
         phDtaLibStructureObj.enableParamsInLlcpConnectPdu =
                 chkBoxLlcpConnectPduPrms.isChecked();
 
@@ -1143,6 +1192,10 @@ public class PhDTAUIMainActivity extends Activity implements
                 ":" + phDtaLibStructureObj.listenEseRfTech.technologyF);
         Log.d(PhUtilities.UI_TAG, "patternNum ="
                 + phDtaLibStructureObj.patternNum);
+        Log.d(PhUtilities.UI_TAG, "timeSlotNumberF ="
+                + phDtaLibStructureObj.timeSlotNumberF);
+        Log.d(PhUtilities.UI_TAG, "connectionDeviceLimit ="
+                + phDtaLibStructureObj.connectionDeviceLimit);
         Log.d(PhUtilities.UI_TAG, "EnableLLCP =" + phDtaLibStructureObj.enableLlcp);
         Log.d(PhUtilities.UI_TAG, "EnableSNEP =" + phDtaLibStructureObj.enableSnep);
     }
@@ -1237,6 +1290,10 @@ public class PhDTAUIMainActivity extends Activity implements
          */
         spinnerPatterNum = (Spinner) findViewById(R.id.spinner_text);
         certificationVersion = (Spinner) findViewById(R.id.certification_version);
+        timeSlotNumberF = (Spinner) findViewById(R.id.timeslotnumber_options);
+        connectionDeviceLimit = (Spinner) findViewById(R.id.condevicelimit_options);
+        tsnRelativeLyt = (RelativeLayout)findViewById(R.id.timeslotnumber_layout);
+        connDevRelativeLyt = (RelativeLayout)findViewById(R.id.condevicelimit_layout);
         /**
          * Calling all the Button id's
          */
@@ -1550,6 +1607,8 @@ public class PhDTAUIMainActivity extends Activity implements
                         onClickColoringRunning = false;
                         spinnerPatterNum.setSelection(0);
                         certificationVersion.setSelection(0);
+                        timeSlotNumberF.setSelection(0);
+                        connectionDeviceLimit.setSelection(0);
                         dialog.cancel();
                                 Log.v(PhUtilities.UI_TAG, "calling phDtaLibDisableDiscovery");
                                 phNXPJniHelper.phDtaLibDisableDiscovery();
@@ -1585,6 +1644,10 @@ public class PhDTAUIMainActivity extends Activity implements
                 spinnerPatterNum.setEnabled(false);
                 if(certificationVersion != null)
                 certificationVersion.setEnabled(false);
+                if(timeSlotNumberF != null)
+                    timeSlotNumberF.setEnabled(false);
+                if(connectionDeviceLimit != null)
+                    connectionDeviceLimit.setEnabled(false);
             }
 
             /**
@@ -1803,6 +1866,8 @@ public class PhDTAUIMainActivity extends Activity implements
             Log.e(PhUtilities.UI_TAG, "llcp is selected");
             spinnerPatterNum.setEnabled(true);
             certificationVersion.setEnabled(true);
+            timeSlotNumberF.setEnabled(true);
+            connectionDeviceLimit.setEnabled(true);
             editTextCustomPatternNum.setText("");
             spinnerPatterNum.setAdapter(adapterPatternNumberLlcp);
             editTextCustomPatternNum.setEnabled(false);
@@ -1886,11 +1951,20 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenP2PF.setChecked(true);
             chkBoxListenP2PA.setEnabled(true);
             chkBoxListenP2PF.setEnabled(true);
+            if(chkBoxListenHCEF.isChecked()) {
+                chkBoxListenHCEF.setChecked(false);
+                Toast.makeText(PhDTAUIMainActivity.this, "HCE-F is disabled, when P2P Listen is selected", Toast.LENGTH_SHORT).show();
+            }
         }else if(!chkBoxListenP2p.isChecked()){
             chkBoxListenP2PA.setChecked(false);
             chkBoxListenP2PF.setChecked(false);
             chkBoxListenP2PA.setEnabled(false);
             chkBoxListenP2PF.setEnabled(false);
+        }
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+        {
+            chkBoxListenHce.setChecked(false);
+            enableTechChkBoxsForModes();
         }
 
     }
@@ -1917,12 +1991,14 @@ public class PhDTAUIMainActivity extends Activity implements
         if(chkBoxListenHce.isChecked()){
             chkBoxListenHCEA.setChecked(true);
             chkBoxListenHCEB.setChecked(true);
+            chkBoxListenHCEF.setChecked(false);
             chkBoxListenHCEA.setEnabled(true);
             chkBoxListenHCEB.setEnabled(true);
-            chkBoxListenHCEF.setEnabled(false);
+            chkBoxListenHCEF.setEnabled(true);
         }else if(!chkBoxListenHce.isChecked()){
             chkBoxListenHCEA.setChecked(false);
             chkBoxListenHCEB.setChecked(false);
+            chkBoxListenHCEF.setChecked(false);
             chkBoxListenHCEA.setEnabled(false);
             chkBoxListenHCEB.setEnabled(false);
             chkBoxListenHCEF.setEnabled(false);
@@ -1987,12 +2063,55 @@ public class PhDTAUIMainActivity extends Activity implements
         }
     }
 
-    private void handleListenHceTechCheckBoxEvent() {
+    private void handleListenHceATechCheckBoxEvent(){
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+        {
+            chkBoxListenHce.setChecked(false);
+            enableTechChkBoxsForModes();
+        }
+
+        if(chkBoxListenHCEF.isChecked()){
+            chkBoxListenHCEF.setChecked(false);
+        }
+    }
+
+    private void handleListenHceBTechCheckBoxEvent(){
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+        {
+            chkBoxListenHce.setChecked(false);
+            enableTechChkBoxsForModes();
+        }
+
+        if(chkBoxListenHCEF.isChecked()){
+            chkBoxListenHCEF.setChecked(false);
+        }
+    }
+
+    private void handleListenHceFTechCheckBoxEvent() {
         if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
         {
                 chkBoxListenHce.setChecked(false);
                 enableTechChkBoxsForModes();
         }
+        Log.v("CheckBoxActivity", (chkBoxListenHCEA.isChecked() ? "HCEA checked" : "HCEA unchecked"));
+
+        if(chkBoxListenHCEF.isChecked()){
+
+            if(chkBoxListenP2p.isChecked()) {
+                chkBoxListenP2p.setChecked(false);
+                chkBoxListenP2PA.setChecked(false);
+                chkBoxListenP2PF.setChecked(false);
+                chkBoxListenP2PA.setEnabled(false);
+                chkBoxListenP2PF.setEnabled(false);
+                Toast.makeText(PhDTAUIMainActivity.this, "P2P Listen is disabled, when HCE-F is selected", Toast.LENGTH_SHORT).show();
+            }else if((chkBoxListenHCEA.isChecked() || chkBoxListenHCEB.isChecked())){
+                Toast.makeText(PhDTAUIMainActivity.this, "HCE-A and HCE-B is disabled, when HCE-F is selected ", Toast.LENGTH_SHORT).show();
+            }
+            chkBoxListenHCEA.setChecked(false);
+            chkBoxListenHCEB.setChecked(false);
+
+        }
+
     }
 
 

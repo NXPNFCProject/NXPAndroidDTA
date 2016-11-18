@@ -121,6 +121,9 @@ typedef struct phDtaLib_sTestProfile
 {
     uint32_t Pattern_Number;    /**< Pattern Number*/
     char Certification_Release[10];
+    BOOLEAN DtaDebugFlag;
+    uint32_t TimeSlotNumber;
+    uint32_t ConnDeviceLimit;
     /*RFU*/         /**< Test Case ID and other parameters in Auto Mode*/
 }phDtaLib_sTestProfile_t;
 

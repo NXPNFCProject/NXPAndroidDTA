@@ -63,7 +63,7 @@
                 android:id="@+id/parent_execution_pattern_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/certification_layout"
+                android:layout_below="@+id/certification_conf"
                 android:layout_centerHorizontal="true"
                 android:padding="10dp" >
 
@@ -212,7 +212,7 @@
                         android:id="@+id/poll_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="5dp" >
+                        android:gravity="center">
 
                         <TextView
                             android:id="@+id/poll_text"
@@ -359,9 +359,8 @@
                         android:id="@+id/listen_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="5dp"
-                        android:layout_below="@id/poll_layout"
-                        android:padding="5dp" >
+                        android:gravity="center"
+                        android:layout_below="@id/poll_layout">
 
                         <TextView
                             android:id="@+id/listen_text"
@@ -617,6 +616,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
+                        android:layout_centerHorizontal="true"
                         android:layout_below="@+id/other_selection_text"
                         >
 
@@ -956,49 +956,123 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textSize="12sp" />
 
-            <RelativeLayout
-                android:id="@+id/certification_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ph_border_different_color_one"
-                android:layout_centerHorizontal="true"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="15dp"
-                android:layout_toLeftOf="@+id/version_number"
-                android:layout_toStartOf="@+id/version_number">
+                <RelativeLayout
+                    android:id="@+id/certification_conf"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                   android:layout_alignParentTop="true"
+                   android:layout_marginTop="15dp">
+                   <RelativeLayout
+                       android:id="@+id/certification_layout"
+                       android:layout_width="100dp"
+                       android:layout_height="wrap_content"
+                       android:background="@drawable/ph_border_different_color_one">
 
-               <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="5dp">
+                       <RelativeLayout
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:padding="2dp"
+                           android:id="@+id/relativeLayout">
 
-                    <TextView
-                        android:id="@+id/certification_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/certification"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentLeft="true"
-                        android:textColor="@android:color/black"
-                        android:contentDescription="@string/tv_cr"
-                        android:textSize="20sp"/>
+                           <TextView
+                               android:id="@+id/certification_text"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:text="@string/certification"
+                               android:textColor="@android:color/black"
+                               android:contentDescription="@string/tv_cr"
+                               android:textSize="20sp"
+                               android:layout_alignParentTop="true"
+                               android:layout_centerHorizontal="true" />
 
-                    <Spinner
-                        android:id="@+id/certification_version"
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:entries="@array/multi_certification_array"
-                        android:popupBackground="#111111"
-                        android:layout_marginLeft="10dp"
-                        android:contentDescription="@string/sp_cr"
-                        android:layout_toRightOf="@+id/certification_text"
-                        android:spinnerMode="dropdown"
-                        android:layout_alignParentRight="true"
-                        android:layout_alignParentEnd="true" />
+                           <Spinner
+                               android:id="@+id/certification_version"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:entries="@array/certification_array"
+                               android:popupBackground="#111111"
+                               android:contentDescription="@string/sp_cr"
+                               android:spinnerMode="dropdown"
+                               android:layout_below="@+id/certification_text" />
 
-                </RelativeLayout>
-            </RelativeLayout>
-        </RelativeLayout>
+                       </RelativeLayout>
+
+                   </RelativeLayout>
+                   <RelativeLayout
+                       android:id="@+id/timeslotnumber_layout"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_marginLeft="10dp"
+                       android:layout_toRightOf="@+id/certification_layout"
+                       android:background="@drawable/ph_border_different_color_one">
+
+                       <RelativeLayout
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:padding="2dp">
+
+                           <TextView
+                               android:id="@+id/timeslotnumber_text"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:text="@string/time_slot_number"
+                               android:contentDescription="@string/tv_tsn"
+                               android:textColor="@android:color/black"
+                               android:textSize="20sp"
+                               android:layout_alignParentTop="true"
+                               android:layout_alignParentLeft="true" />
+
+                           <Spinner
+                               android:id="@+id/timeslotnumber_options"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:entries="@array/timeslotnumber_array"
+                               android:contentDescription="@string/sp_tsn"
+                               android:popupBackground="#111111"
+                               android:spinnerMode="dropdown"
+                               android:layout_below="@+id/timeslotnumber_text"/>
+
+                       </RelativeLayout>
+                   </RelativeLayout>
+                   <RelativeLayout
+                       android:id="@+id/condevicelimit_layout"
+                       android:layout_width="wrap_content"
+                       android:layout_height="wrap_content"
+                       android:layout_marginLeft="10dp"
+                       android:layout_toRightOf="@+id/timeslotnumber_layout"
+                       android:background="@drawable/ph_border_different_color_one">
+
+                       <RelativeLayout
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:padding="2dp">
+
+                            <TextView
+                               android:id="@+id/condevicelimit_text"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                                android:text="@string/con_device_limit"
+                               android:contentDescription="@string/tv_cdl"
+                               android:textColor="@android:color/black"
+                               android:textSize="20sp"
+                                android:layout_alignParentTop="true"
+                                android:layout_alignParentLeft="true" />
+
+                           <Spinner
+                               android:id="@+id/condevicelimit_options"
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:entries="@array/condevicelimit_array"
+                               android:contentDescription="@string/sp_cdl"
+                               android:popupBackground="#111111"
+                               android:spinnerMode="dropdown"
+                               android:layout_below="@+id/condevicelimit_text"
+                               android:layout_centerHorizontal="true" />
+                   </RelativeLayout>
+               </RelativeLayout>
+           </RelativeLayout>
+    </RelativeLayout>
     </ScrollView>
 
 </RelativeLayout>
