@@ -52,12 +52,12 @@ uint8_t gs_paramBuffer[400]; /**< Buffer for passing Data during operations */
 #define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
 #define P2P_DISABLED    0
 
-static const uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLCP magic bytes */
+static uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLCP magic bytes */
                                                               0x01,0x01,0x12, /**< major, minor Version TLV*/
                                                               0x02,0x02,0x07,0xFE, /**< MIUX TLV*/
                                                               0x03,0x02,0x00,0x03, /**< WKS TLV*/
                                                               0x04,0x01,0x64}; /**< LTO TLV*/
-static const uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x12,0x03,0x02,0x00,0x03,0x04,0x01,0x64};
+static uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x12,0x03,0x02,0x00,0x03,0x04,0x01,0x64};
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_INITIATOR = 0x11;
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_TARGET = 0x0D;
 
@@ -365,6 +365,13 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         phMwIf_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CONFIG_NFCDEP_OP, 0x01, abConfigIDData);
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :LLCP Init",(const uint8_t*)__FUNCTION__);
         dtaLibHdl->bIsLlcpCoRemoteServerLinkCongested               = FALSE;
+        if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR8") == 0x00){
+            PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x11;
+            PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x11;
+        }else{
+            PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x12;
+            PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x12;
+        }
         sLlcpInitPrms.sGenBytesInitiator.pbBuff       = (uint8_t *)PHDTALIB_LLCP_GEN_BYTES_INITIATOR;
         sLlcpInitPrms.sGenBytesInitiator.dwBuffLength = PHDTALIB_LLCP_GEN_BYTES_LEN_INITIATOR;
         sLlcpInitPrms.sGenBytesTarget.pbBuff          = (uint8_t *)PHDTALIB_LLCP_GEN_BYTES_TARGET;

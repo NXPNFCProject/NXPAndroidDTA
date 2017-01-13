@@ -60,6 +60,7 @@ endif
 #end
 D_CFLAGS += -DNXP_EXTNS=TRUE
 D_CFLAGS += -DNFC_NXP_NOT_OPEN_INCLUDED=TRUE
+D_CFLAGS += -DNFC_NXP_P2P_PERFORMANCE_TESTING=FALSE
 ######################################
 # Build shared library system/lib/libmwif.so for stack code.
 include $(CLEAR_VARS)

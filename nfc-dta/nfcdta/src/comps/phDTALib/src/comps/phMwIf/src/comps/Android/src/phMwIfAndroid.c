@@ -1261,8 +1261,10 @@ tNFA_STATUS phMwIfi_SelectDevice(){
     }
     /*Restart the discovery*/
     sPrevdiscCfgParams = mwIfHdl->sDiscCfg;
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == FALSE)
     phMwIf_DisableDiscovery(mwIfHdl);
     phMwIf_EnableDiscovery(mwIfHdl,&sPrevdiscCfgParams);
+#endif
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -2762,7 +2764,7 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
     }
 
     phMwIfi_PrintBuffer(pvInBuff,dwLenInBuff,"MwIf> TXVR Sending = ");
-    if(dwLenInBuff > 400)
+    if(dwLenInBuff > 2048)
     {
       ALOGE("MwIf> Error Buffer length %d > 400 !! \n",dwLenInBuff);
       return MWIFSTATUS_INVALID_PARAM;

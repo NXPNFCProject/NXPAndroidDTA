@@ -47,7 +47,7 @@ DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd, BOOLEAN* bSt
     cueot2[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x02 }; /**< EOT Frame 2*/
     MWIFSTATUS dwMwIfStatus = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
-    uint8_t resultBuffer[400],loopBakBuffer[400];
+    uint8_t resultBuffer[2048],loopBakBuffer[2048];
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
     /* Send Start Frame */
     phOsal_LogDebug((const uint8_t*)"DTALib> NFC-DEP Loop Back sending Start Frame ..\n");
@@ -83,11 +83,20 @@ DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd, BOOLEAN* bSt
             dwSizeOfLoopBakBuff = dwSizeOfResultBuff;
 
             phOsal_LogDebugU32h((const uint8_t*)"DTALib> Next Transceive,input buf size=",dwSizeOfLoopBakBuff);
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
+            dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
+                                            (uint8_t *) cueot1,
+                                            sizeof(cueot1),
+                                             resultBuffer,
+                                             &dwSizeOfResultBuff);
+#else
+
             dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
                                             loopBakBuffer,
                                              dwSizeOfLoopBakBuff,
                                              resultBuffer,
                                              &dwSizeOfResultBuff);
+#endif
             phOsal_LogDebugU32h((const uint8_t*)"DTALib> Next Transceive Done: ResultBuffSize= ..",dwSizeOfResultBuff);
             if (dwMwIfStatus != MWIFSTATUS_SUCCESS)
             {
@@ -104,14 +113,27 @@ DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd, BOOLEAN* bSt
 */
 uint8_t Pgu_event;                      /**< To indicate the Last event that occurred from any Call Back */
 DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
+	uint8_t const cusot[] = { 0x00, 0x40, 0x00, 0x01, 0x10, 0x02, 0x01, 0x0E } , /**< Start of Frame in Loop back */
+                  cueot1[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x01 }; /**< EOT Frame 1*/
+#endif
     const uint8_t cspat_no_cmd[] = { 0xFF, 0x00, 0x00, 0x00 },     /* for NFC-F */
                   cswait_cmd[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x03 }; /* for NFC-F */
     MWIFSTATUS    dwMwIfStatus = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     phDtaLib_sQueueData_t  sQueueData;
-    uint8_t resultBuffer[400] = {0},loopBakBuffer[400] = {0};
+    uint8_t resultBuffer[2048] = {0},loopBakBuffer[2048] = {0x00};
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
+    int i=0, j=0;
     LOG_FUNCTION_ENTRY;
+
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
+    for(i=0;i<2048;i++){
+       loopBakBuffer[i] = j++;
+       if(j == 0xFF)
+           j=0x00;
+    }
+#endif
 
     /*Wait for Data Event to start loopback*/
     dwMwIfStatus = phMwIf_ReceiveP2PData(dtaLibHdl->mwIfHdl, resultBuffer, &dwSizeOfResultBuff);
@@ -135,7 +157,20 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
             phOsal_LogError((const uint8_t*)"DTALib> Wait command - Delay generate \n");
             phOsal_Delay(200);
         }
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
+        else if (memcmp((const void *) resultBuffer,
+                (const void *) cusot, sizeof(cusot)) == 0)
+        {
+            phOsal_LogError((const uint8_t*)"DTALib> Wait command - Delay generate \n");
+        }
 
+        else if (memcmp((const void *) resultBuffer,
+                (const void *) cueot1, sizeof(cueot1)) == 0)
+        {
+            phOsal_LogError((const uint8_t*)"DTALib> Wait command - Delay generate \n");
+            break;
+        }
+#endif
         if(!dwSizeOfResultBuff)
         {
             phOsal_LogErrorString((const uint8_t*)"DTALib> :  ", (const uint8_t*)__FUNCTION__);
@@ -143,9 +178,12 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
             return DTASTATUS_FAILED;
         }
 
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
+        dwSizeOfLoopBakBuff = sizeof(loopBakBuffer);
+#else
         memcpy(loopBakBuffer,resultBuffer,dwSizeOfResultBuff);
         dwSizeOfLoopBakBuff = dwSizeOfResultBuff;
-
+#endif
         dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
                                         (uint8_t *)loopBakBuffer,
                                         dwSizeOfLoopBakBuff,
