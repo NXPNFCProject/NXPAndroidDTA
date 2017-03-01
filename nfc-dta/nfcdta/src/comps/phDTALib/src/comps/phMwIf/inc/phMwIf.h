@@ -596,6 +596,7 @@ typedef struct phMwIf_sVersionInfo
 typedef struct phMwIf_sDiscCfgPrms
 {
     phMwIf_sDiscParams_t discParams;
+    char Certification_Release[8];
 }phMwIf_sDiscCfgPrms_t;
 
 /** \ingroup grp_mwif_lib

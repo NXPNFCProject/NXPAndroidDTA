@@ -312,6 +312,9 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
     sMwIfDiscCfgParams.discParams.dwListenUICC = discParams->dwListenUICC;
     sMwIfDiscCfgParams.discParams.dwListenHCE  = discParams->dwListenHCE;
     sMwIfDiscCfgParams.discParams.dwListenESE  = discParams->dwListenESE;
+    strcpy(sMwIfDiscCfgParams.Certification_Release, dtaLibHdl->sTestProfile.Certification_Release);
+    phOsal_LogDebugString ((const uint8_t*)"DEBUG DTALib> sVersionInfo.Certification_Release = ",
+                                    (const uint8_t*)sMwIfDiscCfgParams.Certification_Release);
     phDtaLibi_SetMwIfConfig();
 
     if((dtaLibHdl->sTestProfile.Pattern_Number == 0x06) ||

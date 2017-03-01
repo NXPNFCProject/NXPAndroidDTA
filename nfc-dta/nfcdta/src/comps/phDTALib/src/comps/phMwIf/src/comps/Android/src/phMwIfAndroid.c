@@ -70,6 +70,8 @@ EE events*/
 #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
 #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
 #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
+#define  PHMWIF_CERT_RELEASE_EIGHT 0x00000080
+#define  PHMWIF_CERT_RELEASE_NINE  0x00000090
 
 uint8_t gs_paramBuffer[400];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
@@ -126,7 +128,6 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
     ALOGD("MwIf>%s:enter",__FUNCTION__);
     phMwIfi_IncreaseStackSize();
     phMwIfi_GlobalDtaModeInit();
-    NFA_EnableDtamode(NFA_DTA_DEFAULT_MODE);
     if(phMwIfi_ConfigureDriver(mwIfHdl) != NFA_STATUS_OK)
     {
         ALOGE("MwIf>%s:ConfigDriver Failed",__FUNCTION__);
@@ -186,7 +187,7 @@ MWIFSTATUS phMwIf_DeInit(void* mwIfHandle)
     phMwIf_sHandle_t* mwIfHdl = mwIfHandle;
     MWIFSTATUS        dwMwIfStatus;
     ALOGD("MwIf>%s:enter",__FUNCTION__);
-
+    mwIfHdl->bLlcpEnabled = FALSE;
     dwMwIfStatus = phMwIfi_StackDeInit();
     if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
     {
@@ -432,7 +433,20 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle,
 MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
+    UINT32 dtaMode = NFA_DTA_DEFAULT_MODE;
     ALOGD ("MwIf>%s:Enter\n",__FUNCTION__);
+
+    if(mwIfHdl->bLlcpEnabled)
+        dtaMode = NFA_DTA_LLCP_MODE;
+
+    if(strcmp(mwIfHdl->sDiscCfg.Certification_Release, "CR8") == 0x00){
+        dtaMode |= PHMWIF_CERT_RELEASE_EIGHT;
+    }else if(strcmp(mwIfHdl->sDiscCfg.Certification_Release, "CR9") == 0x00){
+        dtaMode |= PHMWIF_CERT_RELEASE_NINE;
+    }
+
+    NFA_EnableDtamode(dtaMode);
+
     gx_status = NFA_StartRfDiscovery();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not start RfDiscovery !! \n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_RF_DISCOVERY_STARTED_EVT,5000,
@@ -1286,6 +1300,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
     ALOGD ("MwIf> ListenHCE :0x%x\n",discCfgParams->discParams.dwListenHCE);
     ALOGD ("MwIf> ListenESE :0x%x\n",discCfgParams->discParams.dwListenESE);
     ALOGD ("MwIf> ListenUICC:0x%x\n",discCfgParams->discParams.dwListenUICC);
+    ALOGD ("MwIf> discCfgParams->Certification_Release:%s\n",discCfgParams->Certification_Release);
 
     /*Set Polling Discovery configuration: Polling Mask is common for both
      * ReadWrite Mode as well as P2P mode*/
@@ -2919,8 +2934,7 @@ MWIFSTATUS phMwIf_LlcpInit(void*                     pvMwIfHandle,
         return MWIFSTATUS_INVALID_PARAM;
     }
 
-    NFA_EnableDtamode(NFA_DTA_LLCP_MODE);
-
+    mwIfHdl->bLlcpEnabled = TRUE;
     /*Set LLCP params in MW Stack*/
     bNfaStatus = NFA_P2pSetLLCPConfig (PHMWIF_LLCP_MAX_MIU/*LLCP_MAX_MIU*/,
                                        LLCP_OPT_VALUE,

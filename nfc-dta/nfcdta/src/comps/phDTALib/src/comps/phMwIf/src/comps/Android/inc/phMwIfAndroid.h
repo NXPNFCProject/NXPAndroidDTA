@@ -196,7 +196,8 @@ typedef struct phMwIf_sHandle
     UINT16                      systemCode;           /**< System code used ofr HCE-F command/response */
     uint8_t                     nfcid2[NFCID_LEN];    /**< NFCID2 */
     uint16_t                    nfcHceFHandle;        /**< Handle used for HCEF operations */
-    uint32_t                    routingProtocols;         /**< Contains the details of protocols routing */
+    uint32_t                    routingProtocols;     /**< Contains the details of protocols routing */
+    BOOLEAN                     bLlcpEnabled;         /**< TRUE If LLCP enabled, FALSE If LLCP disabled*/
 }phMwIf_sHandle_t;
 
 #define NCI_MSG_TYPE_MASK         0xE0
