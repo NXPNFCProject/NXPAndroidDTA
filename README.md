@@ -19,4 +19,5 @@
 | android-6.0.1_r17                    |  4.8.0_M (PN551/PN548C2)   |  NFC_NCIHALx_AR3C.4.8.0_M_OpnSrc |  DTA 08.0C |
 | android-7.0.0_r12                     |  7.1.0_N (PN548C2/PN551/PN553) |  NFC_NCIHALx_ARFC.7.1.0_N_OpnSrc | DTA 09.03 |
 | android-7.0.0_r12                     |  7.2.0_N (PN553) |  NFC_NCIHALx_ARC0.7.2.0_N_OpnSrc | DTA 09.04 |
-| android-7.0.0_r12                     |  7.3.0_N (PN553) |  NFC_NCIHALx_ARC0.7.3.0_N_OpnSrc | DTA 09.05
+| android-7.0.0_r12                     |  7.3.0_N (PN553) |  NFC_NCIHALx_ARC0.7.3.0_N_OpnSrc | DTA 09.05 |
+| android-7.1.1_r1                     |  7.4.0_N (PN548C2/PN551) |  NFC_NCIHALx_AR3C.7.4.0_N_OpnSrc | DTA 09.06 |
