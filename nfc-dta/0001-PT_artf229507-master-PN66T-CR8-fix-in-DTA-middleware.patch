@@ -1,0 +1,126 @@
+From 4fa5c7ba2df9ea0a1992e9474530aed450077aba Mon Sep 17 00:00:00 2001
+From: nxp78879 <SomeswaraReddy.Samaseni@TechMahindra.com>
+Date: Mon, 27 Feb 2017 18:46:44 +0530
+Subject: [PATCH 1/2] [PT_artf229507]master: PN66T CR8 fix in DTA & middleware
+ for failed test cases with MW NFC_NCIHALx_AR3C.7.3.1_N+ DTA 09.05 which is
+ compatible with the latest middleware patches
+
+---
+ .../phDTALib/src/comps/phDTATst/src/phDTALib.c     |  3 +++
+ .../comps/phDTALib/src/comps/phMwIf/inc/phMwIf.h   |  1 +
+ .../phMwIf/src/comps/Android/inc/phMwIfAndroid.h   |  3 ++-
+ .../phMwIf/src/comps/Android/src/phMwIfAndroid.c   | 22 ++++++++++++++++++----
+ 4 files changed, 24 insertions(+), 5 deletions(-)
+
+diff --git a/nfcdta/src/comps/phDTALib/src/comps/phDTATst/src/phDTALib.c b/nfcdta/src/comps/phDTALib/src/comps/phDTATst/src/phDTALib.c
+index 59e894f..f338fcb 100644
+--- a/nfcdta/src/comps/phDTALib/src/comps/phDTATst/src/phDTALib.c
++++ b/nfcdta/src/comps/phDTALib/src/comps/phDTATst/src/phDTALib.c
+@@ -312,6 +312,9 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
+     sMwIfDiscCfgParams.discParams.dwListenUICC = discParams->dwListenUICC;
+     sMwIfDiscCfgParams.discParams.dwListenHCE  = discParams->dwListenHCE;
+     sMwIfDiscCfgParams.discParams.dwListenESE  = discParams->dwListenESE;
++    strcpy(sMwIfDiscCfgParams.Certification_Release, dtaLibHdl->sTestProfile.Certification_Release);
++    phOsal_LogDebugString ((const uint8_t*)"DEBUG DTALib> sVersionInfo.Certification_Release = ",
++                                    (const uint8_t*)sMwIfDiscCfgParams.Certification_Release);
+     phDtaLibi_SetMwIfConfig();
+ 
+     if((dtaLibHdl->sTestProfile.Pattern_Number == 0x06) ||
+diff --git a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/inc/phMwIf.h b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/inc/phMwIf.h
+index 056fe53..527df28 100644
+--- a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/inc/phMwIf.h
++++ b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/inc/phMwIf.h
+@@ -596,6 +596,7 @@ typedef struct phMwIf_sVersionInfo
+ typedef struct phMwIf_sDiscCfgPrms
+ {
+     phMwIf_sDiscParams_t discParams;
++    char Certification_Release[8];
+ }phMwIf_sDiscCfgPrms_t;
+ 
+ /** \ingroup grp_mwif_lib
+diff --git a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/inc/phMwIfAndroid.h b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/inc/phMwIfAndroid.h
+index cfc5e79..baf8031 100644
+--- a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/inc/phMwIfAndroid.h
++++ b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/inc/phMwIfAndroid.h
+@@ -196,7 +196,8 @@ typedef struct phMwIf_sHandle
+     UINT16                      systemCode;           /**< System code used ofr HCE-F command/response */
+     uint8_t                     nfcid2[NFCID_LEN];    /**< NFCID2 */
+     uint16_t                    nfcHceFHandle;        /**< Handle used for HCEF operations */
+-    uint32_t                    routingProtocols;         /**< Contains the details of protocols routing */
++    uint32_t                    routingProtocols;     /**< Contains the details of protocols routing */
++    BOOLEAN                     bLlcpEnabled;         /**< TRUE If LLCP enabled, FALSE If LLCP disabled*/
+ }phMwIf_sHandle_t;
+ 
+ #define NCI_MSG_TYPE_MASK         0xE0
+diff --git a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/src/phMwIfAndroid.c b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/src/phMwIfAndroid.c
+index 17b5875..6f051ab 100644
+--- a/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/src/phMwIfAndroid.c
++++ b/nfcdta/src/comps/phDTALib/src/comps/phMwIf/src/comps/Android/src/phMwIfAndroid.c
+@@ -70,6 +70,8 @@ EE events*/
+ #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
+ #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
+ #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
++#define  PHMWIF_CERT_RELEASE_EIGHT 0x00000080
++#define  PHMWIF_CERT_RELEASE_NINE  0x00000090
+ 
+ uint8_t gs_paramBuffer[400];/**< Buffer for passing Data during operations */
+ uint32_t gs_sizeParamBuffer;
+@@ -126,7 +128,6 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
+     ALOGD("MwIf>%s:enter",__FUNCTION__);
+     phMwIfi_IncreaseStackSize();
+     phMwIfi_GlobalDtaModeInit();
+-    NFA_EnableDtamode(NFA_DTA_DEFAULT_MODE);
+     if(phMwIfi_ConfigureDriver(mwIfHdl) != NFA_STATUS_OK)
+     {
+         ALOGE("MwIf>%s:ConfigDriver Failed",__FUNCTION__);
+@@ -186,7 +187,7 @@ MWIFSTATUS phMwIf_DeInit(void* mwIfHandle)
+     phMwIf_sHandle_t* mwIfHdl = mwIfHandle;
+     MWIFSTATUS        dwMwIfStatus;
+     ALOGD("MwIf>%s:enter",__FUNCTION__);
+-
++    mwIfHdl->bLlcpEnabled = FALSE;
+     dwMwIfStatus = phMwIfi_StackDeInit();
+     if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
+     {
+@@ -432,7 +433,20 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle,
+ MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle)
+ {
+     phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
++    UINT32 dtaMode = NFA_DTA_DEFAULT_MODE;
+     ALOGD ("MwIf>%s:Enter\n",__FUNCTION__);
++
++    if(mwIfHdl->bLlcpEnabled)
++        dtaMode = NFA_DTA_LLCP_MODE;
++
++    if(strcmp(mwIfHdl->sDiscCfg.Certification_Release, "CR8") == 0x00){
++        dtaMode |= PHMWIF_CERT_RELEASE_EIGHT;
++    }else if(strcmp(mwIfHdl->sDiscCfg.Certification_Release, "CR9") == 0x00){
++        dtaMode |= PHMWIF_CERT_RELEASE_NINE;
++    }
++
++    NFA_EnableDtamode(dtaMode);
++
+     gx_status = NFA_StartRfDiscovery();
+     PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not start RfDiscovery !! \n");
+     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_RF_DISCOVERY_STARTED_EVT,5000,
+@@ -1286,6 +1300,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
+     ALOGD ("MwIf> ListenHCE :0x%x\n",discCfgParams->discParams.dwListenHCE);
+     ALOGD ("MwIf> ListenESE :0x%x\n",discCfgParams->discParams.dwListenESE);
+     ALOGD ("MwIf> ListenUICC:0x%x\n",discCfgParams->discParams.dwListenUICC);
++    ALOGD ("MwIf> discCfgParams->Certification_Release:%s\n",discCfgParams->Certification_Release);
+ 
+     /*Set Polling Discovery configuration: Polling Mask is common for both
+      * ReadWrite Mode as well as P2P mode*/
+@@ -2919,8 +2934,7 @@ MWIFSTATUS phMwIf_LlcpInit(void*                     pvMwIfHandle,
+         return MWIFSTATUS_INVALID_PARAM;
+     }
+ 
+-    NFA_EnableDtamode(NFA_DTA_LLCP_MODE);
+-
++    mwIfHdl->bLlcpEnabled = TRUE;
+     /*Set LLCP params in MW Stack*/
+     bNfaStatus = NFA_P2pSetLLCPConfig (PHMWIF_LLCP_MAX_MIU/*LLCP_MAX_MIU*/,
+                                        LLCP_OPT_VALUE,
+-- 
+1.9.1
+
