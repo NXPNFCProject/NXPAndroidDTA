@@ -20,9 +20,9 @@
 #include "phDTAOSAL.h"
 #include "phMwIf.h"
 
-#define DTALIB_VERSION_STR "UNI_DTA_1.1"
+#define DTALIB_VERSION_STR "UNI_DTA_1.3"
 #define DTALIBVERSION_MAJOR (0x01)
-#define DTALIBVERSION_MINOR (0x01)
+#define DTALIBVERSION_MINOR (0x03)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -194,7 +194,7 @@ typedef struct phMwIf_SnepServerConfig
  * \retval #DTASTATUS_FAILED            Ndef TAG detect unsuccessful.
  *
  */
-extern DTASTATUS phDtaLibi_CheckNDEF(phMwIf_sNdefDetectParams_t* psNdefDetectParams);
+extern DTASTATUS phDtaLibi_CheckNDEF(phMwIf_uTagOpsParams_t* sTagOpsParams);
 
 /**
  * \ingroup grp_dta_lib internal function
