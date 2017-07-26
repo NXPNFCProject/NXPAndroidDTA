@@ -460,30 +460,25 @@ public class PhCustomSNEPRTD extends Dialog implements
     public void snepDtaCmd(String snepCmdType, String snepServiceName, int serviceSap,
             int snepMiu, int snepRwSize, int snepTestCaseId) {
         boolean result = false;
-        Bundle messageService = new Bundle();
-        messageService.putString("message_service_name","com.phdtaui.messageservice.ACTION_BIND");
-        messageService.putString("cmd_type", "registermessageservice");
-        try {
-            result = mNfcDta.configure(messageService);
+        try{
+            if(snepCmdType.equals("enabledta")) {
+                result = mNfcDta.registerMessageService("com.phdtaui.messageservice.ACTION_BIND");
+                result = mNfcDta.enableDta();
+            }else if(snepCmdType.equals("disableDta")) {
+                result = mNfcDta.disableDta();
+            }else if(snepCmdType.equals("enableserver")) {
+                result = mNfcDta.enableServer(snepServiceName, serviceSap, snepMiu, snepRwSize, snepTestCaseId );
+            }else if(snepCmdType.equals("disableserver")) {
+                result = mNfcDta.disableServer();
+            }else if(snepCmdType.equals("enableclient")) {
+                result = mNfcDta.enableClient(snepServiceName, snepMiu, snepRwSize, snepTestCaseId );
+            }else if(snepCmdType.equals("disableclient")) {
+                result = mNfcDta.disableClient();
+            }
         }catch (NoSuchMethodError e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }catch (NoClassDefFoundError e) {
-           e.printStackTrace();
-        }
-
-        Bundle snepCmd = new Bundle();
-        snepCmd.putString("cmd_type",snepCmdType);
-        snepCmd.putString("service_name",snepServiceName);
-        snepCmd.putInt("service_sap", serviceSap);
-        snepCmd.putInt("miu", snepMiu);
-        snepCmd.putInt("rw_size", snepRwSize);
-        snepCmd.putInt("testcase_id", snepTestCaseId);
-        try {
-            result = mNfcDta.configure(snepCmd);
-        }catch (NoSuchMethodError e) {
-           e.printStackTrace();
-        }catch (NoClassDefFoundError e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }
     @Override
