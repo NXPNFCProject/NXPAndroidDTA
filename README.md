@@ -24,3 +24,4 @@
 | android-7.1.1_r1                     |  7.5.0_N (PN553) |  NFC_NCIHALx_ARC0.7.5.0_N_OpnSrc | DTA 09.06 |
 | android-o-preview2                     |  8.0.9_O (PN553/PN557) |  NFC_NCIHALx_AR1800.8.0.9_O_OpnSrc | DTA 10.04 |
 | android-7.1.1_r1/android-o-preview2                     |  10.04 (PN548C2/PN551/PN553/PN557) |  NFC_DTA_v10.04_OpnSrc | DTA 10.04 |
+| android-7.1.1_r1/android-o-preview2                     |  10.06 (PN548C2/PN551/PN553/PN557) |  NFC_DTA_v10.06_OpnSrc | DTA 10.06 |
