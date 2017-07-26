@@ -20,9 +20,9 @@
 #include "phDTAOSAL.h"
 #include "phMwIf.h"
 
-#define DTALIB_VERSION_STR "NFCDTA_10.05"
+#define DTALIB_VERSION_STR "NFCDTA_10.06"
 #define DTALIBVERSION_MAJOR (0x10)
-#define DTALIBVERSION_MINOR (0x05)
+#define DTALIBVERSION_MINOR (0x06)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */

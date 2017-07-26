@@ -117,7 +117,7 @@ do{\
         return MWIFSTATUS_FAILED;\
     }\
     g_dwEvtType = psQueueData->dwEvtType;\
-    if(((g_dwEvtType == NFA_DEACTIVATED_EVT) && (event != NFA_DEACTIVATED_EVT)) || (g_dwEvtType == NFA_RW_INTF_ERROR_EVT)){\
+    if((((g_dwEvtType == NFA_DEACTIVATED_EVT) || (g_dwEvtType == NFA_CE_DEACTIVATED_EVT) ) && (event != NFA_DEACTIVATED_EVT)) || (g_dwEvtType == NFA_RW_INTF_ERROR_EVT)){\
         ALOGE("MwIf> %s:%d Recvd Deactivated Evt while waiting for Evt %d", __FUNCTION__,__LINE__,event);\
         if(event == NFA_RF_DISCOVERY_STOPPED_EVT){\
             ALOGE("MwIf>Deactivated Evt expected during Disc stop");}\
