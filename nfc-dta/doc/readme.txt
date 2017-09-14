@@ -46,3 +46,17 @@
     PN81A              := true
     NFC_NXP_CHIP_TYPE  := PN553
 
+-Commands to be used to push DTA binaries to Android Device
+    adb root
+    adb wait-for-device
+    adb remount
+    adb wait-for-device
+    adb shell rm -rf /data/app/NxpDTA/NxpDTA.apk
+    adb shell mkdir /system/app/NxpDTA
+    adb push libosal.so /system/lib64/
+    adb push libmwif.so /system/lib64/
+    adb push libdta.so /system/lib64/
+    adb push libdta_jni.so /system/lib64/
+    adb push NxpDTA.apk /system/app/NxpDTA/
+    adb reboot
+    pause
