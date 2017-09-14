@@ -3062,15 +3062,15 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
                                  uint8_t* pData,
                                  uint32_t dwLength)
 {
-    uint32_t u32psize = 0;
+    uint64_t u64psize = 0;
     /* Initialize the Message */
     NDEF_MsgInit((uint8_t *)gs_paramBuffer,(uint32_t)600,
-              (uint32_t *)&u32psize);
+              (uint32_t *)&u64psize);
     if(mwIfHdl->sNdefDetectParams.eProtocolType == PHMWIF_PROTOCOL_T1T)
     {
         ALOGD("MwIf> Make an NDEF message \n");
         gx_status = NDEF_MsgAddRec((uint8_t *) gs_paramBuffer,
-                                    (uint32_t)600, (uint32_t *)&u32psize,
+                                    (uint32_t)600, (uint32_t *)&u64psize,
                                     0x01, /* TNF NFC Forum External */
                                     (uint8_t *) "U",
                                     (uint8_t) 1, /* Type */
@@ -3083,7 +3083,7 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
     {
         gx_status = NDEF_MsgAddRec ((uint8_t *)gs_paramBuffer,
                                     (uint32_t)400,
-                                    (uint32_t *)&u32psize,
+                                    (uint32_t *)&u64psize,
                                     0x01, /* TNF NFC Forum External */
                                     (uint8_t *)NULL,
                                     (uint8_t)0,/* Type */
@@ -3100,7 +3100,7 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
         return MWIFSTATUS_FAILED;
     }
     /* Write the NDEF Message */
-    gs_sizeParamBuffer = u32psize; /* Down size for u16 */
+    gs_sizeParamBuffer = u64psize; /* Down size for u16 */
     return MWIFSTATUS_SUCCESS;
 }
 
