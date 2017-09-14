@@ -316,8 +316,10 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_TAG_DETECTOR_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
-    abConfigIDData[0] = 0x00;
-    phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG, 0x01, abConfigIDData);
+    #if ((PN81A == FALSE) && ((NFC_NXP_CHIP_TYPE == PN547C2) || (NFC_NXP_CHIP_TYPE == PN548AD) || (NFC_NXP_CHIP_TYPE == PN551) || (NFC_NXP_CHIP_TYPE == PN553)))
+        abConfigIDData[0] = 0x00;
+        phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG, 0x01, abConfigIDData);
+    #endif
 
     ALOGD("MwIf>%s:Calling MwIf SetConfig ",__FUNCTION__);
     abConfigIDData[0] = 0x00;
