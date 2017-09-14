@@ -79,7 +79,11 @@ uint32_t gs_sizeParamBuffer;
 volatile tNFA_STATUS gx_status = NFA_STATUS_FAILED;
 
 /**< Secure Element testing variables */
-tNFA_HANDLE NfaUiccHandle = 0x402;
+#if (NCI_2_0 == TRUE)
+    tNFA_HANDLE NfaUiccHandle = 0x480;
+#else
+    tNFA_HANDLE NfaUiccHandle = 0x402;
+#endif
 tNFA_HANDLE NfaEseHandle  = 0x4C0;
 tNFA_HANDLE NfaAidHandle;
 static uint8_t Pgu_event; /**< To indicate the Last event that occurred from any Call Back */
@@ -2862,7 +2866,11 @@ tNFA_STATUS phMwIfi_EeGetInfo(phMwIf_sHandle_t *mwIfHdl,
     /*Check if the EE present are valid*/
     for (i=0; i<numNfcEE; i++)
     {
+    #if(NCI_2_0 == TRUE)
+        if (mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS)
+    #else
         if ((mwIfHdl->infoNfcEE[i].num_interface != 0) && (mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS))
+    #endif
         {
             numNfcEEPresent++;
         }
