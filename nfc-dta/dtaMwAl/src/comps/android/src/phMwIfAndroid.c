@@ -988,7 +988,9 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
     mwIfHdl->t3tPMM[5] = 0xFF;
     mwIfHdl->t3tPMM[6] = 0xFF;
     mwIfHdl->t3tPMM[7] = 0xFF;
+#endif
 
+#if(ANDROID_O == TRUE)
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, mwIfHdl->t3tPMM ,phMwIfi_NfaConnCallback);
 #else
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
@@ -4357,7 +4359,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
      return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
                                           technologies_switch_off,technologies_battery_off,
                                          0x0,0x0
-#if (NFC_NXP_CHIP_TYPE == PN557)
+#if(ANDROID_O == TRUE)
                                          ,0x0
 #endif
                                          );
@@ -4378,7 +4380,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultProtoRouting (tNFA_HANDLE         ee_handle,
 return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
                                          protocols_switch_off,protocols_battery_off,
                                          0x0,0x0
-#if (NFC_NXP_CHIP_TYPE == PN557)
+#if(ANDROID_O == TRUE)
                                          ,0x0
 #endif
                                          );
