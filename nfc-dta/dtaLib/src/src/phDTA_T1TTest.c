@@ -234,7 +234,7 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
     uint8_t* pBuffer;
     uint32_t dwSizeOfBuffer;
     DTASTATUS dwDtaStatus;
-    uint8_t outBuff[400]={0};
+    uint8_t outBuff[512]={0};
     LOG_FUNCTION_ENTRY;
 
     sTagOpsParams.sBuffParams.pbBuff = outBuff;
@@ -278,12 +278,6 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
 
                 }
                 else if(psNdefDetectParams->dwCurSize == 0xFE)
-                {
-                    phOsal_LogDebug((const uint8_t*)"DTALib>T1T:Dynamic Memory layout 4 \n");
-                    pBuffer = (uint8_t *)gs_gs_T1TDynamicLayout4NonZeroLenTagData;
-                    dwSizeOfBuffer = sizeof(gs_gs_T1TDynamicLayout4NonZeroLenTagData);
-                }
-                else if(psNdefDetectParams->dwCurSize == 0x01CD)
                 {
                     phOsal_LogDebug((const uint8_t*)"DTALib>T1T:Dynamic Memory layout 6 \n");
                     pBuffer = (uint8_t *)gs_T1TDynamicLayout6NonZeroLenTagData;
