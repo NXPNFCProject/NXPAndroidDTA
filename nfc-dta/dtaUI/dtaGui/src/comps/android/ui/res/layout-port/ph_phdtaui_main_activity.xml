@@ -958,14 +958,14 @@
 
                 <RelativeLayout
                     android:id="@+id/certification_conf"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                   android:layout_alignParentTop="true"
-                   android:layout_marginTop="15dp">
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="15dp">
                    <RelativeLayout
                        android:id="@+id/certification_layout"
-                       android:layout_width="100dp"
+                       android:layout_width="105dp"
                        android:layout_height="wrap_content"
                        android:background="@drawable/ph_border_different_color_one">
 
@@ -1049,13 +1049,13 @@
                            android:padding="2dp">
 
                             <TextView
-                               android:id="@+id/condevicelimit_text"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
+                                android:id="@+id/condevicelimit_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
                                 android:text="@string/con_device_limit"
-                               android:contentDescription="@string/tv_cdl"
-                               android:textColor="@android:color/black"
-                               android:textSize="20sp"
+                                android:contentDescription="@string/tv_cdl"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
                                 android:layout_alignParentTop="true"
                                 android:layout_alignParentLeft="true" />
 

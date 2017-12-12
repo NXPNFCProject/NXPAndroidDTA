@@ -243,11 +243,11 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     {
         abConfigIDData[0] = 0x01;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
-#ifdef NFC_NXP_CHIP_PN548AD
+//#ifdef NFC_NXP_CHIP_PN548AD
         /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
         abConfigIDData[0] = 0x01;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT_ENABLE, 0x01, abConfigIDData);
-#endif
+//#endif
         abConfigIDData[0] = 0x03;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     }
@@ -381,11 +381,11 @@ MWIFSTATUS phMwIf_DeInit(void* mwIfHandle)
     uint8_t abConfigIDData[10]={0};
     ALOGD("MwIf>%s:enter",__FUNCTION__);
 
-#ifdef NFC_NXP_CHIP_PN548AD
+//#ifdef NFC_NXP_CHIP_PN548AD
     /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
      abConfigIDData[0] = 0x03;
-     phMwIfi_SetConfig(dtaLibHdl->mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT_ENABLE, 0x01, abConfigIDData);
-#endif
+     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT_ENABLE, 0x01, abConfigIDData);
+//#endif
     mwIfHdl->bLlcpEnabled = FALSE;
     dwMwIfStatus = phMwIfi_StackDeInit();
     if(dwMwIfStatus != MWIFSTATUS_SUCCESS)

@@ -15,11 +15,32 @@
 -->
 
 <resources>
+
+    <string-array name="multi_text_array">
+        <item>00</item>
+        <item>01</item>
+        <item>02</item>
+        <item>03</item>
+        <item>04</item>
+        <item>05</item>
+        <item>06</item>
+        <item>07</item>
+        <item>08</item>
+        <item>09</item>
+        <item>0A</item>
+        <item>0B</item>
+        <item>0C</item>
+        <item>0D</item>
+        <item>0E</item>
+        <item>0F</item>
+    </string-array>
+
     <string-array name="pattern_number_llcp">
         <item >1200</item>
         <item >1240</item>
         <item >1280</item>
     </string-array>
+
     <string-array name="snep_client_test_cases">
         <item>Select Client Test Case</item>
         <item>TC_C_BIT_BV_01</item>
@@ -32,14 +53,17 @@
         <item>TC_C_GET_BV_02</item>
         <item>TC_C_GET_BV_03</item>
     </string-array>
-        <string-array name="snep_server_test_cases">
+
+    <string-array name="snep_server_test_cases">
         <item>Select Server Test Case</item>
         <item>Other Test Cases</item>
         <item>TC_S_RET_BI_01</item>
     </string-array>
+
     <string-array name="clean_pattern_numbers">
         <item ></item>
     </string-array>
+
     <string-array name="certification_array">
         <item>CR8</item>
         <item>CR9</item>
@@ -47,14 +71,18 @@
         <item>CR11</item>
         <item>CR12</item>
     </string-array>
+
     <string-array name="timeslotnumber_array">
         <item>03</item>
         <item>F3</item>
     </string-array>
+
     <string-array name="condevicelimit_array">
+        <item>00</item>
         <item>01</item>
         <item>02</item>
         <item>03</item>
         <item>04</item>
     </string-array>
+
 </resources>

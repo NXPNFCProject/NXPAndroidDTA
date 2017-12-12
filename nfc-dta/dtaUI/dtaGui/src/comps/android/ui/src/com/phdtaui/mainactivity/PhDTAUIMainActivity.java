@@ -144,13 +144,51 @@ public class PhDTAUIMainActivity extends Activity implements
      */
     public static InetAddress inetAddress;
     public static int portNumber;
-    public final static String DTA_GUI_VERSION = "09.00";
+    public final static String DTA_GUI_VERSION = "10.01";
 
     /**
      * TO know whether Run button or Stop button is clicked
      */
     PhNXPJniHelper phNXPJniHelper = PhNXPJniHelper.getInstance();
     ProgressDialog clientConnectionProgress;
+
+    /**
+     * AutomaTest Related Code for working with Intents on different NFC Forum Test Tools
+     */
+    public final String BUNDLED_PARAMS_CERT_REL_KEY = "cert_rel";
+    public final int CERT_REL_MIN_VALUE = 8;
+
+    public final String BUNDLED_PARAMS_TSNF_KEY = "tsnf";
+    public final String BUNDLED_PARAMS_TSNF_03_VALUE = "03";
+    public final String BUNDLED_PARAMS_TSNF_F3_VALUE = "F3";
+
+    public final String BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY = "conn_dev_limit";
+
+    public final String BUNDLED_PARAMS_PATTERN_KEY = "pattern";                 // Digital Protocol Pattern Numbers Key
+    public final String BUNDLED_PARAMS_ANALOG_PATTERN_KEY = "analog_pattern";   // Analog Pattern Number Key
+
+    public final String BUNDLED_PARAMS_HCE_MODE_KEY = "hce_mode";
+    public final String BUNDLED_PARAMS_HCE_MODE_NONE_VALUE = "none";
+    public final String BUNDLED_PARAMS_HCE_MODE_AB_VALUE = "ab";
+    public final String BUNDLED_PARAMS_HCE_MODE_F_VALUE = "f";
+
+    public final String BUNDLED_PARAMS_LLCP_KEY = "llcp";
+    public final String BUNDLED_PARAMS_LLCP_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_LLCP_DISABLE_VALUE = "disable";
+    public final String BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY = "llcp_conn_pdu_params";
+    public final String BUNDLED_PARAMS_LLCP_ENABLE_CONN_PDU_PARAMS_VALUE = "enable";
+    public final String BUNDLED_PARAMS_LLCP_DISABLE_CONN_PDU_PARAMS_VALUE = "disable";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_KEY = "llcp_pattern";       //  LLCP Pattern Number Key
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1200 = "1200";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1240 = "1240";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1280 = "1280";
+
+    public final String BUNDLED_PARAMS_START_KEY = "start";
+    public final String BUNDLED_PARAMS_STOP_KEY = "stop";
+
+    public final String DTA_INTENT_RESPONSE = "nxp_dta_response";
+    public final String DTA_INTENT_DONE_RESPONSE = "done";
+
     /**
      * Load Library
      */
@@ -351,6 +389,148 @@ public class PhDTAUIMainActivity extends Activity implements
         appearDissappearOFViews();
         handleAllTheModesEvent();
 
+        /** Parse Intent on Create */
+        this.onNewIntent(this.getIntent());
+    }
+
+    /**
+     * Configuring DTA based on the inputs from AutomaTest
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Bundle bundledParams = intent.getExtras();
+
+        if (bundledParams != null) {
+
+            //** DP & Tag Operations Implementaion for Automation */
+            if ( (bundledParams.containsKey(BUNDLED_PARAMS_PATTERN_KEY)) && (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) >=15) ) {
+
+                if (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1000) {
+                    Log.d("ANALOG PATTERN NUMBER RECEIVED with DP Technology:", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
+                } else if ( (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1200) ||
+                            (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1240) ||
+                            (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1280) ) {
+                    Log.d("LLCP PATTERN NUMBER RECEIVED with DP Technology:", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
+                }
+                else {
+                    Log.d("UNKNOWN PATTERN NUMBER RECEIVED with DP Technology: Setting PN to 00", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
+                    this.spinnerPatterNum.setSelection(0);
+                }
+            }
+            else if (bundledParams.containsKey(BUNDLED_PARAMS_PATTERN_KEY)) {
+                this.spinnerPatterNum.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)));
+            }
+
+            if ( (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) &&
+                 (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) >= 5)) {
+                Log.d("Connection Devices Limit is >= 5, so setting to 01", bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY));
+                this.connectionDeviceLimit.setSelection(1);
+            }
+            else if (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) {
+                this.connectionDeviceLimit.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)));
+            }
+
+            if ( (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) &&
+                      (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) >= 13)) {
+                Log.d("Certificaiton Release is >= 13, so setting to CR8", bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY));
+                this.certificationVersion.setSelection(0);
+            }
+            else if (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) {
+                this.certificationVersion.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) - CERT_REL_MIN_VALUE);
+            }
+
+            if (bundledParams.containsKey(BUNDLED_PARAMS_HCE_MODE_KEY)) {
+                switch (bundledParams.getString(BUNDLED_PARAMS_HCE_MODE_KEY)){
+                    case BUNDLED_PARAMS_HCE_MODE_NONE_VALUE:
+                        this.chkBoxListenHce.setChecked(false);
+                        this.handleListenHCECheckBoxEvent();
+                        break;
+                    case BUNDLED_PARAMS_HCE_MODE_AB_VALUE:
+                        this.chkBoxListenHce.setChecked(true);
+                        this.handleListenHCECheckBoxEvent();
+                        break;
+                    case BUNDLED_PARAMS_HCE_MODE_F_VALUE:
+                        this.chkBoxListenHce.setChecked(true);
+                        this.handleListenHCECheckBoxEvent();
+                        this.chkBoxListenHCEF.setChecked(true);
+                        this.handleListenHceFTechCheckBoxEvent();
+                        break;
+                    default:
+                        this.chkBoxListenHce.setChecked(false);
+                        this.handleListenHCECheckBoxEvent();
+                        break;
+                }
+            }
+
+            if (bundledParams.containsKey(BUNDLED_PARAMS_TSNF_KEY)) {
+                switch (bundledParams.getString(BUNDLED_PARAMS_TSNF_KEY)){
+                    case BUNDLED_PARAMS_TSNF_03_VALUE:
+                        this.timeSlotNumberF.setSelection(0);
+                        break;
+                    case BUNDLED_PARAMS_TSNF_F3_VALUE:
+                        this.timeSlotNumberF.setSelection(1);
+                        break;
+                    default:
+                        this.timeSlotNumberF.setSelection(0);
+                        break;
+                }
+            }
+
+            //** LLCP Implementaion for Automation */
+            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_KEY)) {
+                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_KEY)) {
+                    case BUNDLED_PARAMS_LLCP_ENABLE_VALUE:
+                        this.chkBoxLlcp.setChecked(true);
+                        this.handleLLCPCheckBoxEvent();
+                        break;
+                    case BUNDLED_PARAMS_LLCP_DISABLE_VALUE:
+                        this.chkBoxLlcp.setChecked(false);
+                        this.handleLLCPCheckBoxEvent();
+                        break;
+                }
+            }
+
+            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
+                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
+                    case BUNDLED_PARAMS_LLCP_ENABLE_CONN_PDU_PARAMS_VALUE:
+                        this.chkBoxLlcpConnectPduPrms.setChecked(true);
+                        break;
+                    case BUNDLED_PARAMS_LLCP_DISABLE_CONN_PDU_PARAMS_VALUE:
+                        this.chkBoxLlcpConnectPduPrms.setChecked(false);
+                        break;
+                }
+            }
+
+            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
+                //this.spinnerPatterNum.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_LLCP_PATTERN_KEY)));
+                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
+                    case BUNDLED_PARAMS_LLCP_PATTERN_1200:
+                        this.spinnerPatterNum.setSelection(0);
+                        break;
+                    case BUNDLED_PARAMS_LLCP_PATTERN_1240:
+                        this.spinnerPatterNum.setSelection(1);
+                        break;
+                    case BUNDLED_PARAMS_LLCP_PATTERN_1280:
+                        this.spinnerPatterNum.setSelection(2);
+                        break;
+                    default:
+                        this.spinnerPatterNum.setSelection(0);
+                        break;
+                }
+            }
+
+            //** START & STOP Implementaion for Automation */
+            if (bundledParams.containsKey(BUNDLED_PARAMS_START_KEY)) {
+                this.handleStartButtonEvent();
+            }
+
+            if (bundledParams.containsKey(BUNDLED_PARAMS_STOP_KEY)) {
+                this.handleStopButtonEvent();
+            }
+
+            Log.d(DTA_INTENT_RESPONSE, DTA_INTENT_DONE_RESPONSE);
+        }
     }
 
     @Override
@@ -412,7 +592,7 @@ public class PhDTAUIMainActivity extends Activity implements
             break;
 
         case R.id.snep_check_box:
-            handleSNEPCheckBoxEventEvent();
+            handleSNEPCheckBoxEvent();
             break;
 
         case R.id.p2p_poll_check_box:
@@ -839,7 +1019,7 @@ public class PhDTAUIMainActivity extends Activity implements
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            PhCustomExitDialog customExitDialog = new PhCustomExitDialog(this,"Are you sure you want to exit?",true);
+            PhCustomExitDialog customExitDialog = new PhCustomExitDialog(this, "Are you sure you want to exit?", true);
             customExitDialog.show();
         }
 
@@ -880,7 +1060,7 @@ public class PhDTAUIMainActivity extends Activity implements
         if (nfcEnable == true) {
             Log.d(PhUtilities.UI_TAG, "NFC ON");
             builder.setMessage(" Turn OFF NFC Service in DTA mode \n Wait for 5 seconds and Run DTA")
-            // .setNegativeButton("Cancel", null) Anil 24/04/3:35
+            // .setNegativeButton("Cancel", null)
                     .setPositiveButton("Enter",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,
@@ -1891,14 +2071,14 @@ public class PhDTAUIMainActivity extends Activity implements
         }
     }
 
-    private void handleSNEPCheckBoxEventEvent() {
+    private void handleSNEPCheckBoxEvent() {
             try {
                 editTextCustomPatternNum.setEnabled(true);
                 spinnerPatterNum.setAdapter(adapterPatternNumberDefault);
                 chkBoxLlcp.setChecked(false);
                 chkBoxSnep.setChecked(false);
                 if(phCustomSNEPRTD == null){
-                phCustomSNEPRTD       = new PhCustomSNEPRTD(this);
+                    phCustomSNEPRTD = new PhCustomSNEPRTD(this);
                 }
                 phCustomSNEPRTD.show();
             } catch (Exception e) {
