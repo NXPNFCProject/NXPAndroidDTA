@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2015 NXP Semiconductors
+#  Copyright (C) 2015-2018 NXP Semiconductors
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,16 +33,15 @@ LOCAL_MULTILIB := 32
 endif
 
 $(warning PLATFORM_SDK_VERSION is $(PLATFORM_SDK_VERSION))
-ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 20; echo $$?),0)
-$(warning "Building for L release or Later")
-ifeq ($(PN81A), true)
-LOCAL_SRC_FILES := $(call all-java-files-under, src/com) $/../jni/PhNXPJniHelper.java  $/src/PN81A/PhCustomSNEPRTD.java
-else
+ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 25; echo $$?),0)
+$(warning "Building for Android O Release or Later")
+LOCAL_SRC_FILES := $(call all-java-files-under, src/com) $/../jni/PhNXPJniHelper.java  $/src/o/PhCustomSNEPRTD.java
+else ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 20; echo $$?),0)
+$(warning "Building for Android L / M / N Release")
 ifeq ($(ANDROID_O), true)
 LOCAL_JAVA_LIBRARIES := com.nxp.nfc
 endif
 LOCAL_SRC_FILES := $(call all-java-files-under, src/com) $/../jni/PhNXPJniHelper.java  $/src/l/PhCustomSNEPRTD.java
-endif
 else
 $(warning "Building for KK release or Lower")
 LOCAL_SRC_FILES := $(call all-java-files-under, src/com) $/../jni/PhNXPJniHelper.java  $/src/kk/PhCustomSNEPRTD.java

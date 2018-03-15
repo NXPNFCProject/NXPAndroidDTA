@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015 - 2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -116,13 +116,12 @@ OSALSTATUS phOsal_ThreadSetPriority(void *hThread,int32_t sdwPriority)
     struct sched_param param;
     int32_t policy;
     LOG_FUNCTION_ENTRY;
-#if(THREAD_PRIO_SUPPORT == TRUE)
     if(NULL == hThread)
     {
         return OSALSTATUS_INVALID_PARAMS;
     }
     dwStatus = pthread_getschedparam((pthread_t)hThread, &policy, &param);
-   if(dwStatus != 0)
+    if(dwStatus != 0)
     {
         phOsal_LogErrorU32h((const uint8_t*)"Osal>Unable to get thread params.Error=",(uint32_t)dwStatus);
         phOsal_LogErrorString((const uint8_t*)"Osal>",(const uint8_t*)__FUNCTION__);
@@ -136,7 +135,6 @@ OSALSTATUS phOsal_ThreadSetPriority(void *hThread,int32_t sdwPriority)
         phOsal_LogErrorString((const uint8_t*)"Osal>",(const uint8_t*)__FUNCTION__);
         return OSALSTATUS_FAILED;
     }
-#endif
     LOG_FUNCTION_EXIT;
     return OSALSTATUS_SUCCESS;
 }

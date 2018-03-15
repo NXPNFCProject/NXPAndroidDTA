@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@
 #include "phDTAOSAL.h"
 #include "phMwIf.h"
 
-#define DTALIB_VERSION_STR "NFCDTA_10.11"
-#define DTALIBVERSION_MAJOR (0x10)
-#define DTALIBVERSION_MINOR (0x11)
+#define DTALIB_VERSION_STR "NFCDTA_11.01"
+#define DTALIBVERSION_MAJOR (0x11)
+#define DTALIBVERSION_MINOR (0x01)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */

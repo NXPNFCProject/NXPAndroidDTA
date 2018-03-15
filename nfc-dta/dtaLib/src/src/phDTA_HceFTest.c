@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ DTASTATUS phDtaLibi_HceFOperations()
        }
 
        //phOsal_LogDebugU32d((const uint8_t*)"DTALib>sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf = ",(size_t)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
-       phOsal_LogBuffer(sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, "DTALib> Received data pvDataBuf = ");
+       phOsal_LogBuffer(sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
        if(!sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf)
        {
            phOsal_LogErrorString((const uint8_t*)"DTALib>:Invalid Data Recvd",sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
@@ -150,7 +150,7 @@ DTASTATUS phDtaLibi_HceFOperations()
                 count += 16;
                 dwSizeOfwriteBuffer = count; //count = 29
                 writeBuffer[0] = (uint8_t)count; //count = 29
-                phOsal_LogBuffer(writeBuffer, count, "DTALib> Sending data writeBuffer = ");
+                phOsal_LogBuffer((const uint8_t *)writeBuffer, count, (const uint8_t *)"DTALib> Sending data writeBuffer = ");
            }else if(!(blkNum & chkCmdMask) && (memcmp(readUpdCmdBuffer+14, readBuffer+14, 3) == 0x00)){
                 phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> block list is 3 bytes");
                 writeBuffer[count++] = 0x00;
@@ -164,7 +164,7 @@ DTASTATUS phDtaLibi_HceFOperations()
                 count += 16;
                 dwSizeOfwriteBuffer = count;//count = 29
                 writeBuffer[0] = (uint8_t)count;//count = 29
-                phOsal_LogBuffer(writeBuffer, count, "DTALib> Sending data writeBuffer = ");
+                phOsal_LogBuffer((const uint8_t *)writeBuffer, count, (const uint8_t *)"DTALib> Sending data writeBuffer = ");
             }else{
                 phOsal_LogInfoString((const uint8_t*)"DEBUG> DTALib>",(const uint8_t*)" Error in block size or check command called before update command!! \n");
                 writeBuffer[count++] = 0x00;
@@ -178,7 +178,7 @@ DTASTATUS phDtaLibi_HceFOperations()
                 count += 16;
                 dwSizeOfwriteBuffer = count;//count = 29
                 writeBuffer[0] = (uint8_t)count;//count = 29
-                phOsal_LogBuffer(writeBuffer, count, "DTALib> Sending data writeBuffer = ");
+                phOsal_LogBuffer((const uint8_t *)writeBuffer, count, (const uint8_t *)"DTALib> Sending data writeBuffer = ");
            }
        }
        gx_status = phMwIf_SendRawFrame(dtaLibHdl->mwIfHdl,writeBuffer,dwSizeOfwriteBuffer);

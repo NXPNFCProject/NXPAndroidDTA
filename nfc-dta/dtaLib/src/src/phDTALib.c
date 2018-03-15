@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -43,11 +43,10 @@
 extern "C" {
 #endif
 
-phDtaLib_sHandle_t      g_DtaLibHdl = {0};
+phDtaLib_sHandle_t      g_DtaLibHdl;
 uint32_t gx_status = FALSE;   /**<(Check) change the type def.... also NFA_STATUS_FAILED */
 uint8_t gs_paramBuffer[400]; /**< Buffer for passing Data during operations */
 
-#define PHMWIF_THREAD_DELETE_DUMMY_EVT 0xFF /**<Dummy event to exit thread*/
 #define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
 #define P2P_DISABLED    0
 
@@ -128,12 +127,13 @@ DTASTATUS phDtaLib_Init() {
     {
         phOsal_LogError((const uint8_t*)"DTALib> Unable to create Thread");
     }
-
+#if(THREAD_PRIO_SUPPORT == TRUE)
     dwOsalStatus = phOsal_ThreadSetPriority(&dtaLibHdl->dtaThreadHdl, 0);
     if(dwOsalStatus != OSALSTATUS_SUCCESS)
     {
         phOsal_LogError((const uint8_t*)"DTALib> Unable to set priority to Thread");
     }
+#endif
     dwThreadId = phOsal_ThreadGetTaskId();
 
     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf Init\n");
@@ -307,7 +307,9 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR8") == 0x00){
             PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x11;
             PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x11;
-        }else if((strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00) || (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR10") == 0x00)){
+        }else if((strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00) ||
+                 (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR10") == 0x00) ||
+                 (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR11") == 0x00)){
             PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x12;
             PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x12;
         }

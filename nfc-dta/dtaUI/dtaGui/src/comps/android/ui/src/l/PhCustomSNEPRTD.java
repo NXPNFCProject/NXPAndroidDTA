@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -68,7 +68,8 @@ public class PhCustomSNEPRTD extends Dialog implements
 
     /* constants*/
     private final String TAG = "SnepExtendedDTAServer";
-    private final int MESSAGE = 1 , MESSAGE_RECEIVE = 2 , MESSAGE_LLCP_ACTIVATED = 7 , MESSAGE_LLCP_DEACTIVATED = 8;
+    private final int MESSAGE = 1 , MESSAGE_RECEIVE = 2 , MESSAGE_LLCP_ACTIVATED = 7 ,
+                                MESSAGE_LLCP_DEACTIVATED = 8;
 
     /*Other variables of object context*/
     private Context mContext;
@@ -79,6 +80,12 @@ public class PhCustomSNEPRTD extends Dialog implements
     private boolean isServerRunning;
     private boolean isClientRunning;
     SnepBroadcastReciever snepDataReciever;
+
+    /**
+     * AutomaTest Related SNEP Code for working with Intents on different
+     * NFC Forum Test Tools
+     */
+    public boolean AUTOMATEST_FLAG;
 
     public PhCustomSNEPRTD(Context context) {
         super(context);
@@ -143,16 +150,54 @@ public class PhCustomSNEPRTD extends Dialog implements
         boolean nfcEnable=mNfcAdapter.isEnabled();
         switch (v.getId()) {
         case R.id.run_server:
-            if(!isClientRunning){
-            runServerBtnClicked=true;
-            isServerRunning=true;
-            mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
-            stopServerBtn.setVisibility(View.VISIBLE);
-            runServerBtn.setVisibility(View.INVISIBLE);
-            txtVwClientMsg.setText("");
+            handleSnepRunServer();
+            break;
+
+        case R.id.stop_server:
+            handleSnepStopServer();
+            break;
+
+        case R.id.run_client:
+            handleSnepRunClient();
+            break;
+
+        case R.id.stop_client:
+            handleSnepStopClient();
+            break;
+
+        case R.id.back_btn:
+            snepDtaCmd("disableDta", null, 0, 0, 0, 0);
+            exitDialog();
+            break;
+        case R.id.server_clear_msg_button:
             txtVwServerMsg.setText("");
-            if(!nfcEnable){
-            loadingProgress = ProgressDialog.show(mContext, "","Enabling Please Wait...");
+            break;
+        case R.id.client_clear_msg_button:
+            txtVwClientMsg.setText("");
+            break;
+        }
+    }
+
+    //** To handle SNEP Client RUN */
+    public void handleSnepRunClient() {
+        Log.d(PhUtilities.UI_TAG, "In handleSnepRunClient");
+        boolean nfcEnable = mNfcAdapter.isEnabled();
+        if(!isServerRunning){
+            isClientRunning=true;
+        if(chkBoxShortRecordLayout.isChecked()){
+            testCaseID=testCaseID+20;
+        }
+        txtVwClientMsg.setText("");
+        txtVwServerMsg.setText("");
+        chkBoxShortRecordLayout.setEnabled(false);
+        runClientBtnClicked=true;
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
+        Log.e("mNfcAdapter.isEnabled()", ""+mNfcAdapter.isEnabled());
+        runClientBtn.setVisibility(View.INVISIBLE);
+        stopClientBtn.setVisibility(View.VISIBLE);
+        if(!nfcEnable){
+            loadingProgress = ProgressDialog.show(mContext, "",
+                                                   "Enabling Please Wait...");
             new Thread() {
                 public void run() {
                     try {
@@ -160,113 +205,120 @@ public class PhCustomSNEPRTD extends Dialog implements
                         snepDtaCmd("enabledta", null, 0, 0, 0, 0);
                         mNfcAdapter.enable();
                         threadSleep(5000);
-                        snepDtaCmd("enableserver", "urn:nfc:sn:sneptest", 13, 128, 1, testCaseID);
-                    } catch (Exception e) {
+                        Log.d("testCasesID", ""+testCaseID);
+                        if(testCaseID>0 && testCaseID <=6){
+                            snepDtaCmd("enableclient", "urn:nfc:sn:snep",
+                                       13, 128, 1, testCaseID);
+                        }else {
+                            snepDtaCmd("enableclient", "urn:nfc:sn:sneptest",
+                                       13, 128, 1, testCaseID);
+                        }
+                    } catch (NoSuchMethodError e) {
+                        e.printStackTrace();
+                    }catch (NoClassDefFoundError e) {
+                        e.printStackTrace();
                     }
                     loadingProgress.dismiss();
                 }
             }.start();
+            }else if(!spinnerClientTestCaseIds.getSelectedItem().toString().equals(
+                    R.string.select_client_test_case)){
+            Log.d("testCasesID", ""+testCaseID);
+            threadSleep(500);
+            if(testCaseID>0 && testCaseID <=6){
+                snepDtaCmd("enableclient", "urn:nfc:sn:snep", 13,
+                           128, 1, testCaseID);
+            }else {
+                snepDtaCmd("enableclient", "urn:nfc:sn:sneptest", 13,
+                           128, 1, testCaseID);
             }
-            else{
-                runServerBtnClicked=true;
-                threadSleep(500);
-                snepDtaCmd("enableserver", "urn:nfc:sn:sneptest", 13, 128, 1, 0);
-            }
-            }else{
-                Toast.makeText(mContext, "Please Stop Snep Client", Toast.LENGTH_SHORT).show();
-            }
-            break;
+        }
+        }else{
+            Toast.makeText(mContext, "Please Stop the Snep Server",
+                            Toast.LENGTH_SHORT).show();
+        }
+    }
 
-        case R.id.stop_server:
-            runServerBtnClicked=false;
-            isServerRunning=false;
-            mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
-            stopServerBtn.setVisibility(View.INVISIBLE);
-            runServerBtn.setVisibility(View.VISIBLE);
-            txtVwServerMsg.setText("");
-            txtVwClientMsg.setText("");
-            stopServer(mNfcAdapter.isEnabled());
-            break;
+    //** To handle SNEP Client STOP */
+    public void handleSnepStopClient() {
+        Log.d(PhUtilities.UI_TAG, "In handleSnepStopClient");
+        isClientRunning=false;
+        testCaseID=spinnerClientTestCaseIds.getSelectedItemPosition();
+        chkBoxShortRecordLayout.setEnabled(true);
+        runClientBtnClicked=false;
+        txtVwClientMsg.setText("");
+        txtVwServerMsg.setText("");
+        runClientBtn.setVisibility(View.VISIBLE);
+        stopClientBtn.setVisibility(View.INVISIBLE);
+        snepDtaCmd("disableclient", null, 0, 0, 0, 0);
+        stopServer(mNfcAdapter.isEnabled());
+    }
 
-        case R.id.run_client:
-            if(!isServerRunning){
-                isClientRunning=true;
-            if(chkBoxShortRecordLayout.isChecked()){
-                testCaseID=testCaseID+20;
-            }
+    //** To handle SNEP Server RUN */
+    public void handleSnepRunServer() {
+        Log.d(PhUtilities.UI_TAG, "In handleSnepRunServer");
+        boolean nfcEnable = mNfcAdapter.isEnabled();
+        if (!isClientRunning) {
+            runServerBtnClicked = true;
+            isServerRunning = true;
+            mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
+            stopServerBtn.setVisibility(View.VISIBLE);
+            runServerBtn.setVisibility(View.INVISIBLE);
             txtVwClientMsg.setText("");
             txtVwServerMsg.setText("");
-            chkBoxShortRecordLayout.setEnabled(false);
-            runClientBtnClicked=true;
-            mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
-            Log.e("mNfcAdapter.isEnabled()", ""+mNfcAdapter.isEnabled());
-            runClientBtn.setVisibility(View.INVISIBLE);
-            stopClientBtn.setVisibility(View.VISIBLE);
-            if(!nfcEnable){
-                loadingProgress = ProgressDialog.show(mContext, "","Enabling Please Wait...");
+            if (!nfcEnable) {
+                loadingProgress = ProgressDialog.show(mContext, "",
+                                            "Enabling Please Wait...");
                 new Thread() {
                     public void run() {
                         try {
-                            Log.d(PhUtilities.UI_TAG,"calling snepDtaCmd...");
+                            Log.d(PhUtilities.UI_TAG, "calling snepDtaCmd...");
                             snepDtaCmd("enabledta", null, 0, 0, 0, 0);
                             mNfcAdapter.enable();
                             threadSleep(5000);
-                            Log.d("testCasesID", ""+testCaseID);
-                            if(testCaseID>0 && testCaseID <=6){
-                                snepDtaCmd("enableclient", "urn:nfc:sn:snep", 13, 128, 1, testCaseID);
-                            }else {
-                                snepDtaCmd("enableclient", "urn:nfc:sn:sneptest", 13, 128, 1, testCaseID);
-                            }
-                        } catch (NoSuchMethodError e) {
-                            e.printStackTrace();
-                        }catch (NoClassDefFoundError e) {
-                            e.printStackTrace();
+                            snepDtaCmd("enableserver", "urn:nfc:sn:sneptest",
+                                       13, 128, 1, testCaseID);
+                        } catch (Exception e) {
                         }
                         loadingProgress.dismiss();
                     }
                 }.start();
-                }else if(!spinnerClientTestCaseIds.getSelectedItem().toString().equals(R.string.select_client_test_case)){
-                Log.d("testCasesID", ""+testCaseID);
+            } else {
+                runServerBtnClicked = true;
                 threadSleep(500);
-                if(testCaseID>0 && testCaseID <=6){
-                    snepDtaCmd("enableclient", "urn:nfc:sn:snep", 13, 128, 1, testCaseID);
-                }else {
-                    snepDtaCmd("enableclient", "urn:nfc:sn:sneptest", 13, 128, 1, testCaseID);
-                }
+                snepDtaCmd("enableserver", "urn:nfc:sn:sneptest", 13,
+                           128, 1, 0);
             }
-            }else{
-                Toast.makeText(mContext, "Please Stop the Snep Server", Toast.LENGTH_SHORT).show();
-            }
-            break;
-
-        case R.id.stop_client:
-            isClientRunning=false;
-            testCaseID=spinnerClientTestCaseIds.getSelectedItemPosition();
-            chkBoxShortRecordLayout.setEnabled(true);
-            runClientBtnClicked=false;
-            txtVwClientMsg.setText("");
-            txtVwServerMsg.setText("");
-            runClientBtn.setVisibility(View.VISIBLE);
-            stopClientBtn.setVisibility(View.INVISIBLE);
-            snepDtaCmd("disableclient", null, 0, 0, 0, 0);
-            stopServer(mNfcAdapter.isEnabled());
-            break;
-
-        case R.id.back_btn:
-            snepDtaCmd("disableDta", null, 0, 0, 0, 0);
-             exitDialog();
-                break;
-        case R.id.server_clear_msg_button:
-             txtVwServerMsg.setText("");
-            break;
-        case R.id.client_clear_msg_button:
-             txtVwClientMsg.setText("");
-            break;
-            }
+        } else {
+            Toast.makeText(mContext, "Please Stop Snep Client",
+                            Toast.LENGTH_SHORT).show();
+        }
     }
+
+    //** To handle SNEP Server STOP */
+    public void handleSnepStopServer() {
+        Log.d(PhUtilities.UI_TAG, "In handleSnepStopServer");
+        runServerBtnClicked=false;
+        isServerRunning=false;
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this.mContext);
+        stopServerBtn.setVisibility(View.INVISIBLE);
+        runServerBtn.setVisibility(View.VISIBLE);
+        txtVwServerMsg.setText("");
+        txtVwClientMsg.setText("");
+        stopServer(mNfcAdapter.isEnabled());
+    }
+
+    //** To handle SNEP Back Button Press to exit to MainActivity */
+    public void handleBackBtnSnep() {
+        snepDtaCmd("disableDta",null,0,0,0,0);
+        //exitDialog();
+        dismissTheDialog();
+    }
+
     private void stopServer(boolean nfcEnable) {
          if(nfcEnable){
-             loadingProgress = ProgressDialog.show(mContext, "","Disabling Please Wait...");
+             loadingProgress = ProgressDialog.show(mContext, "",
+                                                "Disabling Please Wait...");
              new Thread() {
                  public void run() {
                      try {
@@ -282,12 +334,14 @@ public class PhCustomSNEPRTD extends Dialog implements
                      loadingProgress.dismiss();
                  }
              }.start();
-             }
+         }
     }
+
     AlertDialog.Builder alertBuilder;
+
     public void exitDialog(){
         alertBuilder=new AlertDialog.Builder(mContext);
-        alertBuilder.setMessage("Do you want to exit from SNEP testing and \n go back to main menu?");
+        alertBuilder.setMessage("Do you want to exit from SNEP testing and \n go back to Main Menu?");
         alertBuilder.setPositiveButton("Yes", new OnClickListener() {
         @Override
         public void onClick(DialogInterface arg0, int arg1) {
@@ -316,7 +370,8 @@ public class PhCustomSNEPRTD extends Dialog implements
             }
         }
         if (!isNfcInitInDtaMode) {
-            loadingProgress = ProgressDialog.show(mContext, "","Please Wait...");
+            loadingProgress = ProgressDialog.show(mContext, "",
+                                                    "Please Wait...");
             new Thread() {
                 public void run() {
                     try {
@@ -327,8 +382,9 @@ public class PhCustomSNEPRTD extends Dialog implements
                     loadingProgress.dismiss();
                 }
             }.start();
+        }
     }
-    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(event.KEYCODE_BACK==keyCode){
@@ -412,6 +468,19 @@ public class PhCustomSNEPRTD extends Dialog implements
         return new String(chars);
     }
 
+    /** Getter & Setter for Test Case ID for both SNEP Clinet as well as SNEP server*/
+    public int getTestCaseID() {
+        return testCaseID;
+    }
+
+    public void setTestCaseID(int testCaseID) {
+        /** The test case ID received form AutomaTest commands in mainactivity will
+            be set in phCustomSNEPRTD.java */
+        this.testCaseID = testCaseID;
+        /** This is only to avoid manual selection from UI invocation */
+        AUTOMATEST_FLAG = true;
+    }
+
     public class DeInitDTA extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
@@ -456,13 +525,14 @@ public class PhCustomSNEPRTD extends Dialog implements
     public void snepDtaCmd(String enableclient, String serviceName, int miu,
             int rwSize, int serialNumber, int testCaseId) {
         try{
-            com.nxp.nfc.NxpNfcAdapter mNxpNfcAdapter= com.nxp.nfc.NxpNfcAdapter.getNxpNfcAdapter(mNfcAdapter);
+            com.nxp.nfc.NxpNfcAdapter mNxpNfcAdapter= com.nxp.nfc.NxpNfcAdapter
+                                                       .getNxpNfcAdapter(mNfcAdapter);
             com.nxp.nfc.NfcDta mNfcDta = mNxpNfcAdapter.createNfcDta();
             mNfcDta.snepDtaCmd(enableclient, serviceName, miu,rwSize, serialNumber, testCaseID);
         }catch (NoSuchMethodError e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }catch (NoClassDefFoundError e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }
     @Override
@@ -477,10 +547,18 @@ public class PhCustomSNEPRTD extends Dialog implements
     }
 
     public void serverTestCaseIdSelection(){
-        if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources().getString(R.string.select_server_test_case))){
+        if(!AUTOMATEST_FLAG) {
+            testCaseID = spinnerServerTestCaseIds.getSelectedItemPosition();
+        }else{
+            Log.d("In serverTestCaseIdSelection", (String.valueOf(testCaseID)));
+            this.spinnerServerTestCaseIds.setSelection(testCaseID);
+        }
+        if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources().getString(
+                R.string.select_server_test_case))){
             Log.d(PhUtilities.UI_TAG,spinnerServerTestCaseIds.getSelectedItem().toString());
             runServerBtn.setEnabled(false);
-        }else if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources().getString(R.string.other_test_case))){
+        }else if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources()
+                .getString(R.string.other_test_case))){
             Log.d(PhUtilities.UI_TAG,spinnerServerTestCaseIds.getSelectedItem().toString());
             testCaseID = 0;
             if(runServerBtnClicked){
@@ -491,7 +569,8 @@ public class PhCustomSNEPRTD extends Dialog implements
             runServerBtn.setEnabled(true);
             runServerBtn.setVisibility(View.VISIBLE);
             stopServerBtn.setVisibility(View.INVISIBLE);
-        }else if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources().getString(R.string.tc_s_ret_bi_01))){
+        }else if(spinnerServerTestCaseIds.getSelectedItem().equals(getContext().getResources()
+                .getString(R.string.tc_s_ret_bi_01))){
             Log.d(PhUtilities.UI_TAG,spinnerServerTestCaseIds.getSelectedItem().toString());
             testCaseID = 1;
             if(runServerBtnClicked){
@@ -506,9 +585,16 @@ public class PhCustomSNEPRTD extends Dialog implements
     }
 
     public void clientTestCaseIdSelection(){
-        testCaseID=spinnerClientTestCaseIds.getSelectedItemPosition();
+
+        if(!AUTOMATEST_FLAG) {
+            testCaseID = spinnerClientTestCaseIds.getSelectedItemPosition();
+        }else{
+            Log.d("In clientTestCaseIdSelection", (String.valueOf(testCaseID)));
+            this.spinnerClientTestCaseIds.setSelection(testCaseID);
+        }
         Log.d(PhUtilities.UI_TAG,spinnerClientTestCaseIds.getSelectedItem().toString());
-        if(spinnerClientTestCaseIds.getSelectedItem().equals(getContext().getResources().getString(R.string.select_client_test_case))){
+        if(spinnerClientTestCaseIds.getSelectedItem().equals(getContext().getResources()
+                .getString(R.string.select_client_test_case))){
             runClientBtn.setEnabled(false);
         }
         else if (testCaseID > 0 && testCaseID < 7) {

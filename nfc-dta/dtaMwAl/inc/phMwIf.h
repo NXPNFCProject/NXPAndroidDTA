@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -253,7 +253,8 @@ typedef enum phMWIf_eEvtType
     PHMWIF_P2P_DATA_EVT,
     PHMWIF_CE_DATA_EVT,
     PHMWIF_DEACTIVATED_EVT,
-    PHMWIF_RESTART_DISCOVERY_EVT
+    PHMWIF_RESTART_DISCOVERY_EVT,
+    PHMWIF_THREAD_DELETE_DUMMY_EVT = 0xFF
 }phMWIf_eEvtType_t;
 
 /** \ingroup grp_mwif_lib

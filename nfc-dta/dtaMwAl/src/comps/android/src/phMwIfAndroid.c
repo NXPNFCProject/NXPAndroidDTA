@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -251,7 +251,9 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         abConfigIDData[0] = 0x03;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     }
-    else if((strcmp(sConfigParams->aCertRelease, "CR9") == 0x00) || (strcmp(sConfigParams->aCertRelease, "CR10") == 0x00))
+    else if((strcmp(sConfigParams->aCertRelease, "CR9") == 0x00) ||
+            (strcmp(sConfigParams->aCertRelease, "CR10") == 0x00) ||
+            (strcmp(sConfigParams->aCertRelease, "CR11") == 0x00))
     {
         abConfigIDData[0] = 0x03;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
@@ -320,7 +322,8 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_TAG_DETECTOR_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
-    #if ((PN81A == FALSE) && ((NFC_NXP_CHIP_TYPE == PN547C2) || (NFC_NXP_CHIP_TYPE == PN548AD) || (NFC_NXP_CHIP_TYPE == PN551) || (NFC_NXP_CHIP_TYPE == PN553)))
+    #if ((NFC_NXP_CHIP_TYPE == PN547C2) || (NFC_NXP_CHIP_TYPE == PN548AD) || \
+         (NFC_NXP_CHIP_TYPE == PN551) || (NFC_NXP_CHIP_TYPE == PN553))
         abConfigIDData[0] = 0x00;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG, 0x01, abConfigIDData);
     #endif
@@ -735,7 +738,7 @@ MWIFSTATUS phMwIf_CeConfigure( void *mwIfHandle, phMwIf_eCeDevType_t eDevType)
         dwMwIfStatus = phMwIfi_HceInit(mwIfHdl);
         if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
         {
-            ALOGE((const uint8_t*)"MwIf>%s: Error in Initializing HCE",__FUNCTION__);
+            ALOGE("MwIf>%s: Error in Initializing HCE",__FUNCTION__);
             return MWIFSTATUS_FAILED;
         }
         dwMwIfStatus = phMwIfi_HceConfigure(mwIfHdl, mwIfHdl->sPrevMwIfDiscCfgParams.discParams.dwListenHCE);
@@ -756,7 +759,7 @@ MWIFSTATUS phMwIf_CeConfigure( void *mwIfHandle, phMwIf_eCeDevType_t eDevType)
             return MWIFSTATUS_FAILED;
         }
     }
-    if((eDevType == PHMWIF_UICC_CE))
+    if(eDevType == PHMWIF_UICC_CE)
     {
         ALOGD("MwIf>%s: UICC Enabled",__FUNCTION__);
         dwMwIfStatus = phMwIfi_EeInit(mwIfHdl, PHMWIF_UICC_CE);
@@ -772,7 +775,7 @@ MWIFSTATUS phMwIf_CeConfigure( void *mwIfHandle, phMwIf_eCeDevType_t eDevType)
             return MWIFSTATUS_FAILED;
         }
     }
-    if((eDevType == PHMWIF_SE_CE))
+    if(eDevType == PHMWIF_SE_CE)
     {
         ALOGD("MwIf>%s: ESE Enabled",__FUNCTION__);
         dwMwIfStatus = phMwIfi_EeInit(mwIfHdl, PHMWIF_SE_CE);
@@ -871,7 +874,7 @@ MWIFSTATUS phMwIfi_EeConfigure(void* mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
     tNFA_TECHNOLOGY_MASK technologiesSwitchOn;
-    tNFA_HANDLE       nfaEeHandle;
+    tNFA_HANDLE       nfaEeHandle = 0;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     if(!mwIfHandle ||
        !((eDevType & PHMWIF_UICC_CE) || (eDevType & PHMWIF_SE_CE)))
@@ -2385,7 +2388,11 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_POLL_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_F_ACTIVE\n");
         break;
-#if(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
+#if(AOSP_MASTER_COMPILATION_SUPPORT == FALSE && ANDROID_O == TRUE)
+        case NFC_DISCOVERY_TYPE_POLL_V:
+            ALOGD ("NFC_DISCOVERY_TYPE_POLL_V\n");
+        break;
+#elif(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
         case NFC_DISCOVERY_TYPE_POLL_ISO15693:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_ISO15693\n");
         break;
@@ -4290,7 +4297,7 @@ MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
 MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
                                      uint8_t cmd_params_len,
                                      uint8_t *p_cmd_params,
-#if (PN81A == TRUE)
+#if (ANDROID_O == TRUE)
                                      tNFA_VSC_CBACK *p_cback)
 #else
                                      tNFA_NXP_NCI_RSP_CBACK *p_cback)
@@ -4298,7 +4305,7 @@ MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-#if (PN81A == TRUE)
+#if (ANDROID_O == TRUE)
     gx_status = NFA_SendRawVsCommand (cmd_params_len, p_cmd_params, p_cback);
 #else
     gx_status = NFA_SendNxpNciCommand (cmd_params_len, p_cmd_params, p_cback);
@@ -4400,7 +4407,7 @@ MWIFSTATUS phMwIfi_SendAGCDebugCommand()
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     uint8_t abAgcDbgCmdBuf[] = {0x2F, 0x33, 0x04, 0x40, 0x00, 0x40, 0xD8};
     uint8_t abAgcValues[256];
-#if (PN81A == TRUE)
+#if (ANDROID_O == TRUE)
     gx_status = NFA_SendRawVsCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);
 #else
     gx_status = NFA_SendNxpNciCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);

@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2015 NXP Semiconductors
+#  Copyright (C) 2015-2018 NXP Semiconductors
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ THREAD_PRIO_SUPPORT:= false
 ANDROID_O          := true
 AOSP_MASTER        := false
 NCI_2_0            := true
-PN81A              := false
 
 D_CFLAGS := -DANDROID -DBUILDCFG=1
 
@@ -81,7 +80,3 @@ endif
 ifeq ($(THREAD_PRIO_SUPPORT), true)
     D_CFLAGS += -DTHREAD_PRIO_SUPPORT=TRUE
 endif
-ifeq ($(PN81A), true)
-    D_CFLAGS += -DPN81A=TRUE
-endif
-

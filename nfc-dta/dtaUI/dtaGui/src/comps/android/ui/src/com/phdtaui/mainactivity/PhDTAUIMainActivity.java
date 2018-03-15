@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 NXP Semiconductors
+* Copyright (C) 2015-2018 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ public class PhDTAUIMainActivity extends Activity implements
         android.widget.RadioGroup.OnCheckedChangeListener,
         android.widget.CompoundButton.OnCheckedChangeListener,
         android.widget.AdapterView.OnItemSelectedListener {
+
     /*Pattern number related view elements*/
     private Spinner spinnerPatterNum, certificationVersion, timeSlotNumberF, connectionDeviceLimit;
     private RelativeLayout tsnRelativeLyt, connDevRelativeLyt;
@@ -130,7 +131,8 @@ public class PhDTAUIMainActivity extends Activity implements
             currentStatusInitializing = "Current Status: <font color='#006600'> Initializing</font>";
     private String logFileName;
     private String sPatternNumber , versionName;
-    ArrayAdapter<CharSequence> adapterPatternNumberDefault, adapterPatternNumberLlcp, adapterCleanPatternNumber;
+    ArrayAdapter<CharSequence> adapterPatternNumberDefault,
+                               adapterPatternNumberLlcp, adapterCleanPatternNumber;
 
     private PhNXPHelperMainActivity nxpHelperMainActivity = new PhNXPHelperMainActivity();
     private PhDtaLibStructure       phDtaLibStructureObj  = new PhDtaLibStructure();
@@ -164,13 +166,24 @@ public class PhDTAUIMainActivity extends Activity implements
 
     public final String BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY = "conn_dev_limit";
 
-    public final String BUNDLED_PARAMS_PATTERN_KEY = "pattern";                 // Digital Protocol Pattern Numbers Key
-    public final String BUNDLED_PARAMS_ANALOG_PATTERN_KEY = "analog_pattern";   // Analog Pattern Number Key
+    /** Digital Protocol Pattern Numbers Key */
+    public final String BUNDLED_PARAMS_PATTERN_KEY = "pattern";
+
+    /** Analog Pattern Number Key */
+    public final String BUNDLED_PARAMS_ANALOG_PATTERN_KEY = "analog_pattern";
 
     public final String BUNDLED_PARAMS_HCE_MODE_KEY = "hce_mode";
     public final String BUNDLED_PARAMS_HCE_MODE_NONE_VALUE = "none";
     public final String BUNDLED_PARAMS_HCE_MODE_AB_VALUE = "ab";
     public final String BUNDLED_PARAMS_HCE_MODE_F_VALUE = "f";
+
+    public final String BUNDLED_PARAMS_UICC_MODE_KEY = "uicc_mode";
+    public final String BUNDLED_PARAMS_UICC_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_UICC_DISABLE_VALUE = "disable";
+
+    public final String BUNDLED_PARAMS_ESE_MODE_KEY = "ese_mode";
+    public final String BUNDLED_PARAMS_ESE_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_ESE_DISABLE_VALUE = "disable";
 
     public final String BUNDLED_PARAMS_LLCP_KEY = "llcp";
     public final String BUNDLED_PARAMS_LLCP_ENABLE_VALUE = "enable";
@@ -178,16 +191,43 @@ public class PhDTAUIMainActivity extends Activity implements
     public final String BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY = "llcp_conn_pdu_params";
     public final String BUNDLED_PARAMS_LLCP_ENABLE_CONN_PDU_PARAMS_VALUE = "enable";
     public final String BUNDLED_PARAMS_LLCP_DISABLE_CONN_PDU_PARAMS_VALUE = "disable";
-    public final String BUNDLED_PARAMS_LLCP_PATTERN_KEY = "llcp_pattern";       //  LLCP Pattern Number Key
+
+    /**  LLCP Pattern Number Key */
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_KEY = "llcp_pattern";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1200 = "1200";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1240 = "1240";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1280 = "1280";
+
+/** SNEP Related Parameter for AutomaTest */
+    public final String BUNDLED_PARAMS_SNEP_KEY             = "snep";   // SNEP Key
+    public final String BUNDLED_PARAMS_SNEP_ENABLE_VALUE    = "enable";
+    public final String BUNDLED_PARAMS_SNEP_DISABLE_VALUE   = "disable";
+
+    public final String BUNDLED_PARAMS_SNEP_CLIENT_KEY      = "snep_client"; // SNEP Client Related
+    public final String BUNDLED_PARAMS_SNEP_CLIENT_RUN      = "client_run";
+    public final String BUNDLED_PARAMS_SNEP_CLIENT_STOP     = "client_stop";
+    public final String BUNDLED_PARAM_SNEP_TC_C_BIT_BV_01   = "TC_C_BIT_BV_01";
+    public final String BUNDLED_PARAM_SNEP_TC_C_BIT_BI_01_0 = "TC_C_BIT_BI_01_0";
+    public final String BUNDLED_PARAM_SNEP_TC_C_BIT_BI_01_1 = "TC_C_BIT_BI_01_1";
+    public final String BUNDLED_PARAM_SNEP_TC_C_PUT_BV_01   = "TC_C_PUT_BV_01";
+    public final String BUNDLED_PARAM_SNEP_TC_C_PUT_BV_02   = "TC_C_PUT_BV_02";
+    public final String BUNDLED_PARAM_SNEP_TC_C_PUT_BI_01   = "TC_C_PUT_BI_01";
+    public final String BUNDLED_PARAM_SNEP_TC_C_GET_BV_01   = "TC_C_GET_BV_01";
+    public final String BUNDLED_PARAM_SNEP_TC_C_GET_BV_02   = "TC_C_GET_BV_02";
+    public final String BUNDLED_PARAM_SNEP_TC_C_GET_BV_03   = "TC_C_GET_BV_03";
+
+    public final String BUNDLED_PARAMS_SNEP_SERVER_KEY      = "snep_server"; // SNEP Server Related
+    public final String BUNDLED_PARAMS_SNEP_SERVER_RUN      = "server_run";
+    public final String BUNDLED_PARAMS_SNEP_SERVER_STOP     = "server_stop";
+    public final String BUNDLED_PARAM_SNEP_OTHER_TEST_CASES = "Other_Test_Cases";
+    public final String BUNDLED_PARAM_SNEP_TC_S_RET_BI_01   = "TC_S_RET_BI_01";
 
     public final String BUNDLED_PARAMS_START_KEY = "start";
     public final String BUNDLED_PARAMS_STOP_KEY = "stop";
 
     public final String DTA_INTENT_RESPONSE = "nxp_dta_response";
     public final String DTA_INTENT_DONE_RESPONSE = "done";
+
 
     /**
      * Load Library
@@ -269,20 +309,21 @@ public class PhDTAUIMainActivity extends Activity implements
         }
 
         PhUtilities.exitValue = "exit not clicked";
-        // START - get version number from manifest file
+        /** START - get version number from manifest file */
         try {
             versionName = getPackageManager().getPackageInfo(getPackageName(),
                     0).versionName;
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
-     //   versionNumber.setText("UI Version: " + "05.05");
+        // versionNumber.setText("UI Version: " + "05.05");
         // END - get version number from manifest file
 
         // START - enabling text box on check of file to log
         nfccheck();
         if (PhUtilities.NDK_IMPLEMENTATION && !(mNfcAdapter.isEnabled())) {
-            clientConnectionProgress = ProgressDialog.show(PhDTAUIMainActivity.this, "", "Loading Please Wait..", true, true);
+            clientConnectionProgress = ProgressDialog.show(PhDTAUIMainActivity.this, "",
+                                                            "Loading Please Wait..", true, true);
             clientConnectionProgress.setCancelable(false);
             new Thread(){
                 public void run() {
@@ -327,21 +368,21 @@ public class PhDTAUIMainActivity extends Activity implements
          */
 
         chkBoxLogToFile.setOnCheckedChangeListener(this);
-        // END - enabling text box on check of file to log
+        /** END - enabling text box on check of file to log */
 
-        // START - Display Copy Rights symbol
+        /** START - Display Copy Rights symbol */
         String copyRightsSymbol = "Copyright NXP Semiconductors";
         txtVwCopyRights.setText(copyRightsSymbol);
-        // END - Display Copy Rights symbol
+        /** END - Display Copy Rights symbol */
 
         chkBoxLogCat.setChecked(false);
-        // START - change intent to show Log Cat or Console
+        /** START - change intent to show Log Cat or Console */
 
         /** check weather logcatCheckBox is check or not checked */
 
         chkBoxLogCat.setOnCheckedChangeListener(this);
 
-        // END - change intent to show Log Cat or Console
+        /** END - change intent to show Log Cat or Console */
 
         editTextCustomPatternNum.setEnabled(true);
         spinnerPatterNum.setEnabled(true);
@@ -403,133 +444,320 @@ public class PhDTAUIMainActivity extends Activity implements
 
         if (bundledParams != null) {
 
-            //** DP & Tag Operations Implementaion for Automation */
-            if ( (bundledParams.containsKey(BUNDLED_PARAMS_PATTERN_KEY)) && (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) >=15) ) {
+            //** Handle DP & Tag Operations commands received from AutomaTest */
+            handleAutomaTestDPCommands(bundledParams);
 
-                if (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1000) {
-                    Log.d("ANALOG PATTERN NUMBER RECEIVED with DP Technology:", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
-                } else if ( (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1200) ||
-                            (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1240) ||
-                            (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)) == 1280) ) {
-                    Log.d("LLCP PATTERN NUMBER RECEIVED with DP Technology:", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
-                }
-                else {
-                    Log.d("UNKNOWN PATTERN NUMBER RECEIVED with DP Technology: Setting PN to 00", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY));
-                    this.spinnerPatterNum.setSelection(0);
-                }
-            }
-            else if (bundledParams.containsKey(BUNDLED_PARAMS_PATTERN_KEY)) {
-                this.spinnerPatterNum.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY)));
-            }
+            //** Handle LLCP commands received from AutomaTest */
+            handleAutomaTestLLCPCommands(bundledParams);
 
-            if ( (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) &&
-                 (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) >= 5)) {
-                Log.d("Connection Devices Limit is >= 5, so setting to 01", bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY));
-                this.connectionDeviceLimit.setSelection(1);
-            }
-            else if (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) {
-                this.connectionDeviceLimit.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)));
-            }
+            //** Handle LLCP commands received from AutomaTest */
+            handleAutomaTestSNEPCommands(bundledParams);
 
-            if ( (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) &&
-                      (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) >= 13)) {
-                Log.d("Certificaiton Release is >= 13, so setting to CR8", bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY));
-                this.certificationVersion.setSelection(0);
-            }
-            else if (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) {
-                this.certificationVersion.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) - CERT_REL_MIN_VALUE);
-            }
-
-            if (bundledParams.containsKey(BUNDLED_PARAMS_HCE_MODE_KEY)) {
-                switch (bundledParams.getString(BUNDLED_PARAMS_HCE_MODE_KEY)){
-                    case BUNDLED_PARAMS_HCE_MODE_NONE_VALUE:
-                        this.chkBoxListenHce.setChecked(false);
-                        this.handleListenHCECheckBoxEvent();
-                        break;
-                    case BUNDLED_PARAMS_HCE_MODE_AB_VALUE:
-                        this.chkBoxListenHce.setChecked(true);
-                        this.handleListenHCECheckBoxEvent();
-                        break;
-                    case BUNDLED_PARAMS_HCE_MODE_F_VALUE:
-                        this.chkBoxListenHce.setChecked(true);
-                        this.handleListenHCECheckBoxEvent();
-                        this.chkBoxListenHCEF.setChecked(true);
-                        this.handleListenHceFTechCheckBoxEvent();
-                        break;
-                    default:
-                        this.chkBoxListenHce.setChecked(false);
-                        this.handleListenHCECheckBoxEvent();
-                        break;
-                }
-            }
-
-            if (bundledParams.containsKey(BUNDLED_PARAMS_TSNF_KEY)) {
-                switch (bundledParams.getString(BUNDLED_PARAMS_TSNF_KEY)){
-                    case BUNDLED_PARAMS_TSNF_03_VALUE:
-                        this.timeSlotNumberF.setSelection(0);
-                        break;
-                    case BUNDLED_PARAMS_TSNF_F3_VALUE:
-                        this.timeSlotNumberF.setSelection(1);
-                        break;
-                    default:
-                        this.timeSlotNumberF.setSelection(0);
-                        break;
-                }
-            }
-
-            //** LLCP Implementaion for Automation */
-            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_KEY)) {
-                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_KEY)) {
-                    case BUNDLED_PARAMS_LLCP_ENABLE_VALUE:
-                        this.chkBoxLlcp.setChecked(true);
-                        this.handleLLCPCheckBoxEvent();
-                        break;
-                    case BUNDLED_PARAMS_LLCP_DISABLE_VALUE:
-                        this.chkBoxLlcp.setChecked(false);
-                        this.handleLLCPCheckBoxEvent();
-                        break;
-                }
-            }
-
-            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
-                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
-                    case BUNDLED_PARAMS_LLCP_ENABLE_CONN_PDU_PARAMS_VALUE:
-                        this.chkBoxLlcpConnectPduPrms.setChecked(true);
-                        break;
-                    case BUNDLED_PARAMS_LLCP_DISABLE_CONN_PDU_PARAMS_VALUE:
-                        this.chkBoxLlcpConnectPduPrms.setChecked(false);
-                        break;
-                }
-            }
-
-            if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
-                //this.spinnerPatterNum.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_LLCP_PATTERN_KEY)));
-                switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
-                    case BUNDLED_PARAMS_LLCP_PATTERN_1200:
-                        this.spinnerPatterNum.setSelection(0);
-                        break;
-                    case BUNDLED_PARAMS_LLCP_PATTERN_1240:
-                        this.spinnerPatterNum.setSelection(1);
-                        break;
-                    case BUNDLED_PARAMS_LLCP_PATTERN_1280:
-                        this.spinnerPatterNum.setSelection(2);
-                        break;
-                    default:
-                        this.spinnerPatterNum.setSelection(0);
-                        break;
-                }
-            }
-
-            //** START & STOP Implementaion for Automation */
+            //** START & STOP button Implementaion for Automation */
             if (bundledParams.containsKey(BUNDLED_PARAMS_START_KEY)) {
                 this.handleStartButtonEvent();
             }
-
             if (bundledParams.containsKey(BUNDLED_PARAMS_STOP_KEY)) {
                 this.handleStopButtonEvent();
             }
 
             Log.d(DTA_INTENT_RESPONSE, DTA_INTENT_DONE_RESPONSE);
+        }
+    }
+
+    //** DP & Tag Operations Implementaion for Automation */
+    private void handleAutomaTestDPCommands(Bundle bundledParams) {
+        Log.d(PhUtilities.UI_TAG, "In handleAutomaTestDPCommands");
+
+        if ( bundledParams.containsKey(BUNDLED_PARAMS_PATTERN_KEY) ) {
+            Log.d("Received Pattern Number", bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY) );
+
+            String DpPatternStr = bundledParams.getString(BUNDLED_PARAMS_PATTERN_KEY);
+
+            try {
+                Integer DpPatternInt = Integer.parseInt(DpPatternStr, 16);
+                if ( DpPatternInt>=0 && DpPatternInt <= 15) {
+                    Log.d(PhUtilities.UI_TAG, "DP Pattern number set");
+                    this.spinnerPatterNum.setSelection(DpPatternInt);
+                }
+                else {
+                    Log.d(PhUtilities.UI_TAG, "DP default Pattern number set");
+                    this.spinnerPatterNum.setSelection(0);
+                }
+            }
+            catch (NumberFormatException e) {
+                Log.d(PhUtilities.UI_TAG, "Number format exception occured during conversion");
+            }
+        }
+
+        /* Connection Device Limit */
+        if ( (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) &&
+             ( (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) < 0) &&
+               (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) >= 5) ) ) {
+            Log.d("Connection Devices Limit is <0 or >= 5, so setting to 01",
+                    bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY));
+            this.connectionDeviceLimit.setSelection(1);
+        }
+        else if (bundledParams.containsKey(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)) {
+            this.connectionDeviceLimit.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CONN_DEV_LIMIT_KEY)));
+        }
+
+        /* Certificaiton Release */
+        if ( (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) &&
+                  (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) >= 13)) {
+            Log.d("Certificaiton Release is >= 13, so setting to CR8", bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY));
+            this.certificationVersion.setSelection(0);
+        }
+        else if (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) {
+            this.certificationVersion.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) - CERT_REL_MIN_VALUE);
+        }
+
+        /* HCE Mode */
+        if (bundledParams.containsKey(BUNDLED_PARAMS_HCE_MODE_KEY)) {
+            Log.d(PhUtilities.UI_TAG, "HCE Mode Command Received");
+            switch (bundledParams.getString(BUNDLED_PARAMS_HCE_MODE_KEY)) {
+                case BUNDLED_PARAMS_HCE_MODE_NONE_VALUE:
+                    this.chkBoxListenHce.setChecked(false);
+                    this.handleListenHCECheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_HCE_MODE_AB_VALUE:
+                    this.chkBoxListenHce.setChecked(true);
+                    this.handleListenHCECheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_HCE_MODE_F_VALUE:
+                    this.chkBoxListenHce.setChecked(true);
+                    this.handleListenHCECheckBoxEvent();
+                    this.chkBoxListenHCEF.setChecked(true);
+                    this.handleListenHceFTechCheckBoxEvent();
+                    break;
+                default:
+                    this.chkBoxListenHce.setChecked(false);
+                    this.handleListenHCECheckBoxEvent();
+                    break;
+            }
+        }
+
+        /* UICC Mode */
+        if (bundledParams.containsKey(BUNDLED_PARAMS_UICC_MODE_KEY)) {
+            Log.d(PhUtilities.UI_TAG, "UICC Mode Command Received");
+            switch (bundledParams.getString(BUNDLED_PARAMS_UICC_MODE_KEY)) {
+                case BUNDLED_PARAMS_UICC_ENABLE_VALUE:
+                    this.chkBoxListenUicc.setChecked(true);
+                    this.handleListenUICCCheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_UICC_DISABLE_VALUE:
+                    this.chkBoxListenUicc.setChecked(false);
+                    this.handleListenUICCCheckBoxEvent();
+                    break;
+                default:
+                    this.chkBoxListenUicc.setChecked(false);
+                    this.handleListenUICCCheckBoxEvent();
+                    break;
+            }
+        }
+
+        /* ESE Mode */
+        if (bundledParams.containsKey(BUNDLED_PARAMS_ESE_MODE_KEY)) {
+            Log.d(PhUtilities.UI_TAG, "ESE Mode Command Received");
+            switch (bundledParams.getString(BUNDLED_PARAMS_ESE_MODE_KEY)) {
+                case BUNDLED_PARAMS_ESE_ENABLE_VALUE:
+                    this.chkBoxListenEse.setChecked(true);
+                    this.handleListenESECheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_ESE_DISABLE_VALUE:
+                    this.chkBoxListenEse.setChecked(false);
+                    this.handleListenESECheckBoxEvent();
+                    break;
+                default:
+                    this.chkBoxListenEse.setChecked(false);
+                    this.handleListenHCECheckBoxEvent();
+                    break;
+            }
+        }
+
+        /* Time Slot Number */
+        if (bundledParams.containsKey(BUNDLED_PARAMS_TSNF_KEY)) {
+            switch (bundledParams.getString(BUNDLED_PARAMS_TSNF_KEY)){
+                case BUNDLED_PARAMS_TSNF_03_VALUE:
+                    this.timeSlotNumberF.setSelection(0);
+                    break;
+                case BUNDLED_PARAMS_TSNF_F3_VALUE:
+                    this.timeSlotNumberF.setSelection(1);
+                    break;
+                default:
+                    this.timeSlotNumberF.setSelection(0);
+                    break;
+            }
+        }
+    }
+
+    //** LLCP Implementaion for Automation */
+    private void handleAutomaTestLLCPCommands(Bundle bundledParams) {
+        Log.d(PhUtilities.UI_TAG, "In handleAutomaTestLLCPCommands");
+
+        if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_KEY)) {
+            switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_KEY)) {
+                case BUNDLED_PARAMS_LLCP_ENABLE_VALUE:
+                    this.chkBoxLlcp.setChecked(true);
+                    this.handleLLCPCheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_LLCP_DISABLE_VALUE:
+                    this.chkBoxLlcp.setChecked(false);
+                    this.handleLLCPCheckBoxEvent();
+                    break;
+            }
+        }
+
+        if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
+            switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_CONN_PDU_PARAMS_KEY)) {
+                case BUNDLED_PARAMS_LLCP_ENABLE_CONN_PDU_PARAMS_VALUE:
+                    this.chkBoxLlcpConnectPduPrms.setChecked(true);
+                    break;
+                case BUNDLED_PARAMS_LLCP_DISABLE_CONN_PDU_PARAMS_VALUE:
+                    this.chkBoxLlcpConnectPduPrms.setChecked(false);
+                    break;
+            }
+        }
+
+        if (bundledParams.containsKey(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
+            switch (bundledParams.getString(BUNDLED_PARAMS_LLCP_PATTERN_KEY)) {
+                case BUNDLED_PARAMS_LLCP_PATTERN_1200:
+                    this.spinnerPatterNum.setSelection(0);
+                    break;
+                case BUNDLED_PARAMS_LLCP_PATTERN_1240:
+                    this.spinnerPatterNum.setSelection(1);
+                    break;
+                case BUNDLED_PARAMS_LLCP_PATTERN_1280:
+                    this.spinnerPatterNum.setSelection(2);
+                    break;
+                default:
+                    this.spinnerPatterNum.setSelection(0);
+                    break;
+            }
+        }
+    }
+
+    //** SNEP Implementaion for Automation */
+    private void handleAutomaTestSNEPCommands(Bundle bundledParams) {
+        Log.d(PhUtilities.UI_TAG, "In handleAutomaTestSNEPCommands");
+
+        if (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_KEY)) {
+            switch (bundledParams.getString(BUNDLED_PARAMS_SNEP_KEY)) {
+                case BUNDLED_PARAMS_SNEP_ENABLE_VALUE:
+                    this.chkBoxSnep.setChecked(true);
+                    this.handleSNEPCheckBoxEvent();
+                    break;
+                case BUNDLED_PARAMS_SNEP_DISABLE_VALUE:
+                    this.chkBoxSnep.setChecked(false);
+                    Log.d("SNEP_DISABLE", "Received disable SNEP command ....");
+                    if(null != phCustomSNEPRTD){
+                        Log.d("SNEP_DISABLE","Received command to disable SNEP functionality");
+                        phCustomSNEPRTD.handleBackBtnSnep();
+                        Log.d("SNEP_DISABLE", "Completed closing SNEP dialog");
+                    }
+                    this.handleSNEPCheckBoxEvent();
+                    break;
+            }
+        }
+
+        if (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_CLIENT_KEY) &&
+                (null != phCustomSNEPRTD)) {
+
+            Log.d("BUNDLED_PARAMS_SNEP_CLIENT_KEY value is",
+                    bundledParams.getString(BUNDLED_PARAMS_SNEP_CLIENT_KEY));
+
+            switch (bundledParams.getString(BUNDLED_PARAMS_SNEP_CLIENT_KEY)) {
+                case BUNDLED_PARAM_SNEP_TC_C_BIT_BV_01:
+                    phCustomSNEPRTD.setTestCaseID(1);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_BIT_BI_01_0:
+                    phCustomSNEPRTD.setTestCaseID(2);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_BIT_BI_01_1:
+                    phCustomSNEPRTD.setTestCaseID(3);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_PUT_BV_01:
+                    phCustomSNEPRTD.setTestCaseID(4);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_PUT_BV_02:
+                    phCustomSNEPRTD.setTestCaseID(5);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_PUT_BI_01:
+                    phCustomSNEPRTD.setTestCaseID(6);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_GET_BV_01:
+                    phCustomSNEPRTD.setTestCaseID(7);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_GET_BV_02:
+                    phCustomSNEPRTD.setTestCaseID(8);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_C_GET_BV_03:
+                    phCustomSNEPRTD.setTestCaseID(9);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+                default:
+                    //phCustomSNEPRTD.setTestCaseID(0);
+                    phCustomSNEPRTD.clientTestCaseIdSelection();
+                    break;
+            }
+            phCustomSNEPRTD.AUTOMATEST_FLAG = false;
+        }
+        //** RUN & STOP Implementaion for Automation for SNEP Client */
+        if ( (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_CLIENT_KEY)) &&
+                (bundledParams.getString(BUNDLED_PARAMS_SNEP_CLIENT_KEY).equals(
+                        BUNDLED_PARAMS_SNEP_CLIENT_RUN)) ) {
+            Log.d(PhUtilities.UI_TAG, "Received SNEP Client RUN command from AutomaTest");
+            phCustomSNEPRTD.handleSnepRunClient();
+        }
+        else if ( (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_CLIENT_KEY)) &&
+                (bundledParams.getString(BUNDLED_PARAMS_SNEP_CLIENT_KEY).equals(
+                        BUNDLED_PARAMS_SNEP_CLIENT_STOP)) ) {
+            Log.d(PhUtilities.UI_TAG, "Received SNEP Client STOP command from AutomaTest");
+            phCustomSNEPRTD.handleSnepStopClient();
+        }
+
+        //** SNEP Server Related Configurations */
+        if (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_SERVER_KEY) &&
+                (null != phCustomSNEPRTD)) {
+            Log.d("BUNDLED_PARAMS_SNEP_SERVER_KEY value is",
+                    bundledParams.getString(BUNDLED_PARAMS_SNEP_SERVER_KEY));
+
+            switch (bundledParams.getString(BUNDLED_PARAMS_SNEP_SERVER_KEY)) {
+                case BUNDLED_PARAM_SNEP_OTHER_TEST_CASES:
+                    phCustomSNEPRTD.setTestCaseID(1);
+                    phCustomSNEPRTD.serverTestCaseIdSelection();
+                    break;
+                case BUNDLED_PARAM_SNEP_TC_S_RET_BI_01:
+                    phCustomSNEPRTD.setTestCaseID(2);
+                    phCustomSNEPRTD.serverTestCaseIdSelection();
+                    break;
+                default:
+                    //phCustomSNEPRTD.setTestCaseID(0);
+                    phCustomSNEPRTD.serverTestCaseIdSelection();
+                    break;
+            }
+            phCustomSNEPRTD.AUTOMATEST_FLAG = false;
+        }
+        //** RUN & STOP Implementaion for Automation for SNEP Server */
+        if ( (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_SERVER_KEY)) &&
+                (bundledParams.getString(BUNDLED_PARAMS_SNEP_SERVER_KEY).equals(
+                        BUNDLED_PARAMS_SNEP_SERVER_RUN)) ) {
+            Log.d(PhUtilities.UI_TAG, "Received SNEP Server RUN command from AutomaTest");
+            phCustomSNEPRTD.handleSnepRunServer();
+        }
+        else if ( (bundledParams.containsKey(BUNDLED_PARAMS_SNEP_SERVER_KEY)) &&
+                (bundledParams.getString(BUNDLED_PARAMS_SNEP_SERVER_KEY).equals(
+                        BUNDLED_PARAMS_SNEP_SERVER_STOP)) ) {
+            Log.d(PhUtilities.UI_TAG, "Received SNEP Server STOP command from AutomaTest");
+            phCustomSNEPRTD.handleSnepStopServer();
         }
     }
 
