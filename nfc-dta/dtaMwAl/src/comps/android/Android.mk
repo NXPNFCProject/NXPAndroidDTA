@@ -23,6 +23,23 @@ $(patsubst ./%,%, \
  )
 endef
 
+# function to find all *.cc files under a directory
+define all-cc-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find $(1) -name "*.cc" -and -not -name ".*") \
+ )
+endef
+
+# function to find all *.c files under a directory
+define all-c-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find $(1) -name "*.c" -and -not -name ".*") \
+ )
+endef
+
+
 LOCAL_PATH:= $(call my-dir)/../../../../
 include $(LOCAL_PATH)/dtaConfig.mk
 
@@ -34,6 +51,7 @@ MWIF_PATH := dtaMwAl
 OSAL_PATH  := dtaPlatform
 LIBNFC_NCI_PATH:= external/libnfc-nci
 LIBNFC_NCI_PATH_O:= system/nfc
+BASE_LOGGING_PATH_P:= frameworks/base
 
 NFA := src/nfa
 NFC := src/nfc
@@ -64,6 +82,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(OSAL_PATH)/phDtaOsal/inc \
     $(LOCAL_PATH)/dtaPlatform/phInfra/inc \
     $(LOCAL_PATH)/$(MWIF_PATH)/src/comps/android/inc \
     $(LIBNFC_NCI_PATH)/src/include \
+    $(LIBNFC_NCI_PATH_O)/utils/include \
     $(LIBNFC_NCI_PATH)/src/gki/ulinux \
     $(LIBNFC_NCI_PATH)/src/gki/common \
     $(LIBNFC_NCI_PATH)/$(NFA)/include \
@@ -81,13 +100,19 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(OSAL_PATH)/phDtaOsal/inc \
     $(LIBNFC_NCI_PATH_O)/$(NFC)/int \
     $(LIBNFC_NCI_PATH_O)/src/hal/include \
     $(LIBNFC_NCI_PATH_O)/src/hal/int \
-    $(LOCAL_PATH)/dtaPlatform/phDtaOsal/src/comps/android/inc
+    $(LOCAL_PATH)/dtaPlatform/phDtaOsal/src/comps/android/inc \
+    $(BASE_LOGGING_PATH_P)/media/mca/filterfw/native/base
 ifeq ($(FLAG_NXP_HAL_EXTNS), true)
     LOCAL_C_INCLUDES += vendor/nxp/opensource/hardware/interfaces/nxpnfc/1.0/default
 endif
 
+ifeq ($(ANDROID_P), true)
+    LOCAL_C_INCLUDES += hardware/nxp/nfc/extns/impl
+endif
+
 LOCAL_SRC_FILES := \
     $(call all-c-files-under, dtaMwAl/src/comps/android) \
+    $(call all-cc-files-under, dtaMwAl/src/comps/android) \
     $(call all-cpp-files-under, dtaMwAl/src/comps/android)
 
 LOCAL_SHARED_LIBRARIES := \

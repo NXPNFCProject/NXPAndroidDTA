@@ -26,6 +26,10 @@
 #include <semaphore.h>
 #include "phDTAOSAL.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 ****************************** Macro Definitions ******************************
 */
@@ -51,7 +55,7 @@ OSALSTATUS phOsal_ThreadCreate   (void                         **hThread,
     /* Check for successfull creation of thread */
     status = pthread_create((pthread_t *)hThread,
                             NULL,
-                            (void *)pThreadFunction,
+                            (void *(*)(void *))pThreadFunction,
                             pParam);
     if(0 != status)
     {
@@ -139,11 +143,6 @@ OSALSTATUS phOsal_ThreadSetPriority(void *hThread,int32_t sdwPriority)
     return OSALSTATUS_SUCCESS;
 }
 
-static void * phOsal_ThreadProcedure(void *lpParameter)
-{
-    return lpParameter;
-}
-
 OSALSTATUS phOsal_SemaphoreCreate(void        **hSemaphore,
                                  uint8_t     bInitialValue,
                                  uint8_t     bMaxValue)
@@ -165,7 +164,7 @@ OSALSTATUS phOsal_SemaphoreCreate(void        **hSemaphore,
         return OSALSTATUS_FAILED;
     }
 
-    status = sem_init(*hSemaphore, 0, bInitialValue);
+    status = sem_init((sem_t *)*hSemaphore, 0, bInitialValue);
     if(status == -1)
     {
         phOsal_LogErrorU32d((const uint8_t*)"Osal>Unable to allocate memory for semaphore.Status=",(uint32_t)status);
@@ -187,13 +186,13 @@ OSALSTATUS phOsal_SemaphorePost(void *hSemaphore)
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(sem_getvalue(hSemaphore,&checkval) == -1)
+    if(sem_getvalue((sem_t *)hSemaphore,&checkval) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal> Semaphore Not available");
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(sem_post(hSemaphore) == -1)
+    if(sem_post((sem_t *)hSemaphore) == -1)
    {
        phOsal_LogError((const uint8_t*)"Osal> error in sem Post");
        return OSALSTATUS_INVALID_PARAMS;
@@ -214,7 +213,7 @@ OSALSTATUS phOsal_SemaphoreWait(void *hSemaphore,
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(sem_getvalue(hSemaphore,&checkval) == -1)
+    if(sem_getvalue((sem_t *)hSemaphore,&checkval) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal> Semaphore Not available");
         return OSALSTATUS_INVALID_PARAMS;
@@ -222,7 +221,7 @@ OSALSTATUS phOsal_SemaphoreWait(void *hSemaphore,
 
     if(timeout_ms == 0)
     {
-        if(sem_wait(hSemaphore) == -1)
+        if(sem_wait((sem_t *)hSemaphore) == -1)
         {
              phOsal_LogError((const uint8_t*)"Osal> Error in Semaphore infinite wait !!");
              return OSALSTATUS_INVALID_PARAMS;
@@ -242,7 +241,7 @@ OSALSTATUS phOsal_SemaphoreWait(void *hSemaphore,
         xtms.tv_sec  += (time_t)timeout_ms/1000;
         xtms.tv_nsec += ((long)(timeout_ms%1000))*(1000000);
 
-        while ((status = sem_timedwait(hSemaphore, &xtms)) == -1 && errno == EINTR)
+        while ((status = sem_timedwait((sem_t *)hSemaphore, &xtms)) == -1 && errno == EINTR)
         {
              phOsal_LogError((const uint8_t*)"Osal>Error in sem_timedwait restart it!!");
              continue;       /* Restart if interrupted by handler */
@@ -282,13 +281,13 @@ OSALSTATUS phOsal_SemaphoreDelete(void *hSemaphore)
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(sem_getvalue(hSemaphore,&checkval) == -1)
+    if(sem_getvalue((sem_t *)hSemaphore,&checkval) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal> Semaphore Not available");
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(sem_destroy(hSemaphore) == -1)
+    if(sem_destroy((sem_t *)hSemaphore) == -1)
     {
        phOsal_LogError((const uint8_t*)"Osal> Semaphore Destroy Failed");
        return OSALSTATUS_FAILED;
@@ -317,7 +316,7 @@ OSALSTATUS phOsal_MutexCreate(void        **hMutex)
         return OSALSTATUS_FAILED;
     }
 
-    status = pthread_mutex_init(*hMutex, 0);
+    status = pthread_mutex_init((pthread_mutex_t *)*hMutex, 0);
     if(status == -1)
     {
         phOsal_LogErrorU32d((const uint8_t*)"Osal>Error in Mutex Lock",(uint32_t)status);
@@ -330,7 +329,6 @@ OSALSTATUS phOsal_MutexCreate(void        **hMutex)
 
 OSALSTATUS phOsal_MutexLock(void *hMutex)
 {
-    uint32_t checkval;
     LOG_FUNCTION_ENTRY;
     if(hMutex == NULL)
     {
@@ -338,7 +336,7 @@ OSALSTATUS phOsal_MutexLock(void *hMutex)
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(pthread_mutex_lock(hMutex) == -1)
+    if(pthread_mutex_lock((pthread_mutex_t *)hMutex) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal>Error in Mutex Lock");
         return OSALSTATUS_INVALID_PARAMS;
@@ -350,7 +348,6 @@ OSALSTATUS phOsal_MutexLock(void *hMutex)
 
 OSALSTATUS phOsal_MutexUnlock(void *hMutex)
 {
-    uint32_t checkval;
     LOG_FUNCTION_ENTRY;
     if(hMutex == NULL)
     {
@@ -358,7 +355,7 @@ OSALSTATUS phOsal_MutexUnlock(void *hMutex)
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(pthread_mutex_unlock(hMutex) == -1)
+    if(pthread_mutex_unlock((pthread_mutex_t *)hMutex) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal>Error in Mutex UnLock");
         return OSALSTATUS_INVALID_PARAMS;
@@ -370,7 +367,6 @@ OSALSTATUS phOsal_MutexUnlock(void *hMutex)
 
 OSALSTATUS phOsal_MutexDelete(void *hMutex)
 {
-    uint32_t checkval;
     LOG_FUNCTION_ENTRY;
     if(hMutex == NULL)
     {
@@ -378,7 +374,7 @@ OSALSTATUS phOsal_MutexDelete(void *hMutex)
         return OSALSTATUS_INVALID_PARAMS;
     }
 
-    if(pthread_mutex_destroy(hMutex) == -1)
+    if(pthread_mutex_destroy((pthread_mutex_t *)hMutex) == -1)
     {
         phOsal_LogError((const uint8_t*)"Osal>Error in Mutex Destroy");
         return OSALSTATUS_INVALID_PARAMS;
@@ -392,8 +388,8 @@ OSALSTATUS phOsal_MutexDelete(void *hMutex)
 
 OSALSTATUS phOsal_Init(pphOsal_Config_t pOsalConfig)
 {
-    pphOsal_Config_t config = pOsalConfig;
     LOG_FUNCTION_ENTRY;
+    phOsal_LogErrorU32h((const uint8_t*)"pOsalConfig.dwCallbackThreadId", pOsalConfig->dwCallbackThreadId);
     LOG_FUNCTION_EXIT;
     return OSALSTATUS_SUCCESS;
 }
@@ -402,3 +398,7 @@ void phOsal_Delay(uint32_t dwDelayInMs)
 {
     usleep(dwDelayInMs*1000); /**< Converting milliseconds to Microseconds */
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -24,6 +24,9 @@ include $(CLEAR_VARS)
 # Name of the APK to build
 LOCAL_PACKAGE_NAME := NxpDTA
 LOCAL_CERTIFICATE := platform
+ifeq (true,$(ANDROID_P))
+LOCAL_PRIVATE_PLATFORM_APIS := true
+endif
 LOCAL_MODULE_TAGS := tests
 LOCAL_ARM_MODE := arm
 ifeq (true,$(TARGET_IS_64_BIT))

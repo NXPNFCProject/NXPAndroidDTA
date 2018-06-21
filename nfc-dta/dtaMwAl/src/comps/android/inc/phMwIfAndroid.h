@@ -20,6 +20,7 @@
 #include "phMwIf.h"
 #include "errno.h"
 #include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -401,4 +402,5 @@ MWIFSTATUS phMwIfi_HceConfigure(void* mwIfHandle,
 #ifdef __cplusplus
 }
 #endif
+
 #endif /* PHMWIFANDROID_H_ */

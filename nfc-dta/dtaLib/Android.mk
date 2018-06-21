@@ -23,6 +23,22 @@ $(patsubst ./%,%, \
  )
 endef
 
+# function to find all *.cc files under a directory
+define all-cc-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find $(1) -name "*.cc" -and -not -name ".*") \
+ )
+endef
+
+# function to find all *.c files under a directory
+define all-c-files-under
+$(patsubst ./%,%, \
+  $(shell cd $(LOCAL_PATH) ; \
+          find $(1) -name "*.c" -and -not -name ".*") \
+ )
+endef
+
 LOCAL_PATH:= $(call my-dir)/../
 include $(LOCAL_PATH)/dtaConfig.mk
 MWIF_PATH := dtaMwAl
@@ -63,7 +79,9 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaLib/src/inc/ \
     external/libnfc-nci/src/gki/ulinux/
 
 LOCAL_SRC_FILES := \
-    $(call all-c-files-under, dtaLib)
+    $(call all-c-files-under, dtaLib) \
+    $(call all-cc-files-under, dtaLib) \
+    $(call all-cpp-files-under, dtaLib)
 
 LOCAL_SHARED_LIBRARIES := libmwif \
               libosal

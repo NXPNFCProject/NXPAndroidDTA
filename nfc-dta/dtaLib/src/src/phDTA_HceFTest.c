@@ -36,6 +36,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Host Card Emulation for Felica related operations
  */
@@ -110,10 +114,10 @@ DTASTATUS phDtaLibi_HceFOperations()
        }
 
        //phOsal_LogDebugU32d((const uint8_t*)"DTALib>sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf = ",(size_t)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
-       phOsal_LogBuffer(sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
+       phOsal_LogBuffer((const uint8_t*)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
        if(!sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf)
        {
-           phOsal_LogErrorString((const uint8_t*)"DTALib>:Invalid Data Recvd",sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
+           phOsal_LogErrorString((const uint8_t*)"DTALib>:Invalid Data Recvd",(const uint8_t *)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
            return DTASTATUS_FAILED;
        }
 
@@ -194,3 +198,7 @@ DTASTATUS phDtaLibi_HceFOperations()
     }
     return MWIFSTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif

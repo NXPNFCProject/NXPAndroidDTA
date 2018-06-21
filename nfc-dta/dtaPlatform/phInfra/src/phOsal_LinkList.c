@@ -29,6 +29,12 @@
 #endif
 #include "phDTAOSAL.h"
 #include "phOsal_LinkList.h"
+
+
+#ifdef __cplusplus
+extern "" {
+#endif
+
 /**
  * Structure for link list node
  */
@@ -71,7 +77,7 @@ OSALSTATUS phOsal_ListCreate(void**                        phListHandle,
 
     /*Allocate memory to linked list context*/
     memHdl      = psCreateParams->memHdl;
-    psListCtxt  = psCreateParams->MemAllocCb( memHdl,
+    psListCtxt  = (phOsal_ListCtxt_t *)psCreateParams->MemAllocCb( memHdl,
                                              sizeof(phOsal_ListCtxt_t));
 
     if(NULL == psListCtxt)
@@ -105,7 +111,7 @@ OSALSTATUS phOsal_ListInsertNode(void*                     pvListHandle,
                                     PHOSAL_LIST_POSITION_T    eListPos,
                                     void*                     pvData )
 {
-    phOsal_ListCtxt_t *psListCtxt    = pvListHandle;
+    phOsal_ListCtxt_t *psListCtxt    = (phOsal_ListCtxt_t *)pvListHandle;
     phOsal_ListNode_t *psNodeTba    = NULL; /*Node to be added*/
 
     /*Validity check*/
@@ -115,7 +121,7 @@ OSALSTATUS phOsal_ListInsertNode(void*                     pvListHandle,
     }/*if(NULL == pvListHandle)*/
 
     /*Create new obj node to be added and update its parameters*/
-    psNodeTba = psListCtxt->sListCreateParams.MemAllocCb(psListCtxt->sListCreateParams.memHdl,
+    psNodeTba = (phOsal_ListNode_t *)psListCtxt->sListCreateParams.MemAllocCb(psListCtxt->sListCreateParams.memHdl,
                                                         sizeof(phOsal_ListNode_t));
 
     psNodeTba->ps_next = NULL;
@@ -189,7 +195,7 @@ OSALSTATUS phOsal_ListRemoveNode(void*                     pvListHandle,
                                  PHOSAL_LIST_POSITION_T    eListPos,
                                  void**                    ppvData )
 {
-    phOsal_ListCtxt_t *psListCtxt    = pvListHandle;
+    phOsal_ListCtxt_t *psListCtxt    = (phOsal_ListCtxt_t *)pvListHandle;
     phOsal_ListNode_t *psNodeTbd    = NULL; /*Node to be deleted*/
 
     /*Validity check*/
@@ -297,7 +303,7 @@ OSALSTATUS phOsal_ListRemoveNode(void*                     pvListHandle,
  */
 OSALSTATUS phOsal_ListDestroy ( void* pvListHandle)
 {
-    phOsal_ListCtxt_t *psListCtxt = pvListHandle;
+    phOsal_ListCtxt_t *psListCtxt = (phOsal_ListCtxt_t *)pvListHandle;
 
     /*Validity check*/
     if(NULL == pvListHandle)
@@ -325,7 +331,7 @@ OSALSTATUS phOsal_ListDestroy ( void* pvListHandle)
  */
 OSALSTATUS phOsal_ListFlush(void* pvListHandle)
 {
-    phOsal_ListCtxt_t *psListCtxt        = pvListHandle;
+    phOsal_ListCtxt_t *psListCtxt        = (phOsal_ListCtxt_t *)pvListHandle;
     /*Validity check*/
     if(NULL == pvListHandle)
     {
@@ -348,7 +354,7 @@ OSALSTATUS phOsal_ListFlush(void* pvListHandle)
  */
 OSALSTATUS phOsali_ListDeleteAllNodes(void* pvListHandle)
 {
-    phOsal_ListCtxt_t *psListCtxt        = pvListHandle;
+    phOsal_ListCtxt_t *psListCtxt        = (phOsal_ListCtxt_t *)pvListHandle;
     phOsal_ListNode_t *psNodeTbd        = NULL; /*Node to be deleted*/
 
     /*Delete all nodes*/
@@ -369,5 +375,9 @@ OSALSTATUS phOsali_ListDeleteAllNodes(void* pvListHandle)
 
     return OSALSTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* nothing past this point */

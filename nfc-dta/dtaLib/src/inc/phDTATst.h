@@ -20,9 +20,13 @@
 #include "phDTAOSAL.h"
 #include "phMwIf.h"
 
-#define DTALIB_VERSION_STR "NFCDTA_11.01"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define DTALIB_VERSION_STR "NFCDTA_11.06"
 #define DTALIBVERSION_MAJOR (0x11)
-#define DTALIBVERSION_MINOR (0x01)
+#define DTALIBVERSION_MINOR (0x06)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -695,7 +699,10 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_SnepServer_Response(NFCSTATUS responseStatus, 
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_SnepServer_DeInit(HANDLE *ServerHandle);
 
+#endif
 
+#ifdef __cplusplus
+}
 #endif
 
 #endif /*#ifndef __PH_DTATST_H__*/

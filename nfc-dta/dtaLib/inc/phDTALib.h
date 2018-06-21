@@ -32,6 +32,9 @@
 #include <string.h>
 #include "phDTAOSAL.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Configuration for extending symbols for different platform */
 #ifndef DTALIB_LIB_EXTEND
@@ -215,10 +218,6 @@ typedef enum phDtaLib_snepDefServerTestCases
 
 /**<Callback interface between DTALIB and JNI layer*/
 typedef void (*phdtaLib_EvtCb_t) (void* dtaApplHdl, phdtaAppLib_eEvtType_t eEvtType, phdtaLib_sEvtData_t*  sEvtData);
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * \ingroup grp_dta_lib
@@ -518,4 +517,5 @@ DTALIB_LIB_EXTEND DTASTATUS phDtaLibi_snepServerExtended(phDtaLib_snepExtServerT
 #ifdef __cplusplus
 }
 #endif
+
 #endif

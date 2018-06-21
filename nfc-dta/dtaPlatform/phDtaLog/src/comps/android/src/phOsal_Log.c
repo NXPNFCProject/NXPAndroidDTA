@@ -21,6 +21,11 @@
 #include <errno.h>
 #include <string.h>
 #include "phDTAOSAL.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*Global log level to filter the type of logs to be published*/
 static phOsal_eLogLevel_t geLogLevel=PHOSAL_LOGLEVEL_NONE;
 
@@ -279,3 +284,7 @@ void phOsal_LogFunctionExit(const uint8_t* pbModuleName, const uint8_t* pbFuncNa
     if(geLogLevel >= PHOSAL_LOGLEVEL_DEBUG)
         ALOGD("%s>%s:Exit",pbModuleName,pbFuncName);
 }
+
+#ifdef __cplusplus
+}
+#endif

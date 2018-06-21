@@ -768,7 +768,7 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_TagOperation( void* mwIfHandle,
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_TagCmd(void* mwIfHandle,
                                   phMwIf_eProtocolType_t eProtocolType,
-                                  phMwIf_uTagParams_t*   psTagParams);
+                                  phMwIf_uTagParams_t* psTagParams);
 
 /**
  * \ingroup grp_mwif_lib

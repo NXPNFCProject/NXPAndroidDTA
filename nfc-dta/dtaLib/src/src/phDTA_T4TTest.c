@@ -34,6 +34,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern phDtaLib_sHandle_t g_DtaLibHdl;
 
 static uint8_t const gs_pbStartOfTransaction[] = { 0x00, 0xA4, 0x04, 0x00, 0x0E,
@@ -173,3 +177,7 @@ DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t TestProfile,
       /*For Pattern 0&7 return dwMwIfStatus & others return dwDtaStatus*/
       return (dwMwIfStatus | dwDtaStatus);
 }
+
+#ifdef __cplusplus
+}
+#endif

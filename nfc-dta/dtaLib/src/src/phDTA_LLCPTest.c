@@ -36,6 +36,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define PHDTALIB_SERVER_MIU ((uint16_t)0x87E) /*IUT srever Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
 #define PHDTALIB_SERVER_RW  ((uint8_t)01)
 #define PHDTALIB_CLIENT_MIU ((uint16_t)0x87E)/*IUT client Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
@@ -64,7 +68,6 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
 
     uint16_t                    wClientMiu;
     uint16_t                    wServerMiu;
-    OSALSTATUS                  dwOsalStatus = 0;
     LOG_FUNCTION_ENTRY;
 
     if(eLlcpEvtType == PHMWIF_LLCP_SERVER_CONN_REQ_EVT)
@@ -110,7 +113,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             sConnectPrms.bClientRw            = PHDTALIB_CLIENT_RW;
             dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(psDtaLibHdl->mwIfHdl,
                                                     &sConnectPrms,
-                                                    (void *)&psDtaLibHdl->pvCORemoteServerConnHandle);
+                                                    (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
 
         }
         else if(psTestProfile->Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL)
@@ -135,7 +138,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             sConnectPrms.bClientRw            = PHDTALIB_CLIENT_RW;
             dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(psDtaLibHdl->mwIfHdl,
                                                     &sConnectPrms,
-                                                    (void *)&psDtaLibHdl->pvCORemoteServerConnHandle);
+                                                    (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
 
         }
         else
@@ -153,7 +156,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             sConnectPrms.bClientRw            = PHDTALIB_CLIENT_RW;
             dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(psDtaLibHdl->mwIfHdl,
                                                     &sConnectPrms,
-                                                    (void *)&psDtaLibHdl->pvCORemoteServerConnHandle);
+                                                    (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
         }
         if (dwMwIfStatus != MWIFSTATUS_SUCCESS)
         {
@@ -179,7 +182,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
         psDtaLibHdl->pvCOServerHandle = (puLlcpEvtInfo->sConnReq.wServerHandle);
 
         phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:Waiting for Data from Remote Client");
-        sLlcpConnOrientedData.pbBuff       = malloc(PHDTALIB_MAX_LLCP_DATA);
+        sLlcpConnOrientedData.pbBuff       = (uint8_t *)malloc(PHDTALIB_MAX_LLCP_DATA);
         sLlcpConnOrientedData.dwBuffLength = PHDTALIB_MAX_LLCP_DATA;
 
         dwMwIfStatus = phMwIf_LlcpConnOrientedRecvData(psDtaLibHdl->mwIfHdl,
@@ -194,7 +197,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
         phDtaLibi_PrintBuffer(sLlcpConnOrientedData.pbBuff,(uint16_t)sLlcpConnOrientedData.dwBuffLength,(const uint8_t*)"DTALib>LLCP:Received Data");
         if(psDtaLibHdl->bIsLlcpCoRemoteServerLinkCongested)
         {
-            phMwIf_sBuffParams_t               *psLlcpConnOrientedData = malloc(sizeof(phMwIf_sBuffParams_t));
+            phMwIf_sBuffParams_t               *psLlcpConnOrientedData = (phMwIf_sBuffParams_t *)malloc(sizeof(phMwIf_sBuffParams_t));
             psLlcpConnOrientedData->pbBuff = sLlcpConnOrientedData.pbBuff;
             psLlcpConnOrientedData->dwBuffLength = sLlcpConnOrientedData.dwBuffLength;
 
@@ -288,7 +291,7 @@ DTASTATUS phDtaLibi_LlcpConnLessOperations(phDtaLib_sTestProfile_t* psTestProfil
 
         /*Wait for Data to start LLCP Transaction*/
         phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:Waiting for Data from Remote Client");
-        sLlcpConnLessData.pbBuff       = malloc(PHDTALIB_MAX_LLCP_DATA);
+        sLlcpConnLessData.pbBuff       = (uint8_t *)malloc(PHDTALIB_MAX_LLCP_DATA);
         sLlcpConnLessData.dwBuffLength = PHDTALIB_MAX_LLCP_DATA;
         dwMwIfStatus = phMwIf_LlcpConnLessRecvData(psDtaLibHdl->mwIfHdl,
                                            psDtaLibHdl->pvCLRemoteClientConnLessHandle,
@@ -430,3 +433,7 @@ DTASTATUS phDtaLibi_LlcpHandleDeactivatedEvent()
 
     LOG_FUNCTION_EXIT;
 }
+
+#ifdef __cplusplus
+}
+#endif

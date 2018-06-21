@@ -36,6 +36,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern phDtaLib_sHandle_t g_DtaLibHdl;
 
 /**
@@ -68,3 +72,7 @@ DTASTATUS phDtaLibi_UICCOperations()
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif

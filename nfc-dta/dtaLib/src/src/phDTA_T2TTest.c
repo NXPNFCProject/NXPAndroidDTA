@@ -34,6 +34,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*Constant T2T Data for predefined memory layouts*/
 static const uint8_t gs_T2TPattern1[] = {0x03, 0xFF, 0x07, 0xEC};
 static const uint8_t gs_T2TPattern2[] = {0xC5, 0x01, 0x00, 0x00};
@@ -88,7 +92,7 @@ extern BOOLEAN gui_flag_t2t_sleep;
         psTagParams->eT2TCmd = PHMWIF_T2T_READ_CMD;\
         psTagParams->sBuffParams.pbBuff = gs_T2TBuff;\
         psTagParams->dwBlockNum = blkNum;\
-        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(void *)psTagParams);\
+        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(phMwIf_uTagParams_t*)psTagParams);\
         if(dwMwIfStatus != MWIFSTATUS_SUCCESS)\
             break;}
 
@@ -97,7 +101,7 @@ extern BOOLEAN gui_flag_t2t_sleep;
         psTagParams->dwBlockNum = blkNum;\
         psTagParams->sBuffParams.pbBuff = (uint8_t*)tagData;\
         psTagParams->sBuffParams.dwBuffLength = sizeof(tagData);\
-        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(void *)psTagParams);\
+        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(phMwIf_uTagParams_t*)psTagParams);\
         if(dwMwIfStatus != MWIFSTATUS_SUCCESS)\
             break;}
 
@@ -106,7 +110,7 @@ extern BOOLEAN gui_flag_t2t_sleep;
         psTagParams->dwSectorNum = SectorNum;\
         psTagParams->sBuffParams.pbBuff = NULL;\
         psTagParams->sBuffParams.dwBuffLength = 0;\
-        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(void *)psTagParams);\
+        dwMwIfStatus = phMwIf_TagCmd(mwIfHdl, PHMWIF_PROTOCOL_T2T,(phMwIf_uTagParams_t*)psTagParams);\
         if(dwMwIfStatus != MWIFSTATUS_SUCCESS)\
             break;}
 
@@ -121,7 +125,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
     uint32_t   dwBlkNum     = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     phMwIf_uTagParams_t   sTagParams;
-    phMwIf_sT2TParams_t*   psTagParams = (void *)&sTagParams;
+    phMwIf_sT2TParams_t*   psTagParams = (phMwIf_sT2TParams_t *)&sTagParams;
 
     LOG_FUNCTION_ENTRY;
     memset(psTagParams, 0, sizeof(phMwIf_uTagParams_t));
@@ -303,3 +307,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
     LOG_FUNCTION_EXIT;
     return dwMwIfStatus;
 }
+
+#ifdef __cplusplus
+}
+#endif

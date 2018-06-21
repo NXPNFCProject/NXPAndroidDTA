@@ -49,6 +49,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaPlatform/phDtaOsal/inc \
     $(LOCAL_PATH)/inc \
     $(LOCAL_PATH)/../../../inc \
     $(LIBNFC_NCI_PATH)/src/include \
+    $(LIBNFC_NCI_PATH_O)/utils/include \
     $(LIBNFC_NCI_PATH)/src/gki/ulinux \
     $(LIBNFC_NCI_PATH)/src/gki/common \
     $(LIBNFC_NCI_PATH)/$(NFA)/include \
@@ -63,6 +64,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaPlatform/phDtaOsal/inc \
     $(LIBNFC_NCI_PATH_O)/$(NFA)/include \
     $(LIBNFC_NCI_PATH_O)/$(NFA)/int \
     $(LIBNFC_NCI_PATH_O)/$(NFC)/include \
+    $ system/nfc/src/nfa/include \
     $(LIBNFC_NCI_PATH_O)/$(NFC)/int \
     $(LIBNFC_NCI_PATH_O)/src/hal/include \
     $(LIBNFC_NCI_PATH_O)/src/hal/int
@@ -70,8 +72,14 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaPlatform/phDtaOsal/inc \
 
 LOCAL_SRC_FILES := \
     $(call all-c-files-under, dtaPlatform/phDtaLog) \
+    $(call all-cc-files-under, dtaPlatform/phDtaLog) \
+    $(call all-cpp-files-under, dtaPlatform/phDtaLog) \
     $(call all-c-files-under, dtaPlatform/phInfra) \
-    $(call all-c-files-under, dtaPlatform/phDtaOsal/src/comps/android)
+    $(call all-cc-files-under, dtaPlatform/phInfra) \
+    $(call all-cpp-files-under, dtaPlatform/phInfra) \
+    $(call all-c-files-under, dtaPlatform/phDtaOsal/src/comps/android) \
+    $(call all-cc-files-under, dtaPlatform/phDtaOsal/src/comps/android) \
+    $(call all-cpp-files-under, dtaPlatform/phDtaOsal/src/comps/android)
 
 LOCAL_SHARED_LIBRARIES := \
     libcutils \

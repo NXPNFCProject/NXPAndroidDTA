@@ -34,6 +34,10 @@
 #include "phDTALib.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define T3T_CHECK_CMD                 0x06
 #define T3T_RESPONSE_DATA_OFFSET      0x0D /* In T3T CHECK command response, Data offset starts from 13th byte */
 #define T3T_UPDATE_CMD                0x08
@@ -367,7 +371,6 @@ DTASTATUS phDtaLibi_T3TNDEFRead(void)
  */
 DTASTATUS phDtaLibi_T3TNDEFWrite(void)
 {
-    phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     phDtaLibi_sT3Tcmd_t sT3Tcmd;
     phDtaLibi_sT3Tcmd_t *psT3TcmdPrms = &sT3Tcmd;
     LOG_FUNCTION_ENTRY;
@@ -594,3 +597,7 @@ DTASTATUS phDtaLibi_T3TCmd(phDtaLibi_sT3Tcmd_t *psT3TcmdPrms)
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif

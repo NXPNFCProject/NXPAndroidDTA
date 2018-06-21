@@ -39,6 +39,7 @@
 #include "phOsal_LinkList.h"
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -256,8 +257,6 @@ DTASTATUS phDtaLibi_ReInit()
  */
 DTASTATUS phDtaLib_EeInit(phDtaLib_eNfceeDevType_t DevType)
 {
-    phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
-
     LOG_FUNCTION_ENTRY;
 
     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf NFC EE Init");
@@ -1097,7 +1096,6 @@ void phDtaLib_RegisterCallback( void *dtaApplHdl, phdtaLib_EvtCb_t dtaApplCb)
 }
 
 DTASTATUS phDtaLib_SetConfig(phDtaLib_sDiscParams_t* discParams){
-    phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     MWIFSTATUS dwMwIfStatus = 0;
     LOG_FUNCTION_ENTRY;
 
@@ -1126,6 +1124,7 @@ DTASTATUS phDtaLib_GetConfig(uint8_t bnumIDs, uint8_t *pbparamIDs, uint8_t *pvOu
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
+
 #ifdef __cplusplus
 }
 #endif

@@ -23,9 +23,10 @@
  * Project:  NFC DTA LIB
  */
 #include <jni.h>
-
+#ifdef __cplusplus
 extern "C"
 {
+#endif
 
 /** \ingroup grp_dta_lib
     Indicates DTA initialization status. */
@@ -116,5 +117,6 @@ DTAJNI_LIB_EXTEND JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_
 DTAJNI_LIB_EXTEND JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibGetIUTInfoJNI(JNIEnv *env, jobject obj, jobject phDtaLibsIUTInfot);
 
 /* P2P LLCP and SNEP*/
-
+#ifdef __cplusplus
 };
+#endif

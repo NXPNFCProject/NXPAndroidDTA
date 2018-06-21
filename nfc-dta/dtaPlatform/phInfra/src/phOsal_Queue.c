@@ -24,6 +24,10 @@
 #include "phOsal_LinkList.h"
 #include "phOsal_Queue.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct phOsal_QueueCtxt_tag
 {
 
@@ -63,7 +67,7 @@ OSALSTATUS phOsal_QueueCreate(void**                        pvQueueHandle,
 
     /*Allocate memory to queue context*/
     pvMemHdl  = psQueueCreatePrms->memHdl;
-    psQCtxt   = psQueueCreatePrms->MemAllocCb(pvMemHdl,
+    psQCtxt   = (phOsal_QueueCtxt_t *)psQueueCreatePrms->MemAllocCb(pvMemHdl,
                                             sizeof(phOsal_QueueCtxt_t));
     if(!psQCtxt)
     {
@@ -133,7 +137,7 @@ OSALSTATUS phOsal_QueueCreate(void**                        pvQueueHandle,
  */
 OSALSTATUS phOsal_QueueDestroy(void* pvQueueHandle)
 {
-    phOsal_QueueCtxt_t *psQCtxt=pvQueueHandle;
+    phOsal_QueueCtxt_t *psQCtxt=(phOsal_QueueCtxt_t *)pvQueueHandle;
     void*               pvMemHdl;
     OSALSTATUS          wStatus=OSALSTATUS_SUCCESS;
     PH_OSAL_FUNC_ENTRY;
@@ -177,7 +181,7 @@ OSALSTATUS phOsal_QueuePush(void* pvQueueHandle,
                                    void  *pvQueueObj,
                                    uint32_t uwTimeoutMs)
 {
-    phOsal_QueueCtxt_t *psQCtxt = pvQueueHandle;
+    phOsal_QueueCtxt_t *psQCtxt = (phOsal_QueueCtxt_t *)pvQueueHandle;
     OSALSTATUS         dwStatus = OSALSTATUS_SUCCESS;
 
     PH_OSAL_FUNC_ENTRY;
@@ -297,7 +301,7 @@ OSALSTATUS phOsal_QueuePull(void*  pvQueueHandle,
                                  void     **pvQueueObj,
                                  uint32_t uwTimeoutMs)
 {
-    phOsal_QueueCtxt_t *psQCtxt=pvQueueHandle;
+    phOsal_QueueCtxt_t *psQCtxt=(phOsal_QueueCtxt_t *)pvQueueHandle;
     OSALSTATUS          dwStatus=OSALSTATUS_SUCCESS;
 
     PH_OSAL_FUNC_ENTRY;
@@ -359,7 +363,6 @@ OSALSTATUS phOsal_QueuePull(void*  pvQueueHandle,
  */
 OSALSTATUS phOsal_QueueFlush(void* pvQueueHandle)
 {
-    phOsal_QueueCtxt_t *psQCtxt=pvQueueHandle;
     OSALSTATUS          dwOsalStatus=OSALSTATUS_SUCCESS;
     void*               pvQueueData;
     PH_OSAL_FUNC_ENTRY;
@@ -383,3 +386,7 @@ OSALSTATUS phOsal_QueueFlush(void* pvQueueHandle)
     PH_OSAL_FUNC_EXIT;
     return OSALSTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif

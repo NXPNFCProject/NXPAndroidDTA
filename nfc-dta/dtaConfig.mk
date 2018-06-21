@@ -14,12 +14,69 @@
 #  limitations under the License.
 #
 #########Build DTA Application and dependent modules#############################
-$(info "NXP-NFC-DTA>Set DTA macros..")
-FLAG_NXP_HAL_EXTNS := true
-THREAD_PRIO_SUPPORT:= false
-ANDROID_O          := true
-AOSP_MASTER        := false
-NCI_2_0            := true
+$(info "NXP-NFC-DTA> Set DTA macros..")
+
+ANDROID_VER := P
+NCI_VER     := 2_0
+
+# Build DTA for Android P Devices
+ifeq ($(ANDROID_VER),P)
+ifeq ($(NCI_VER),1_0)
+$(info "NXP-NFC-DTA> Building DTA for Android P + NCI 1.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := false
+AOSP_MASTER             := true
+NCI_2_0                 := false
+ANDROID_P               := true
+NXP_CHIP_TYPE           := $(PN553)
+else ifeq ($(NCI_VER),2_0)
+$(info "NXP-NFC-DTA> Building DTA for Android P + NCI 2.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := false
+AOSP_MASTER             := true
+NCI_2_0                 := true
+ANDROID_P               := true
+NXP_CHIP_TYPE           := $(PN557)
+endif
+endif
+
+# Build DTA for Android O Devices
+ifeq ($(ANDROID_VER),O)
+ifeq ($(NCI_VER),1_0)
+$(info "NXP-NFC-DTA> Building DTA for Android O + NCI 1.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := true
+AOSP_MASTER             := false
+NCI_2_0                 := false
+ANDROID_P               := false
+NXP_CHIP_TYPE           := $(PN553)
+else ifeq ($(NCI_VER),2_0)
+$(info "NXP-NFC-DTA> Building DTA for Android O + NCI 2.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := true
+AOSP_MASTER             := false
+NCI_2_0                 := true
+ANDROID_P               := false
+NXP_CHIP_TYPE           := $(PN557)
+endif
+endif
+
+#Build DTA for L/M/N Devices + PN80T
+ifeq (($(ANDROID_VER),L) || ($(ANDROID_VER),M) || ($(ANDROID_VER),N))
+$(info "NXP-NFC-DTA> Building DTA for Android L/M/N + NCI 1.0")
+FLAG_NXP_HAL_EXTNS      := false
+THREAD_PRIO_SUPPORT     := true
+ANDROID_O               := false
+AOSP_MASTER             := false
+NCI_2_0                 := false
+ANDROID_P               := false
+NXP_CHIP_TYPE           := $(PN553)
+endif
+
 
 D_CFLAGS := -DANDROID -DBUILDCFG=1
 
@@ -53,9 +110,6 @@ ifeq ($(PN557),5)
 D_CFLAGS += -DPN557=5
 endif
 
-#### Select the CHIP ####
-NXP_CHIP_TYPE := $(PN557)
-
 ifeq ($(NXP_CHIP_TYPE),$(PN547C2))
 D_CFLAGS += -DNFC_NXP_CHIP_TYPE=$(PN547C2)
 else ifeq ($(NXP_CHIP_TYPE),$(PN548AD))
@@ -79,4 +133,7 @@ ifeq ($(NCI_2_0), true)
 endif
 ifeq ($(THREAD_PRIO_SUPPORT), true)
     D_CFLAGS += -DTHREAD_PRIO_SUPPORT=TRUE
+endif
+ifeq ($(ANDROID_P),true)
+    D_CFLAGS += -DANDROID_P=TRUE
 endif

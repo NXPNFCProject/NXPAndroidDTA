@@ -35,6 +35,11 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern phDtaLib_sHandle_t g_DtaLibHdl;
 
 /**
@@ -115,6 +120,7 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
 #if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
     uint8_t const cusot[] = { 0x00, 0x40, 0x00, 0x01, 0x10, 0x02, 0x01, 0x0E } , /**< Start of Frame in Loop back */
                   cueot1[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x01 }; /**< EOT Frame 1*/
+    int i=0, j=0;
 #endif
     const uint8_t cspat_no_cmd[] = { 0xFF, 0x00, 0x00, 0x00 },     /* for NFC-F */
                   cswait_cmd[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x03 }; /* for NFC-F */
@@ -123,7 +129,7 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
     //phDtaLib_sQueueData_t  sQueueData;
     uint8_t resultBuffer[2048] = {0},loopBakBuffer[2048] = {0x00};
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
-    int i=0, j=0;
+
     LOG_FUNCTION_ENTRY;
 
 #if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
@@ -196,3 +202,7 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
     LOG_FUNCTION_EXIT;
     return gx_status;
 }
+
+#ifdef __cplusplus
+}
+#endif

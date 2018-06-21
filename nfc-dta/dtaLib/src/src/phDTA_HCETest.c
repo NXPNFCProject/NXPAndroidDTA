@@ -36,6 +36,10 @@
 #include "phOsal_Queue.h"
 #include "phDTATst.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Host Card Emulation related operations
  */
@@ -153,3 +157,7 @@ DTASTATUS phDtaLibi_HceOperations()
 
     return MWIFSTATUS_SUCCESS;
 }
+
+#ifdef __cplusplus
+}
+#endif
