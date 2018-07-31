@@ -1708,7 +1708,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
                     "MwIf> ERROR ConfigureUiccListen",&(mwIfHdl->sLastQueueData));
         }
 
-        /*Set UICC Listen Configuration*/
+        /*Set ESE Listen Configuration*/
         techMask = discCfgParams->discParams.dwListenESE;
         if(!techMask)
         {
@@ -2401,7 +2401,8 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_POLL_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_F_ACTIVE\n");
         break;
-#if(AOSP_MASTER_COMPILATION_SUPPORT == FALSE && ANDROID_O == TRUE)
+#if((AOSP_MASTER_COMPILATION_SUPPORT == FALSE) && \
+        (ANDROID_O == TRUE || ANDROID_P == TRUE))
         case NFC_DISCOVERY_TYPE_POLL_V:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_V\n");
         break;

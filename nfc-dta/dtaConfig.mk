@@ -26,6 +26,29 @@ $(info "NXP-NFC-DTA> Building DTA for Android P + NCI 1.0 .....")
 FLAG_NXP_HAL_EXTNS      := true
 THREAD_PRIO_SUPPORT     := false
 ANDROID_O               := false
+AOSP_MASTER             := false
+NCI_2_0                 := false
+ANDROID_P               := true
+NXP_CHIP_TYPE           := $(PN553)
+else ifeq ($(NCI_VER),2_0)
+$(info "NXP-NFC-DTA> Building DTA for Android P + NCI 2.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := false
+AOSP_MASTER             := false
+NCI_2_0                 := true
+ANDROID_P               := true
+NXP_CHIP_TYPE           := $(PN557)
+endif
+endif
+
+# Build DTA for Android P AOSP MASTER Devices
+ifeq ($(ANDROID_VER),MASTER)
+ifeq ($(NCI_VER),1_0)
+$(info "NXP-NFC-DTA> Building DTA for Android P + NCI 1.0 .....")
+FLAG_NXP_HAL_EXTNS      := true
+THREAD_PRIO_SUPPORT     := false
+ANDROID_O               := false
 AOSP_MASTER             := true
 NCI_2_0                 := false
 ANDROID_P               := true
