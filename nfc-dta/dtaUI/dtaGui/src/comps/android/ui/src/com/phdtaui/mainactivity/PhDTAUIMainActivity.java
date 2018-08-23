@@ -172,6 +172,9 @@ public class PhDTAUIMainActivity extends Activity implements
     /** Analog Pattern Number Key */
     public final String BUNDLED_PARAMS_ANALOG_PATTERN_KEY = "analog_pattern";
 
+    public final String BUNDLED_PARAMS_LIS_P2P_MODE_KEY = "listen_p2p";
+    public final String BUNDLED_PARAMS_LIS_P2P_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_LIS_P2P_DISABLE_VALUE = "disable";
     public final String BUNDLED_PARAMS_HCE_MODE_KEY = "hce_mode";
     public final String BUNDLED_PARAMS_HCE_MODE_NONE_VALUE = "none";
     public final String BUNDLED_PARAMS_HCE_MODE_AB_VALUE = "ab";
@@ -228,6 +231,9 @@ public class PhDTAUIMainActivity extends Activity implements
     public final String DTA_INTENT_RESPONSE = "nxp_dta_response";
     public final String DTA_INTENT_DONE_RESPONSE = "done";
 
+    /** Varaible to check and control Automa Test application is running or not
+     */
+    public boolean bIsInAutomationMode = false;
 
     /**
      * Load Library
@@ -455,10 +461,13 @@ public class PhDTAUIMainActivity extends Activity implements
 
             //** START & STOP button Implementaion for Automation */
             if (bundledParams.containsKey(BUNDLED_PARAMS_START_KEY)) {
-                this.handleStartButtonEvent();
+              bIsInAutomationMode = true;
+              Log.d(PhUtilities.UI_TAG, "Start DTA in ATM Mode");
+              this.handleStartButtonEvent();
             }
             if (bundledParams.containsKey(BUNDLED_PARAMS_STOP_KEY)) {
-                this.handleStopButtonEvent();
+              Log.d(PhUtilities.UI_TAG, "Stop DTA ATM Mode");
+              this.handleStopButtonEvent();
             }
 
             Log.d(DTA_INTENT_RESPONSE, DTA_INTENT_DONE_RESPONSE);
@@ -510,6 +519,27 @@ public class PhDTAUIMainActivity extends Activity implements
         }
         else if (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) {
             this.certificationVersion.setSelection(Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) - CERT_REL_MIN_VALUE);
+        }
+
+        /* Listen P2P Mode */
+        if(bundledParams.containsKey(BUNDLED_PARAMS_LIS_P2P_MODE_KEY)) {
+            Log.d(PhUtilities.UI_TAG, "Listen P2P Command Received");
+            switch (bundledParams.getString(BUNDLED_PARAMS_LIS_P2P_MODE_KEY)) {
+                case BUNDLED_PARAMS_LIS_P2P_ENABLE_VALUE:
+                    this.chkBoxListenP2p.setChecked(true);
+                    if(this.chkBoxListenHCEF.isChecked()) {
+                        this.chkBoxListenHCEF.setChecked(false);
+                        this.handleListenHceFTechCheckBoxEvent();
+                        Toast.makeText(PhDTAUIMainActivity.this,
+                              "HCE-F is disabled, when P2P Listen is selected",
+                              Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case BUNDLED_PARAMS_LIS_P2P_DISABLE_VALUE:
+                    this.chkBoxListenP2p.setChecked(false);
+                    break;
+            }
+            this.handleListenP2PCheckBoxEvent();
         }
 
         /* HCE Mode */
@@ -646,6 +676,7 @@ public class PhDTAUIMainActivity extends Activity implements
                 case BUNDLED_PARAMS_SNEP_ENABLE_VALUE:
                     this.chkBoxSnep.setChecked(true);
                     this.handleSNEPCheckBoxEvent();
+                    Log.d("SNEP_ENABLE", "Received Enable SNEP Command");
                     break;
                 case BUNDLED_PARAMS_SNEP_DISABLE_VALUE:
                     this.chkBoxSnep.setChecked(false);
@@ -1996,39 +2027,50 @@ public class PhDTAUIMainActivity extends Activity implements
         if((onClickColoringRunning) && (PhUtilities.STOP_BUTTON_HANDLE != 0xFFFF)){
             PhDTAJniEvent eEvent= new PhDTAJniEvent(PhDTAJniEvent.EventType.values()[PhUtilities.STOP_BUTTON_HANDLE]);
             }
-            if(PhUtilities.STOP_BUTTON_HANDLE==PhDTAJniEvent.EventType.PHDTALIB_TEST_CASE_EXEC_STARTED.ordinal()){
-                AlertDialog.Builder alertDialogBuilder=new AlertDialog.Builder(this);
-                alertDialogBuilder.setTitle("Warning:");
-                alertDialogBuilder.setMessage("Test case Execution is in progress, pressing yes will exit the application");
-                alertDialogBuilder.setCancelable(false);
-                alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            if ((PhUtilities.STOP_BUTTON_HANDLE ==
+                 PhDTAJniEvent.EventType.PHDTALIB_TEST_CASE_EXEC_STARTED
+                     .ordinal()) &&
+                (!(bIsInAutomationMode))) {
+              Log.d(PhUtilities.UI_TAG,
+                    "alertDialogBuilder in test case execution in progress");
+              AlertDialog.Builder alertDialogBuilder =
+                  new AlertDialog.Builder(this);
+              alertDialogBuilder.setTitle("Warning:");
+              alertDialogBuilder.setMessage(
+                  "Test case Execution is in progress, pressing yes will exit the application");
+              alertDialogBuilder.setCancelable(false);
+              alertDialogBuilder.setPositiveButton(
+                  "Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int arg1) {
-                        stopBtn.setBackgroundColor(Color.parseColor(getResources()
-                                .getString(R.color.grey)));
-                        runBtn.setBackgroundColor(Color.parseColor(getResources()
-                                .getString(R.color.green)));
-                        runBtn.setEnabled(true);
-                        runBtn.setClickable(true);
-                        exitBtn.setBackgroundColor(Color.parseColor(getResources()
-                                .getString(R.color.orange)));
-                        onClickColoringRunning = false;
-                        spinnerPatterNum.setSelection(0);
-                        certificationVersion.setSelection(0);
-                        timeSlotNumberF.setSelection(0);
-                        connectionDeviceLimit.setSelection(0);
-                        dialog.cancel();
-                                Log.v(PhUtilities.UI_TAG, "calling phDtaLibDisableDiscovery");
-                                phNXPJniHelper.phDtaLibDisableDiscovery();
-                                android.os.Process.killProcess(android.os.Process.myPid());
+                      stopBtn.setBackgroundColor(Color.parseColor(
+                          getResources().getString(R.color.grey)));
+                      runBtn.setBackgroundColor(Color.parseColor(
+                          getResources().getString(R.color.green)));
+                      runBtn.setEnabled(true);
+                      runBtn.setClickable(true);
+                      exitBtn.setBackgroundColor(Color.parseColor(
+                          getResources().getString(R.color.orange)));
+                      onClickColoringRunning = false;
+                      spinnerPatterNum.setSelection(0);
+                      certificationVersion.setSelection(0);
+                      timeSlotNumberF.setSelection(0);
+                      connectionDeviceLimit.setSelection(0);
+                      dialog.cancel();
+                      Log.v(PhUtilities.UI_TAG,
+                            "calling phDtaLibDisableDiscovery");
+                      phNXPJniHelper.phDtaLibDisableDiscovery();
+                      android.os.Process.killProcess(
+                          android.os.Process.myPid());
                     }
-                });
-                alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                  });
+              alertDialogBuilder.setNegativeButton(
+                  "No", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     }
-                });
-                alertDialogBuilder.show();
+                  });
+              alertDialogBuilder.show();
             }else{
             runBtn.setClickable(true);
             Log.e(PhUtilities.UI_TAG, "stop clicked");
@@ -2411,6 +2453,12 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenHCEB.setEnabled(false);
             chkBoxListenHCEF.setEnabled(false);
         }
+
+        /* Enabling Listen P2P to default when HCE-F is not checked */
+        if(!chkBoxListenHCEF.isChecked()) {
+            chkBoxListenP2p.setChecked(true);
+            handleListenP2PCheckBoxEvent();
+        }
     }
 
     private void handleListenESECheckBoxEvent() {
@@ -2458,8 +2506,8 @@ public class PhDTAUIMainActivity extends Activity implements
     private void handleListenP2pTechCheckBoxEvent() {
         if((!chkBoxListenP2PA.isChecked()) && (!chkBoxListenP2PB.isChecked()) && (!chkBoxListenP2PF.isChecked()))
         {
-                chkBoxListenP2p.setChecked(false);
-                enableTechChkBoxsForModes();
+            chkBoxListenP2p.setChecked(false);
+            enableTechChkBoxsForModes();
         }
     }
 
@@ -2504,7 +2552,6 @@ public class PhDTAUIMainActivity extends Activity implements
         Log.v("CheckBoxActivity", (chkBoxListenHCEA.isChecked() ? "HCEA checked" : "HCEA unchecked"));
 
         if(chkBoxListenHCEF.isChecked()){
-
             if(chkBoxListenP2p.isChecked()) {
                 chkBoxListenP2p.setChecked(false);
                 chkBoxListenP2PA.setChecked(false);
@@ -2517,11 +2564,11 @@ public class PhDTAUIMainActivity extends Activity implements
             }
             chkBoxListenHCEA.setChecked(false);
             chkBoxListenHCEB.setChecked(false);
-
+        } else { /* Enable P2P by default when HCE-F is not checked */
+            chkBoxListenP2p.setChecked(true);
+            handleListenP2PCheckBoxEvent();
         }
-
     }
-
 
     private void handleListenEseTechCheckBoxEvent() {
         if((!chkBoxListenESEA.isChecked()) && (!chkBoxListenESEB.isChecked()) && (!chkBoxListenESEF.isChecked()))
@@ -2539,6 +2586,7 @@ public class PhDTAUIMainActivity extends Activity implements
         handleListenHCECheckBoxEvent();
         handleListenESECheckBoxEvent();
     }
+
     public PhDtaLibStructure getPhDtaLibStructureObj() {
         return phDtaLibStructureObj;
     }
@@ -2550,6 +2598,7 @@ public class PhDTAUIMainActivity extends Activity implements
     public void setTxtVwAppStatus(String strAppStatus) {
         this.txtVwAppStatus.setText(strAppStatus);
     }
+
     private void enableBtnsWhichAreTicked(){
         if(chkBoxPollP2PA.isChecked())
             chkBoxPollP2PA.setEnabled(true);
@@ -2588,6 +2637,7 @@ public class PhDTAUIMainActivity extends Activity implements
         if(chkBoxListenESEF.isChecked())
             chkBoxListenESEF.setEnabled(true);
     }
+
     private void enableTechChkBoxsForModes(){
         if(chkBoxPollP2p.isChecked()){
             chkBoxPollP2PA.setEnabled(true);

@@ -34,4 +34,6 @@ Configuration is as explained below:
      5. To Build DTA for Android L/M/N & NCI v1.0
             ANDROID_VER := L or M or N
             NCI_VER     := 1_0
+
+Note: For AOSP complaint MW build, AOSP_MASTER to be set to TRUE
 ________________________________________________________________________

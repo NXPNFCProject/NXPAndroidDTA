@@ -1692,7 +1692,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SET_P2P_LISTEN_TECH_EVT,5000,
                     "MwIf> ERROR SetP2pListen",&(mwIfHdl->sLastQueueData));
         }
-#if(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
+
         /*Set UICC Listen Configuration*/
         techMask = discCfgParams->discParams.dwListenUICC;
         if(!techMask)
@@ -1717,12 +1717,21 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
         else
         {
             ALOGD("MwIf> NFA_CeConfigureEseListenTech\n");
+#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE)
+            /* NFA_CeConfigureUiccListenTech is used to configure ESE as we don't have seperate
+               API to configure for ESE in AOSP master. NfaEseHandle is used as input argument
+               to the same method */
+            gx_status = NFA_CeConfigureUiccListenTech(NfaEseHandle, techMask);
+            PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not start ConfigureEseListen !! \n");
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_UICC_LISTEN_CONFIGURED_EVT,5000,
+                    "MwIf> ERROR ConfigureEseListen",&(mwIfHdl->sLastQueueData));
+#else
             gx_status = NFA_CeConfigureEseListenTech(NfaEseHandle, techMask);
             PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not start ConfigureEseListen !! \n");
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_ESE_LISTEN_CONFIGURED_EVT,5000,
                     "MwIf> ERROR ConfigureEseListen",&(mwIfHdl->sLastQueueData));
-        }
 #endif
+        }
 
         /*Set HCE Listen Configuration*/
         techMask = discCfgParams->discParams.dwListenHCE;
@@ -1746,7 +1755,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
             phMwIfi_CeRegisterAID(mwIfHdl);
         }
         gx_status = NFA_EnableListening();
-        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not Enable Listening !! \n");
+        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Err Could not Enable Listening !! \n");
         PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_LISTEN_ENABLED_EVT,5000,
                 "MwIf> ERROR Enable Listen",&(mwIfHdl->sLastQueueData));
     }
@@ -1784,7 +1793,7 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
         PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SET_P2P_LISTEN_TECH_EVT,5000,
                 "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
     }
-#if(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
+
     /*Disable Listen techs for Card Emulation from UICC */
     if(mwIfHdl->sDiscCfg.discParams.dwListenUICC)
     {
@@ -1799,12 +1808,21 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
     if(mwIfHdl->sDiscCfg.discParams.dwListenESE)
     {
         ALOGD("MwIf> Disable NFA_CeConfigureEseListenTech\n");
+#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE)
+        /* NFA_CeConfigureUiccListenTech is used to configure ESE as we don't have seperate
+           API to configure for ESE in AOSP master. NfaEseHandle is used as an input argument
+           to the same method */
+        gx_status = NFA_CeConfigureUiccListenTech(NfaEseHandle, 0x00);
+        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not Disable ConfigureEseListen !! \n");
+        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_UICC_LISTEN_CONFIGURED_EVT,5000,
+                "MwIf> ERROR Disable ConfigureEseListen",&(mwIfHdl->sLastQueueData));
+#else
         gx_status = NFA_CeConfigureEseListenTech(NfaEseHandle, 0x00);
         PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not Disable ConfigureEseListen !! \n");
         PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_ESE_LISTEN_CONFIGURED_EVT,5000,
                 "MwIf> ERROR Disable ConfigureEseListen",&(mwIfHdl->sLastQueueData));
-    }
 #endif
+    }
     ALOGD ("MwIf> %s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
