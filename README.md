@@ -30,3 +30,4 @@
 | android-8.0.0_r4/android-8.1.0_r7              |  11.01 (PN548C2/PN551/PN553/PN557) |  NFC_NCIHALx_AR00C0.8.4.0_OpnSrc | DTA 11.01 |
 | android-p-preview 2               |  11.06 (PN553/PN557) |  NFC_NCIHALx_AR00C0.9.0.D_OpnSrc | DTA 11.06 |
 | android-9.0.0_r3              |  11.07 (PN557) |  NFC_NCIHALx_AR0800.9.1.0_OpnSrc | DTA 11.07 |
+| android-9.0.0_r3              |  11.08 (PN81T/PN557) |  NFC_NCIHALx_AR1800.9.2.0_OpnSrc | DTA 11.08 |
