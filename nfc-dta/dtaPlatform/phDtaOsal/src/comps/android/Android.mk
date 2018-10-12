@@ -23,8 +23,12 @@ include $(LOCAL_PATH)/dtaConfig.mk
 # Build shared library system/lib/libmwif.so for stack code.
 include $(CLEAR_VARS)
 
-LIBNFC_NCI_PATH:= external/libnfc-nci
-LIBNFC_NCI_PATH_O:= system/nfc
+LIBNFC_NCI_PATH := external/libnfc-nci
+ifeq ($(SN100x), true)
+LIBNFC_NCI_PATH_O := system/nfc/SN100x
+else
+LIBNFC_NCI_PATH_O := system/nfc
+endif
 NFA := src/nfa
 NFC := src/nfc
 HAL := src/hal
@@ -64,7 +68,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaPlatform/phDtaOsal/inc \
     $(LIBNFC_NCI_PATH_O)/$(NFA)/include \
     $(LIBNFC_NCI_PATH_O)/$(NFA)/int \
     $(LIBNFC_NCI_PATH_O)/$(NFC)/include \
-    $ system/nfc/src/nfa/include \
+    $(LIBNFC_NCI_PATH_O)/src/nfa/include \
     $(LIBNFC_NCI_PATH_O)/$(NFC)/int \
     $(LIBNFC_NCI_PATH_O)/src/hal/include \
     $(LIBNFC_NCI_PATH_O)/src/hal/int

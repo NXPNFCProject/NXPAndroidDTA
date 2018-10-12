@@ -61,6 +61,12 @@ else
 LOCAL_MULTILIB := 32
 endif
 
+ifeq ($(SN100x), true)
+LIBNFC_NCI_PATH_O := system/nfc/SN100x
+else
+LIBNFC_NCI_PATH_O := system/nfc
+endif
+
 LOCAL_MODULE := libdta
 LOCAL_MODULE_TAGS := optional
 #LOCAL_SHARED_LIBRARIES := libhardware_legacy libcutils liblog libdl libstlport libhardware
@@ -73,8 +79,8 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/dtaLib/src/inc/ \
     $(LOCAL_PATH)/dtaPlatform/phInfra/inc \
     $(LOCAL_PATH)/dtaPlatform/phDtaOsal/inc \
     $(LOCAL_PATH)/dtaPlatform/phDtaOsal/src/comps/android/inc \
-    system/nfc/src/gki/common/ \
-    system/nfc/src/gki/ulinux/ \
+    $(LIBNFC_NCI_PATH_O)/src/gki/common/ \
+    $(LIBNFC_NCI_PATH_O)/src/gki/ulinux/ \
     external/libnfc-nci/src/gki/common/ \
     external/libnfc-nci/src/gki/ulinux/
 

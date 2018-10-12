@@ -35,7 +35,13 @@ else
 LOCAL_MULTILIB := 32
 endif
 
-LOCAL_MODULE_TAGS:= optional
+ifeq ($(SN100x), true)
+LIBNFC_NCI_PATH_O := system/nfc/SN100x
+else
+LIBNFC_NCI_PATH_O := system/nfc
+endif
+
+LOCAL_MODULE_TAGS := optional
 
 #phExampleNfc
 define all-cpp-files-under
@@ -49,8 +55,8 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/$(JNI_PATH) \
     $(DTA_PATH)/inc/ \
     $(OSAL_PATH)/inc/ \
-    system/nfc/src/gki/common/ \
-    system/nfc/src/gki/ulinux/ \
+    $(LIBNFC_NCI_PATH_O)/src/gki/common/ \
+    $(LIBNFC_NCI_PATH_O)/src/gki/ulinux/ \
     external/libnfc-nci/src/gki/common/ \
     external/libnfc-nci/src/gki/ulinux/ \
     $(DTALIB_PATH)/src/comps/phMwIf/inc \

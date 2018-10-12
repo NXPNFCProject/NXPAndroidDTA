@@ -49,9 +49,13 @@ include $(LOCAL_PATH)/dtaConfig.mk
 include $(CLEAR_VARS)
 MWIF_PATH := dtaMwAl
 OSAL_PATH  := dtaPlatform
-LIBNFC_NCI_PATH:= external/libnfc-nci
-LIBNFC_NCI_PATH_O:= system/nfc
-BASE_LOGGING_PATH_P:= frameworks/base
+LIBNFC_NCI_PATH := external/libnfc-nci
+ifeq ($(SN100x), true)
+LIBNFC_NCI_PATH_O := system/nfc/SN100x
+else
+LIBNFC_NCI_PATH_O := system/nfc
+endif
+BASE_LOGGING_PATH_P := frameworks/base
 
 NFA := src/nfa
 NFC := src/nfc
