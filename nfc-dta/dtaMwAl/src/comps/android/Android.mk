@@ -111,7 +111,11 @@ ifeq ($(FLAG_NXP_HAL_EXTNS), true)
 endif
 
 ifeq ($(ANDROID_P), true)
+ifeq ($(SN100x), true)
+    LOCAL_C_INCLUDES += hardware/nxp/nfc/SN100x/extns/impl
+else
     LOCAL_C_INCLUDES += hardware/nxp/nfc/extns/impl
+endif
 endif
 
 LOCAL_SRC_FILES := \
