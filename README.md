@@ -32,3 +32,4 @@
 | android-9.0.0_r3              |  11.07 (PN557) |  NFC_NCIHALx_AR0800.9.1.0_OpnSrc | DTA 11.07 |
 | android-9.0.0_r3              |  11.08 (PN81T/PN557) |  NFC_NCIHALx_AR1800.9.2.0_OpnSrc | DTA 11.08 |
 | android-p-preview 2               |  11.09 (SN100x/PN553) |  NFC_NCIHALx_AR2000.09.00.0C_OpnSrc NFC_NCIHALx_AR2000.09.00.0F_OpnSrc | DTA 11.09 |
+| android-p-preview 2               |  9.00.11 (SN100x) |  NFC_NCIHALx_AR2000.09.00.11_OpnSrc | DTA 11.0A |
