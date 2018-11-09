@@ -788,6 +788,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                 break;
             }
             eDiscType = psQueueData->uEvtInfo.uDpEvtInfo.sActivationPrms.eActivatedRfTechTypeAndMode;
+            phOsal_LogDebugU32h((const uint8_t*)"DTALib> PHMWIF_NFCDEP_ACTIVATED_EVT eDiscType = 0x%x", eDiscType);
+
             if ((eDiscType == PHMWIF_DISCOVERY_TYPE_POLL_A)
                     || (eDiscType == PHMWIF_DISCOVERY_TYPE_POLL_F))
             {
@@ -798,8 +800,14 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                     || (eDiscType == PHMWIF_DISCOVERY_TYPE_LISTEN_F))
             {
                 phOsal_LogDebug((const uint8_t*)"DTALib-DEP> We are Target now !! \n");
-                phDtaLibi_NfcdepInitiatorOperations();
-            } else
+                dwDtaStatus = phDtaLibi_NfcdepInitiatorOperations();
+                if(dwDtaStatus != DTASTATUS_SUCCESS)
+                {
+                    bDiscStartReqd = FALSE;
+                    bDiscStopReqd  = FALSE;
+                }
+            }
+            else
             {
                 phOsal_LogError((const uint8_t*)"DTALib> Invalid Discovery Type received");
             }
@@ -807,6 +815,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             break;
         case PHMWIF_DEACTIVATED_EVT:
             eDeactType = psQueueData->uEvtInfo.uDpEvtInfo.eDeactivateType;
+            phOsal_LogDebugU32h((const uint8_t*)"DTALib> PHMWIF_DEACTIVATED_EVT eDeactType = 0x%x", eDeactType);
             free(psQueueData);
             /*FIXME: LLCP tests require Stop/Start after each TC execution and deactivation,
              * else we get RFlinkloss and RFStuck issue*/
