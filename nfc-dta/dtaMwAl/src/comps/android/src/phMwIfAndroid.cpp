@@ -3077,7 +3077,13 @@ MWIFSTATUS phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle)
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LB_APPDATA, 4, gs_paramBuffer);
     gs_paramBuffer[0] = 0x08;
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LB_SFGI, 1, gs_paramBuffer);
-    gs_paramBuffer[0] = 0x01;/*DID Support for HCE Type B*/
+    /*DID Support for HCE Type B*/
+    /*Incase of NCI2.0, upper nibble contains FWI*/
+#if (NCI_2_0 == TRUE)
+    gs_paramBuffer[0] = 0x71;
+#else
+    gs_paramBuffer[0] = 0x01;
+#endif
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LB_ADC_FO, 1, gs_paramBuffer);
     gs_paramBuffer[0] = 0x00;
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LI_BIT_RATE, 1, gs_paramBuffer);
