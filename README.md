@@ -34,3 +34,4 @@
 | android-p-preview 2               |  11.09 (SN100x/PN553) |  NFC_NCIHALx_AR2000.09.00.0C_OpnSrc NFC_NCIHALx_AR2000.09.00.0F_OpnSrc | DTA 11.09 |
 | android-p-preview 2               |  11.0A (SN100x) |  NFC_NCIHALx_AR2000.09.00.11_OpnSrc | DTA 11.0A |
 | android-p-preview 2               |  11.0B (SN100x/PN8xT) | NFC_NCIHALx_AR2000.09.00.13_OpnSrc NFC_NCIHALx_AR0040.9.3.0_OpnSrc  NFC_NCIHALx_AR00C0.9.4.0_OpnSrc NFC_NCIHALx_AR1800.9.5.0_OpnSrc  NFC_NCIHALx_AR2000.09.00.15_OpnSrc  NFC_NCIHALx_AR2000.09.00.16_OpnSrc NFC_NCIHALx_AR2000.09.00.17_OpnSrc NFC_NCIHALx_AR2000.09.00.18_OpnSrc | DTA 11.0B |
+| android-p-preview 2               |  11.0C (PN8xT) | NFC_NCIHALx_AR18C0.9.6.0_OpnSrc | DTA 11.0C |
