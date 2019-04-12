@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -286,7 +286,7 @@ DTASTATUS phDtaLibi_LlcpConnLessOperations(phDtaLib_sTestProfile_t* psTestProfil
         phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:ConnectionLessServerParams:");
         phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Client SAP=",(uint32_t)puLlcpEvtInfo->sLlcpConnLessData.bRemoteSap);
         phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:ConnLessRemoteHandle=",(uint32_t)puLlcpEvtInfo->sLlcpConnLessData.wConnLessHandle);
-        psDtaLibHdl->pvCLRemoteClientConnLessHandle = (void *)(((char*)0)+(puLlcpEvtInfo->sLlcpConnLessData.wConnLessHandle));
+        psDtaLibHdl->pvCLRemoteClientConnLessHandle = INT_TO_PTR(puLlcpEvtInfo->sLlcpConnLessData.wConnLessHandle);
         bRemoteClientSap = puLlcpEvtInfo->sLlcpConnLessData.bRemoteSap;
 
         /*Wait for Data to start LLCP Transaction*/

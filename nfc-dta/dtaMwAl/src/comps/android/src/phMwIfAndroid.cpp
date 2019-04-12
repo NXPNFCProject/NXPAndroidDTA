@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -3435,7 +3435,7 @@ MWIFSTATUS  phMwIf_LlcpRegisterServerConnOriented(void*                         
     /*Copy server handle received in NFA_P2P_REG_SERVER_EVT*/
     psP2pEventData = &(mwIfHdl->sLastQueueData.uEvtData.sP2pEvtData);
     mwIfHdl->sLlcpPrms.sConnOrientedServer.wServerHandle = psP2pEventData->reg_server.server_handle;
-    *ppvServerHandle = (void *)(((char*)0)+psP2pEventData->reg_server.server_handle);
+    *ppvServerHandle = INT_TO_PTR(psP2pEventData->reg_server.server_handle);
 
     /*Save Server registration params*/
     mwIfHdl->sLlcpPrms.sConnOrientedServer.sSrvrRegnPrms = *psLlcpSrvrPrms;
@@ -3475,7 +3475,7 @@ MWIFSTATUS  phMwIf_LlcpRegisterServerConnLess(void*                         pvMw
     /*Copy server handle received in NFA_P2P_REG_SERVER_EVT*/
     psP2pEventData = &(mwIfHdl->sLastQueueData.uEvtData.sP2pEvtData);
     mwIfHdl->sLlcpPrms.sConnLessServer.wServerHandle = psP2pEventData->reg_server.server_handle;
-    *ppvServerHandle = (void *)(((char*)0)+psP2pEventData->reg_server.server_handle);
+    *ppvServerHandle = INT_TO_PTR(psP2pEventData->reg_server.server_handle);
 
     /*Save Server registration params*/
     mwIfHdl->sLlcpPrms.sConnLessServer.sSrvrRegnPrms = *psLlcpSrvrPrms;
@@ -3530,7 +3530,7 @@ MWIFSTATUS phMwIf_LlcpConnOrientedClientConnect( void*                          
     /*Save client connect params*/
     psP2pEventData = &(mwIfHdl->sLastQueueData.uEvtData.sP2pEvtData);
     mwIfHdl->sLlcpPrms.sConnOrientedClient.wRemoteServerConnHandle = psP2pEventData->connected.conn_handle;
-    *ppvRemoteServerConnHandle = (void *)(((char*)0)+psP2pEventData->connected.conn_handle);
+    *ppvRemoteServerConnHandle = INT_TO_PTR(psP2pEventData->connected.conn_handle);
     mwIfHdl->sLlcpPrms.sConnOrientedClient.sLlcpClientConnectPrms = *psConnectPrms;
 
     ALOGD("MwIf>%s:exit",__FUNCTION__);
@@ -3615,7 +3615,7 @@ MWIFSTATUS phMwIf_LlcpConnOrientedRecvData(void*                     pvMwIfHandl
     }
 
     /*Check whether the connection is connection oriented or connection less*/
-    if(pvConnHandle == ((void *)(((char*)0)+mwIfHdl->sLlcpPrms.sConnOrientedServer.wRemoteClientConnHandle)))
+    if(pvConnHandle == INT_TO_PTR(mwIfHdl->sLlcpPrms.sConnOrientedServer.wRemoteClientConnHandle))
     {
         ALOGD("MwIf>Get P2P data");
         bNfaStatus = NFA_P2pReadData ((size_t)pvConnHandle,
@@ -3649,7 +3649,7 @@ MWIFSTATUS phMwIf_LlcpConnOrientedSendData(void*                     pvMwIfHandl
     }
 
     /*Check whether the connection is connection oriented or connection less*/
-    if(pvConnHandle == ((void *)(((char*)0)+mwIfHdl->sLlcpPrms.sConnOrientedClient.wRemoteServerConnHandle)))
+    if(pvConnHandle == INT_TO_PTR(mwIfHdl->sLlcpPrms.sConnOrientedClient.wRemoteServerConnHandle))
     {
         ALOGD("MwIf>Send P2P data");
         bNfaStatus = NFA_P2pSendData ((size_t)pvConnHandle,
@@ -3790,8 +3790,8 @@ void phMwIfi_NfaLlcpServerCallback(tNFA_P2P_EVT eP2pEvent,tNFA_P2P_EVT_DATA *psP
                 ALOGD("MwIf>LlcpSrvrCb: P2P Client Connection Request \n ");
                 eLlcpEvtType = PHMWIF_LLCP_SERVER_CONN_REQ_EVT;
                 mwIfHdl->sLlcpPrms.sConnOrientedServer.wRemoteClientConnHandle = psP2pEventData->conn_req.conn_handle;
-                sLlcpEvtInfo.sConnReq.wServerHandle  = (void *)(((char *)0)+psP2pEventData->conn_req.server_handle);
-                sLlcpEvtInfo.sConnReq.wConnHandle    = (void *)(((char *)0)+psP2pEventData->conn_req.conn_handle);
+                sLlcpEvtInfo.sConnReq.wServerHandle  = INT_TO_PTR(psP2pEventData->conn_req.server_handle);
+                sLlcpEvtInfo.sConnReq.wConnHandle    = INT_TO_PTR(psP2pEventData->conn_req.conn_handle);
                 sLlcpEvtInfo.sConnReq.bRemoteSap     = psP2pEventData->conn_req.remote_sap;
                 sLlcpEvtInfo.sConnReq.wRemoteMiu     = psP2pEventData->conn_req.remote_miu;
                 sLlcpEvtInfo.sConnReq.bRemoteRw      = psP2pEventData->conn_req.remote_rw;

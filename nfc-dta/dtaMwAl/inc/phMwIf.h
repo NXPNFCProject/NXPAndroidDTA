@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -63,6 +63,10 @@ typedef uint32_t MWIFSTATUS;
 #define PHMWIF_RFTECHNOLOGY_MASK_B    0x02    /**< NFC Technology B */
 #define PHMWIF_RFTECHNOLOGY_MASK_F    0x04    /**< NFC Technology F */
 typedef uint32_t phMwIf_RfTechMask_t;
+
+#ifndef INT_TO_PTR
+# define INT_TO_PTR(P) ((void*)(intptr_t)(P))
+#endif
 
 /** \ingroup grp_mwif_lib
     Type of NFC protocol being used*/

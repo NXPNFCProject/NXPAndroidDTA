@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#define DTALIB_VERSION_STR "NFCDTA_11.0C"
+#define DTALIB_VERSION_STR "NFCDTA_11.0D"
 #define DTALIBVERSION_MAJOR (0x11)
-#define DTALIBVERSION_MINOR (0x0C)
+#define DTALIBVERSION_MINOR (0x0D)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
