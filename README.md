@@ -1,13 +1,13 @@
 # NXPAndroidDTA
 
 
-####Git Repository
+#### Git Repository
 
 | DESCRIPTION        | CHECKOUT COMMAND          |
 | :-------------: |:-------------:| 
 | NXPAndroidDTA    |  git clone https://github.com/NXPNFCProject/NXPAndroidDTA.git |
 
-####Supported Android Versions
+#### Supported Android Versions
 
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
