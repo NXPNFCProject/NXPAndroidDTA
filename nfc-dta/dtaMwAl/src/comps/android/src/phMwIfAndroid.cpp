@@ -602,12 +602,13 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle)
         return MWIFSTATUS_INVALID_PARAM;
     }
 
+    phMwIfi_SetDtaMode(mwIfHdl);
+
     if(discCfgParams->discParams.dwListenP2P != P2P_DISABLED)
     {
         ALOGD ("MwIf> configuring Routing for P2P \n");
         phMwIfi_P2pRoutingConfigure(mwIfHandle, (phMwIf_eProtocolType_t)NFA_PROTOCOL_MASK_NFC_DEP);
     }
-
     /*** Since NFA_EeUpdateNow() function was called from different functions some of the routing was overwriting
      * So, removed all other calls and after all the routing configuration is done this function has been called to avoid overwrite ***/
     phMwIfi_RoutingUpdate(mwIfHdl);
@@ -642,9 +643,9 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle)
 }
 
 /**
-* start the discovery loop
+* Set DtaMode
 */
-MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle)
+MWIFSTATUS phMwIfi_SetDtaMode(void* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     uint32_t dtaMode = NFA_DTA_DEFAULT_MODE | NFA_DTA_CR8;
@@ -669,6 +670,18 @@ MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle)
     }
 
     NFA_EnableDtamode((tNFA_eDtaModes) dtaMode);
+
+    ALOGD ("%s: Exit\n",__FUNCTION__);
+    return MWIFSTATUS_SUCCESS;
+}
+
+/**
+* start the discovery loop
+*/
+MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle)
+{
+    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
+    ALOGD ("MwIf>%s:Enter\n",__FUNCTION__);
 
     gx_status = NFA_StartRfDiscovery();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not start RfDiscovery !! \n");
@@ -1101,7 +1114,6 @@ MWIFSTATUS phMwIfi_RoutingUpdate(void* mwIfHandle)
     ALOGD("MwIf> Going for EE Update Now\n");
     gx_status = NFA_EeUpdateNow();
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
-    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
             "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);

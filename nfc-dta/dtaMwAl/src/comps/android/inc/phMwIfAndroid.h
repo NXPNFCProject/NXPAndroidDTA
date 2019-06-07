@@ -365,6 +365,7 @@ void       phMwIfi_CopyActivationPrms(phMWIf_sActivatedEvtInfo_t* psActivationPr
                                              tNFC_ACTIVATE_DEVT*         psActivationNtfPrms);
 MWIFSTATUS phMwIfi_DiscoveryStop(void* mwIfHandle);
 MWIFSTATUS phMwIfi_DiscoveryStart(void* mwIfHandle);
+MWIFSTATUS phMwIfi_SetDtaMode(void* mwIfHandle);
 tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
                                              tNFA_TECHNOLOGY_MASK technologies_switch_on,
                                              tNFA_TECHNOLOGY_MASK technologies_switch_off,
