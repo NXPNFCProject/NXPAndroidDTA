@@ -46,7 +46,7 @@ extern "C" {
 
 phDtaLib_sHandle_t      g_DtaLibHdl;
 uint32_t gx_status = FALSE;   /**<(Check) change the type def.... also NFA_STATUS_FAILED */
-uint8_t gs_paramBuffer[400]; /**< Buffer for passing Data during operations */
+uint8_t gs_paramBuffer[600]; /**< Buffer for passing Data during operations */
 
 #define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
 #define P2P_DISABLED    0

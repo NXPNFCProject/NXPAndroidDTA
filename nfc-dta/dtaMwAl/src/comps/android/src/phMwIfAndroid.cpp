@@ -83,7 +83,7 @@ EE events*/
 #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
 #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
 
-static uint8_t gs_paramBuffer[400];/**< Buffer for passing Data during operations */
+static uint8_t gs_paramBuffer[600];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
 volatile tNFA_STATUS gx_status = NFA_STATUS_FAILED;
 
