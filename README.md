@@ -38,4 +38,5 @@
 | android-p-preview 2               |  11.0D (SN100x) | NFC_NCIHALx_AR2000.09.00.19_OpnSrc | DTA 11.0D |
 | aosp-master                       |  11.0D (SN100x) | NFC_AR_00_2000_10.00.04_OpnSrc | DTA 11.0D |
 | aosp-master                       | 11.0D (SN100x)   11.0D (PN553/PN557/PN80T/PN81T) | NFC_AR_00_6000_10.00.06_OpnSrc NFC_AR_00_18C0_10.01.00_OpnSrc | DTA 11.0D |
+| aosp-master                       | 11.0F (PN553/PN557/PN80T/PN81T) | NFC_AR_00_18C0_10.02.00_OpnSrc | DTA 11.0F |
 
