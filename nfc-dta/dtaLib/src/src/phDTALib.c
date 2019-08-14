@@ -462,6 +462,7 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
         (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL))
     {
         dtaLibHdl->sConfigPrms.bEnableLlcp = TRUE;
+        dtaLibHdl->sConfigPrms.bPollBitRateTypeF = (PHMWIF_NCI_BITRATE_212 | PHMWIF_NCI_BITRATE_424);
     }
     /*Configure API to configure the FW*/
     if(phMwIf_ConfigParams(dtaLibHdl->mwIfHdl, &dtaLibHdl->sConfigPrms) != MWIFSTATUS_SUCCESS )

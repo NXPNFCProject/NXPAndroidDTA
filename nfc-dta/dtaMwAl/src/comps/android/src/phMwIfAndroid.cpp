@@ -280,30 +280,10 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     }
 
-    if((sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424) && (sConfigParams->bEnableAnalog != TRUE))
+    if(sConfigParams->bEnableAnalog == TRUE || sConfigParams->bEnableLlcp == TRUE)
     {
-        /*Configure TypeF Polling Bitrate to 424 for pattern 0x06,0x08,0x0A as per DTA Spec*/
-        abConfigIDData[0] = 0x02;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
-    }
-    else
-    {
-        abConfigIDData[0] = 0x01;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 0x01, abConfigIDData);
-    }
-    if(sConfigParams->bNfcdepPollBitRateHigh == TRUE)
-    {
-        abConfigIDData[0] = 0x00;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 1, abConfigIDData);
-    }
-    else
-    {
-        abConfigIDData[0] = 0x01;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 0x01, abConfigIDData);
-    }
-    if(sConfigParams->bEnableAnalog == TRUE)
-    {
-        if((sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_212) && (sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424))
+        if((sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_212)
+           && (sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424))
         {
             /*For Analog Mode, Enable Poll[A,B,F(212&424)] & Listen[F-P2P,CE-UICC Type A&B].
              * Only Do bitrate configuration using Setconfig in this block.
@@ -314,6 +294,30 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
             phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
         }
     }
+    else if((sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424)
+            && (sConfigParams->bEnableAnalog != TRUE))
+    {
+        /*Configure TypeF Polling Bitrate to 424 for pattern 0x06,0x08,0x0A as per DTA Spec*/
+        abConfigIDData[0] = 0x02;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
+    }
+    else
+    {
+        abConfigIDData[0] = 0x01;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 0x01, abConfigIDData);
+    }
+
+  if(sConfigParams->bNfcdepPollBitRateHigh == TRUE)
+    {
+        abConfigIDData[0] = 0x00;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 1, abConfigIDData);
+    }
+    else
+    {
+        abConfigIDData[0] = 0x01;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 0x01, abConfigIDData);
+    }
+
     if(sConfigParams->bEnableLlcp == TRUE)
     {
         abConfigIDData[0] = 0x0A;
