@@ -44,6 +44,7 @@
 #endif
 
 #include "nci_defs.h"
+#include "nfc_target.h"
 #include <nfa_api.h>
 #include <nfa_rw_api.h>
 #include <nfa_snep_api.h>
@@ -4323,12 +4324,21 @@ MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
                                 phMWIf_eDeactivateType_t eDeactType)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
+    uint8_t RW_TAG_SLP_REQ[] = {0x50, 0x00};
+
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     ALOGD("MwIf>eDeactType = %d",eDeactType);
     if(eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF)
     {
         ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF");
-        gx_status = NFA_Deactivate(TRUE);
+        if((gx_device.activate_ntf.protocol == NFC_PROTOCOL_T2T) &&
+        (NFA_GetNCIVersion() >= NCI_VERSION_2_0)) {
+            gx_status = NFA_SendRawFrame((uint8_t *)RW_TAG_SLP_REQ,sizeof(RW_TAG_SLP_REQ),0);
+            ALOGD("MwIf>%s:T2T Sleep Request",__FUNCTION__);
+        }
+        else {
+            gx_status = NFA_Deactivate(TRUE);
+        }
     }
     else if(eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY || eDeactType == PHMWIF_DEACTIVATE_TYPE_IDLE)
     {
