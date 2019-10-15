@@ -56,9 +56,13 @@ static uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLC
                                                               0x02,0x02,0x07,0xFE, /**< MIUX TLV*/
                                                               0x03,0x02,0x00,0x03, /**< WKS TLV*/
                                                               0x04,0x01,0x64}; /**< LTO TLV*/
-static uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,0x01,0x01,0x12,0x03,0x02,0x00,0x03,0x04,0x01,0x64};
+static uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,     /**< LLCP magic bytes */
+                                                     0x01,0x01,0x12,     /**< major, minor Version TLV*/
+                                                     0x02,0x02,0x07,0xFE,/**< MIUX TLV*/
+                                                     0x03,0x02,0x00,0x03,/**< WKS TLV*/
+                                                     0x04,0x01,0x64};    /**< LTO TLV*/
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_INITIATOR = 0x11;
-static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_TARGET = 0x0D;
+static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_TARGET = 0x11;
 
 static void      phDtaLibi_CbMsgHandleThrd(void *param);
 static void*     phDtaLibi_MemAllocCb(void* memHdl, uint32_t size);
