@@ -138,5 +138,10 @@ ifeq ($(FLAG_NXP_HAL_EXTNS), true)
     LOCAL_SHARED_LIBRARIES += vendor.nxp.nxpnfc@1.0 \
                               android.hardware.nfc@1.0
 endif
+
+ifeq ($(NXPNFC_11_TRANSCEIVE_CALLBACK_SUPPORT), true)
+   LOCAL_SHARED_LIBRARIES += vendor.nxp.nxpnfc@1.1
+endif
+
 include $(BUILD_SHARED_LIBRARY)
 

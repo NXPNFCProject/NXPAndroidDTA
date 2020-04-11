@@ -35,9 +35,9 @@ else
 LOCAL_MULTILIB := 32
 endif
 
-$(warning PLATFORM_SDK_VERSION is $(PLATFORM_SDK_VERSION))
+$(info PLATFORM_SDK_VERSION is $(PLATFORM_SDK_VERSION))
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 25; echo $$?),0)
-$(warning "Building for Android O Release or Later")
+$(info "Building for Android O Release or Later")
 LOCAL_SRC_FILES := $(call all-java-files-under, src/com) $/../jni/PhNXPJniHelper.java  $/src/o/PhCustomSNEPRTD.java
 else ifeq ($(shell test $(PLATFORM_SDK_VERSION) -gt 20; echo $$?),0)
 $(warning "Building for Android L / M / N Release")

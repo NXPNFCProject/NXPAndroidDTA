@@ -369,7 +369,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     else
         abConfigIDData[0] = 0x02;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_PROTOCOL_TYPE, 0x01, abConfigIDData);
-    abConfigIDData[0] = 0x02;
+    abConfigIDData[0] = 0x00;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LI_BIT_RATE, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x01;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_RF_FIELD_INFO, 0x01, abConfigIDData);

@@ -19,6 +19,7 @@ $(info "NXP-NFC-DTA> Set DTA macros..")
 ANDROID_VER := P
 NCI_VER     := 2_0
 SN100x      := false
+NXPNFC_11_TRANSCEIVE_CALLBACK_SUPPORT := false
 
 # Build DTA for Android P Devices
 ifeq ($(ANDROID_VER),P)

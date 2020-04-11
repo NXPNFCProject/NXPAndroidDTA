@@ -45,5 +45,9 @@ Configuration is as explained below:
             NCI_VER     := 1_0
             SN100x      := false
 
-Note: For AOSP complaint MW build, AOSP_MASTER to be set to TRUE
+Note:
+
+1) For AOSP complaint MW build, AOSP_MASTER to be set to TRUE
+2) By default the DTA build with vendor.nxp.nxpnfc@v1.0. For MW which supports
+   vendor.nxp.nxpnfc@v1.1 then set NXPNFC_11_TRANSCEIVE_CALLBACK_SUPPORT to TRUE.
 ________________________________________________________________________
