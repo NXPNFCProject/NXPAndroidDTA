@@ -1,0 +1,100 @@
+/*
+  Copyright 2020 NXP
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+cc_library_shared {
+    name: "libosal",
+
+    arch: {
+        arm: {
+            instruction_set: "arm",
+        },
+    },
+
+    shared_libs: [
+        "libcutils",
+        "liblog",
+        "libdl",
+        "libc",
+    ],
+
+    cflags: [
+        "-DBUILDCFG=1",
+        "-Wall",
+        "-Werror",
+        "-Wimplicit-fallthrough",
+    ],
+
+    include_dirs: [
+        "system/nfc-dta/dtaPlatform/phInfra/inc",
+        "system/nfc-dta/dtaPlatform/phDtaOsal/src/comps/android/inc",
+        "system/nfc-dta/dtaPlatform/phDtaOsal/inc",
+        "system/nfc/SN100x/src/include",
+        "system/nfc/SN100x/src/nfa/include",
+        "system/nfc/SN100x/src/nfc/include",
+        "system/nfc/SN100x/src/gki/ulinux",
+        "system/nfc/SN100x/src/gki/common",
+        "system/nfc/SN100x/utils/include",
+    ],
+
+    srcs: [
+        ":phDtaLogSrc",
+        ":phDtaInfraSrc",
+        "src/*.c",
+    ],
+}
+
+//  Platform or chip specific build
+//cc_library_shared {
+//    name: "libosal_nq",
+
+//    arch: {
+//        arm: {
+//            instruction_set: "arm",
+//        },
+//    },
+
+//    shared_libs: [
+//        "libcutils",
+//        "liblog",
+//        "libdl",
+//        "libc",
+//    ],
+
+//    cflags: [
+//        "-DBUILDCFG=1",
+//        "-Wall",
+//        "-Werror",
+//        "-Wimplicit-fallthrough",
+//    ],
+
+//    include_dirs: [
+//        "system/nfc-dta/dtaPlatform/phInfra/inc",
+//        "system/nfc-dta/dtaPlatform/phDtaOsal/src/comps/android/inc",
+//        "system/nfc-dta/dtaPlatform/phDtaOsal/inc",
+//        "system/nfc/src/include",
+//        "system/nfc/src/nfa/include",
+//        "system/nfc/src/nfc/include",
+//        "system/nfc/src/gki/ulinux",
+//        "system/nfc/src/gki/common",
+//        "system/nfc/utils/include",
+//    ],
+
+//    srcs: [
+//        ":phDtaLogSrc",
+//        ":phDtaInfraSrc",
+//        "src/*.c",
+//    ],
+//}

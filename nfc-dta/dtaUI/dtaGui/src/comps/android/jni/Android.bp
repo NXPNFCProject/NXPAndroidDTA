@@ -1,0 +1,74 @@
+/*
+  Copyright 2020 NXP
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+*/
+
+cc_library_shared {
+    name: "libdta_jni",
+
+    arch: {
+        arm: {
+            instruction_set: "arm",
+        },
+    },
+
+    include_dirs: [
+        "system/nfc-dta/dtaUI/dtaGui/src/comps/android/jni",
+        "system/nfc-dta/dtaLib/src/inc",
+        "system/nfc-dta/dtaLib/inc",
+        "system/nfc-dta/dtaPlatform/phDtaOsal/inc",
+        "system/nfc-dta/dtaPlatform/phDtaOsal/src/comps/android/inc",
+        "system/nfc-dta/dtaMwAl/inc/",
+        "system/nfc/SN100x/src/gki/common/",
+        "system/nfc/SN100x/src/gki/ulinux/",
+    ],
+
+    srcs: ["*.cpp"],
+
+    shared_libs: [
+        "libdta",
+        "libcutils",
+        "libosal",
+    ],
+}
+
+//  Platform or chip specific build
+//cc_library_shared {
+//    name: "libdta_jni_nq",
+
+//    arch: {
+//        arm: {
+//            instruction_set: "arm",
+//        },
+//    },
+
+//    include_dirs: [
+//        "system/nfc-dta/dtaUI/dtaGui/src/comps/android/jni",
+//        "system/nfc-dta/dtaLib/src/inc",
+//        "system/nfc-dta/dtaLib/inc",
+//        "system/nfc-dta/dtaPlatform/phDtaOsal/inc",
+//        "system/nfc-dta/dtaPlatform/phDtaOsal/src/comps/android/inc",
+//        "system/nfc-dta/dtaMwAl/inc/",
+//        "system/nfc/src/gki/common/",
+//        "system/nfc/src/gki/ulinux/",
+//    ],
+
+//    srcs: ["*.cpp"],
+
+//    shared_libs: [
+//        "libdta_nq",
+//        "libcutils",
+//        "libosal_nq",
+//    ],
+//}

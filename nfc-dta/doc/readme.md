@@ -1,53 +1,8 @@
+The ReadMe explains about waht DTA build varients will be build by default and
+what changes needed to build DTA for other than default varients.
 
-########################################################################
+1) By default the DTA build for SNxyz varients with Android-10 / 11.
 
-1. File to be Modified is "dtaConfig.mk"
-
-2. By default release package is configured to build for PN557/PN81T
-   with ANDROID - P.
-
-3. Refer to the below table for furhter details.
-
-4. How to read the table: Check Android Version, set the flags based on
-   the CHIP (PN81T / PN80T)
-########################################################################
-
-________________________________________________________________________
-Configuration is as explained below:
-
-     1. To Build DTA for Android P & NCI v2.0 for SN100x
-            ANDROID_VER := P
-            NCI_VER     := 2_0
-            SN100x      := true
-
-     2. To Build DTA for Android P & NCI v2.0
-            ANDROID_VER := P
-            NCI_VER     := 2_0
-            SN100x      := false
-
-     3. To Build DTA for Android P & NCI v1.0
-            ANDROID_VER := P
-            NCI_VER     := 1_0
-            SN100x      := false
-
-     4. To Build DTA for Android O & NCI v2.0
-            ANDROID_VER := O
-            NCI_VER     := 2_0
-            SN100x      := false
-
-     5. To Build DTA for Android O & NCI v1.0
-            ANDROID_VER := O
-            NCI_VER     := 1_0
-            SN100x      := false
-
-     6. To Build DTA for Android L/M/N & NCI v1.0
-            ANDROID_VER := L or M or N
-            NCI_VER     := 1_0
-            SN100x      := false
-
-Note:
-
-1) For AOSP complaint MW build, AOSP_MASTER to be set to TRUE
-2) By default the DTA build with vendor.nxp.nxpnfc@v1.0. For MW which supports
-   vendor.nxp.nxpnfc@v1.1 then set NXPNFC_11_TRANSCEIVE_CALLBACK_SUPPORT to TRUE.
-________________________________________________________________________
+2) By default the DTA build with vendor.nxp.nxpnfc@v2.0. For MW which supports
+   vendor.nxp.nxpnfclegacy@v1.0 & vendor.nxp.nxpnfc@v1.1 need to build with the
+corresponding vendor versions.

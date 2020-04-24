@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2020 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -313,6 +313,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>EnableSnep = ",enableSnep);
 
     dtaJNIHdl->jObject = (jobject)env->NewGlobalRef(phDtaLibsDiscParamst);
+#if 0
     jclass cls = (env)->GetObjectClass(dtaJNIHdl->jObject);
     dtaJNIHdl->jmethodID = env->GetMethodID(cls,"phDtaUIi_EvtCb","(II)V");
     if (dtaJNIHdl->jmethodID == 0)
@@ -320,6 +321,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
         phOsal_LogDebug((const uint8_t*)"DTAJni> DTA status failed error in GetMethodID\n");
         return DTASTATUS_FAILED;
     }
+#endif
 
     phOsal_LogDebug((const uint8_t*)"DTAJni> Calling Enable Discovery\n");
     memset(&discParams,0,sizeof(phDtaLib_sDiscParams_t));
@@ -434,7 +436,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibGetIUTInfo
 void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_sEvtData_t  *sEvtData)
 {
     phDtaJNI_sHandle_t *dtaJNIHdl = (phDtaJNI_sHandle_t *)dtaApplHdl;
-    int getEnvStat;
+    //int getEnvStat;
     LOG_FUNC_ENTRY;
     if((dtaJNIHdl == NULL) || (dtaJNIHdl->jVm == NULL))
     {
@@ -445,6 +447,7 @@ void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_s
     switch(eEvtType)
     {
         case PHDTALIB_TEST_CASE_EXEC_STARTED:
+        #if 0
             getEnvStat = (dtaJNIHdl->jVm)->GetEnv((void **)&(dtaJNIHdl->jniEnv), JNI_VERSION_1_6);
             if (getEnvStat == JNI_EDETACHED) {
                 phOsal_LogDebug((const uint8_t*)"DTAJni>:GetEnv: not attached\n");
@@ -458,16 +461,17 @@ void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_s
             else if (getEnvStat == JNI_EVERSION) {
                 phOsal_LogDebug((const uint8_t*)"DTAJni>:GetEnv: version not supported\n");
             }
+        #endif
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_CASE_EXEC_STARTED",(const uint8_t*)__FUNCTION__);
-            (dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_STARTED, 0);
+            //(dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_STARTED, 0);
         break;
         case PHDTALIB_TEST_CASE_EXEC_COMPLETED:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_CASE_EXEC_COMPLETED",(const uint8_t*)__FUNCTION__);
-            (dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_COMPLETED, 0);
+            //(dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_COMPLETED, 0);
         break;
         case PHDTALIB_TEST_EXEC_DEINIT:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_EXEC_DEINIT thread detaching",(const uint8_t*)__FUNCTION__);
-            (dtaJNIHdl->jVm)->DetachCurrentThread();
+            //(dtaJNIHdl->jVm)->DetachCurrentThread();
         break;
         default:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:Invalid event type",(const uint8_t*)__FUNCTION__);

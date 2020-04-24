@@ -1,5 +1,6 @@
 /*
 * Copyright (C) 2015-2019 NXP Semiconductors
+* Copyright 2020 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -27,24 +28,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <semaphore.h>
-/* #include <sys/time.h> */
 #include <sys/resource.h>
-
-/* #include <utils/Log.h> */
 #include "data_types.h"
-
-#if(ANDROID_P == TRUE)
 #include "logging.h"
-#else
-#if(ANDROID_O == TRUE)
-#include "_OverrideLog.h"
-#else
-#include "OverrideLog.h"
-#endif
-#endif
 
-#include "nci_defs.h"
-#include "nfc_target.h"
+#include <buildcfg.h>
+#include <nci_defs.h>
+#include <nfc_target.h>
 #include <nfa_api.h>
 #include <nfa_rw_api.h>
 #include <nfa_snep_api.h>
@@ -53,6 +43,7 @@
 #include <nfa_hci_api.h>
 #include <nfa_p2p_api.h>
 #include <ndef_utils.h>
+#include <nfc_config.h>
 #include "dlfcn.h"
 
 #include "phDTAOSAL.h"
@@ -84,16 +75,14 @@ EE events*/
 #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
 #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
 
+static uint8_t gs_nciVersion = 0;   /**< To assign NCI version */
 static uint8_t gs_paramBuffer[600];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
 volatile tNFA_STATUS gx_status = NFA_STATUS_FAILED;
 
 /**< Secure Element testing variables */
-#if (NCI_2_0 == TRUE)
-    tNFA_HANDLE NfaUiccHandle = 0x480;
-#else
-    tNFA_HANDLE NfaUiccHandle = 0x402;
-#endif
+tNFA_HANDLE NfaUiccHandle = 0x480;
+tNFA_HANDLE NfaUiccHandle_NCI_1_0 = 0x402;
 tNFA_HANDLE NfaEseHandle  = 0x4C0;
 tNFA_HANDLE NfaAidHandle;
 static uint8_t Pgu_event; /**< To indicate the Last event that occurred from any Call Back */
@@ -175,7 +164,7 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
                                        (void *)mwIfHdl);
     if( dwOsalStatus != OSALSTATUS_SUCCESS)
     {
-            ALOGD("MwIf>%s:Thread Create Failed1",__FUNCTION__);
+        ALOGD("MwIf>%s:Thread Create Failed1",__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
 
@@ -188,6 +177,11 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
         ALOGE("MwIf>%s:Routing initialization Failed",__FUNCTION__);
     }
     *mwIfHandle = (void*)mwIfHdl;
+    gs_nciVersion = NFA_GetNCIVersion();
+    if(gs_nciVersion == NCI_VERSION_1_0)
+    {
+        NfaUiccHandle = NfaUiccHandle_NCI_1_0;
+    }
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -270,13 +264,13 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         /*FIXME:For PN548 only: CON_DEVICES_LIMIT to be set to 01 and then reset to 03 after Deinit*/
         abConfigIDData[0] = sConfigParams->dwConnDeviceLimit;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT_ENABLE, 0x01, abConfigIDData);
-
-#if (NCI_2_0 == TRUE)
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PA_ENABLE, 0x01, abConfigIDData); /* To enable PA devices limit */
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PB_ENABLE, 0x01, abConfigIDData); /* To enable PB devices limit */
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PF_ENABLE, 0x01, abConfigIDData); /* To enable PF devices limit */
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PV_ENABLE, 0x01, abConfigIDData); /* To enable PV devices limit */
-#endif
+        if(gs_nciVersion >= NCI_VERSION_2_0)
+        {
+            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PA_ENABLE, 0x01, abConfigIDData); /* To enable PA devices limit */
+            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PB_ENABLE, 0x01, abConfigIDData); /* To enable PB devices limit */
+            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PF_ENABLE, 0x01, abConfigIDData); /* To enable PF devices limit */
+            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICE_PV_ENABLE, 0x01, abConfigIDData); /* To enable PV devices limit */
+        }
         abConfigIDData[0] = sConfigParams->dwTimeSlotNumber;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_FELICA_TSN_CFG, 0x01, abConfigIDData);
     }
@@ -336,12 +330,11 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_TAG_DETECTOR_CFG, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
-    #if ((NFC_NXP_CHIP_TYPE == PN547C2) || (NFC_NXP_CHIP_TYPE == PN548AD) || \
-         (NFC_NXP_CHIP_TYPE == PN551) || (NFC_NXP_CHIP_TYPE == PN553))
+    if(gs_nciVersion == NCI_VERSION_1_0)
+    {
         abConfigIDData[0] = 0x00;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_LISTEN_PROFILE_SEL_CFG, 0x01, abConfigIDData);
-    #endif
-
+    }
     ALOGD("MwIf>%s:Calling MwIf SetConfig ",__FUNCTION__);
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_ATR_REQ_GEN_BYTES_CFG, 0, abConfigIDData);//ATR_REQ General bytes
@@ -1009,22 +1002,18 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
     mwIfHdl->systemCode = 16388;
 
     /*Register Callback for NFCEE Events*/
-#if(NCI_2_0 == TRUE)
-    mwIfHdl->t3tPMM[0] = 0xFF;
-    mwIfHdl->t3tPMM[1] = 0xFF;
-    mwIfHdl->t3tPMM[2] = 0x49;
-    mwIfHdl->t3tPMM[3] = 0x93;
-    mwIfHdl->t3tPMM[4] = 0xFF;
-    mwIfHdl->t3tPMM[5] = 0xFF;
-    mwIfHdl->t3tPMM[6] = 0xFF;
-    mwIfHdl->t3tPMM[7] = 0xFF;
-#endif
-
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE)
+    if(gs_nciVersion >= NCI_VERSION_2_0)
+    {
+        mwIfHdl->t3tPMM[0] = 0xFF;
+        mwIfHdl->t3tPMM[1] = 0xFF;
+        mwIfHdl->t3tPMM[2] = 0x49;
+        mwIfHdl->t3tPMM[3] = 0x93;
+        mwIfHdl->t3tPMM[4] = 0xFF;
+        mwIfHdl->t3tPMM[5] = 0xFF;
+        mwIfHdl->t3tPMM[6] = 0xFF;
+        mwIfHdl->t3tPMM[7] = 0xFF;
+    }
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, mwIfHdl->t3tPMM ,phMwIfi_NfaConnCallback);
-#else
-    gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
-#endif
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf>ERROR EE Register !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT,5000,
             "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
@@ -2041,11 +2030,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
 /*DATA chaining needs to be handled by Applicaion from L-release onwards
  * In KK release and before, it was handled in middleware*/
 #ifdef APP_HANDLE_DATA_CHAINING
-                        #if(ANDROID_P == TRUE)
                         if(px_data->status == NFC_STATUS_CONTINUE)
-                        #else
-                        if(px_data->status == NFA_STATUS_CONTINUE)
-                        #endif
                         {/*If its a chained Data dont publish the event. Wait for the last Data event*/
                             ALOGD("MwIf>Chained Data of Size=%d, Wait for last Data event before publishing\n",
                                     px_data->data.len);
@@ -2065,7 +2050,6 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                         }
                     }
                 }
-
             }
             break;
             case NFA_SELECT_CPLT_EVT:
@@ -2357,19 +2341,10 @@ void phMwIfi_PrintNfaEeEventCode (tNFA_EE_EVT xevent)
         case NFA_EE_DISCOVER_REQ_EVT:
             ALOGD ("NFA_EE_DISCOVER_REQ_EVT\n");
         break;
-        #if(ANDROID_P == FALSE)
-        case NFA_EE_ROUT_ERR_EVT:
-            ALOGD ("NFA_EE_ROUT_ERR_EVT\n");
-        break;
-        #endif
         case NFA_EE_NO_MEM_ERR_EVT:
             ALOGD ("NFA_EE_NO_MEM_ERR_EVT\n");
         break;
-        #if(ANDROID_P == FALSE)
-        case NFA_EE_NO_CB_ERR_EVT:
-            ALOGD ("NFA_EE_NO_CB_ERR_EVT\n");
-        break;
-        #endif
+
         default:
             ALOGD ("Unknown event\n");
         break;
@@ -2436,25 +2411,9 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_POLL_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_F_ACTIVE\n");
         break;
-#if((AOSP_MASTER_COMPILATION_SUPPORT == FALSE) && \
-        (ANDROID_O == TRUE || ANDROID_P == TRUE))
         case NFC_DISCOVERY_TYPE_POLL_V:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_V\n");
         break;
-#elif(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
-        case NFC_DISCOVERY_TYPE_POLL_ISO15693:
-            ALOGD ("NFC_DISCOVERY_TYPE_POLL_ISO15693\n");
-        break;
-#endif
-/*
-        case NFC_DISCOVERY_TYPE_POLL_B_PRIME:
-            ALOGD ("NFC_DISCOVERY_TYPE_POLL_B_PRIME\n");
-        break;
-
-        case NFC_DISCOVERY_TYPE_POLL_KOVIO:
-            ALOGD ("NFC_DISCOVERY_TYPE_POLL_KOVIO\n");
-        break;
-*/
         case NFC_DISCOVERY_TYPE_LISTEN_A:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_A\n");
         break;
@@ -2470,14 +2429,9 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_LISTEN_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_F_ACTIVE\n");
         break;
-/*
         case NFC_DISCOVERY_TYPE_LISTEN_ISO15693:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_ISO15693\n");
         break;
-        case NFC_DISCOVERY_TYPE_LISTEN_B_PRIME:
-            ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_B_PRIME\n");
-        break;
-*/
         default:
             ALOGD ("Unknown discovery type\n");
         break;
@@ -2562,36 +2516,6 @@ void phMwIfi_PrintNfaStatusCode(tNFA_STATUS xstatus) {
     case NFA_STATUS_REJECTED:
        ALOGD("NFA_STATUS_REJECTED\n");
        break;
-    #if(ANDROID_P == FALSE)
-    case NFA_STATUS_MSG_CORRUPTED:
-       ALOGD("NFA_STATUS_MSG_CORRUPTED\n");
-       break;
-    case NFA_STATUS_NOT_INITIALIZED:
-       ALOGD("NFA_STATUS_NOT_INITIALIZED\n");
-       break;
-    case NFA_STATUS_SYNTAX_ERROR :
-       ALOGD("NFA_STATUS_SYNTAX_ERROR\n");
-       break;
-    case NFA_STATUS_UNKNOWN_OID:
-        ALOGD("NFA_STATUS_UNKNOWN_OID\n");
-        break;
-    case NFA_STATUS_MSG_SIZE_TOO_BIG:
-        ALOGD("NFA_STATUS_MSG_SIZE_TOO_BIG\n");
-        break;
-    case NFA_STATUS_ACTIVATION_FAILED:
-        ALOGD("NFA_STATUS_ACTIVATION_FAILED\n");
-        break;
-    case NFA_STATUS_TEAR_DOWN:
-        ALOGD("NFA_STATUS_TEAR_DOWN\n");
-        break;
-    case NFA_STATUS_RF_TRANSMISSION_ERR:
-        ALOGD("NFA_STATUS_RF_TRANSMISSION_ERR\n");
-        break;
-    case NFA_STATUS_RF_PROTOCOL_ERR:
-        ALOGD("NFA_STATUS_RF_PROTOCOL_ERR\n");
-        break;
-
-    #endif
     case NFA_STATUS_BUFFER_FULL:
        ALOGD("NFA_STATUS_BUFFER_FULL\n");
        break;
@@ -2613,38 +2537,6 @@ void phMwIfi_PrintNfaStatusCode(tNFA_STATUS xstatus) {
     case NFA_STATUS_TIMEOUT:
         ALOGD("NFA_STATUS_TIMEOUT\n");
         break;
-    #if(ANDROID_P == FALSE)
-    case NFA_STATUS_EE_INTF_ACTIVE_FAIL:
-        ALOGD("NFA_STATUS_EE_INTF_ACTIVE_FAIL\n");
-        break;
-    case NFA_STATUS_EE_TRANSMISSION_ERR:
-        ALOGD("NFA_STATUS_EE_TRANSMISSION_ERR\n");
-        break;
-    case NFA_STATUS_EE_PROTOCOL_ERR:
-        ALOGD("NFA_STATUS_EE_PROTOCOL_ERR\n");
-        break;
-    case NFA_STATUS_EE_TIMEOUT:
-        ALOGD("NFA_STATUS_EE_TIMEOUT\n");
-        break;
-    case NFA_STATUS_CMD_STARTED:
-        ALOGD("NFA_STATUS_CMD_STARTED\n");
-        break;
-    case NFA_STATUS_HW_TIMEOUT:
-        ALOGD("NFA_STATUS_HW_TIMEOUTF\n");
-        break;
-    case NFA_STATUS_CONTINUE:
-        ALOGD("NFA_STATUS_CONTINUE\n");
-        break;
-    case NFA_STATUS_REFUSED:
-        ALOGD("NFA_STATUS_REFUSED\n");
-        break;
-    case NFA_STATUS_BAD_RESP:
-        ALOGD("NFA_STATUS_BAD_RESP\n");
-        break;
-    case NFA_STATUS_CMD_NOT_CMPLTD:
-        ALOGD("NCA_STATUS_CMD_NOT_CMPLTD\n");
-        break;
-    #endif
     case NFA_STATUS_NO_BUFFERS:
         ALOGD("NFA_STATUS_NO_BUFFERS\n");
         break;
@@ -2929,13 +2821,16 @@ tNFA_STATUS phMwIfi_EeGetInfo(phMwIf_sHandle_t *mwIfHdl,
     /*Check if the EE present are valid*/
     for (i=0; i<numNfcEE; i++)
     {
-    #if(NCI_2_0 == TRUE)
-        if (mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS)
-    #else
-        if ((mwIfHdl->infoNfcEE[i].num_interface != 0) && (mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS))
-    #endif
+        if(gs_nciVersion >= NCI_VERSION_2_0)
         {
-            numNfcEEPresent++;
+            if(mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS)
+                numNfcEEPresent++;
+        }
+        else
+        {
+            if ((mwIfHdl->infoNfcEE[i].num_interface != 0) &&
+                (mwIfHdl->infoNfcEE[i].ee_interface[0] != NCI_NFCEE_INTERFACE_HCI_ACCESS))
+               numNfcEEPresent++;
         }
     }
     ALOGE("numNfcEEPresent = %d\n",numNfcEEPresent);
@@ -2944,7 +2839,10 @@ tNFA_STATUS phMwIfi_EeGetInfo(phMwIf_sHandle_t *mwIfHdl,
         ALOGE("NO Valid SE found\n");
         return NFA_STATUS_FAILED;
     }
-
+    if(gs_nciVersion == NCI_VERSION_1_0)
+    {
+        NfaUiccHandle = NfaUiccHandle_NCI_1_0;
+    }
     /*Make sure EE is active*/
     for(i=0; i<=numNfcEEPresent; i++)
     {
@@ -3096,19 +2994,19 @@ MWIFSTATUS phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle)
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LB_SFGI, 1, gs_paramBuffer);
     /*DID Support for HCE Type B*/
     /*Incase of NCI2.0, upper nibble contains FWI*/
-#if (NCI_2_0 == TRUE)
-    gs_paramBuffer[0] = 0x71;
-#else
-    gs_paramBuffer[0] = 0x01;
-#endif
+    if(gs_nciVersion >= NCI_VERSION_2_0)
+        gs_paramBuffer[0] = 0x71;
+    else
+        gs_paramBuffer[0] = 0x01;
+
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LB_ADC_FO, 1, gs_paramBuffer);
     gs_paramBuffer[0] = 0x00;
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_LI_BIT_RATE, 1, gs_paramBuffer);
-#if (NCI_2_0 == TRUE)
-    gs_paramBuffer[0] = 0x81;
-#else
-    gs_paramBuffer[0] = 0x08;
-#endif
+    if(gs_nciVersion >= NCI_VERSION_2_0)
+        gs_paramBuffer[0] = 0x81;
+    else
+        gs_paramBuffer[0] = 0x08;
+
     phMwIfi_SetConfig(mwIfHandle,NCI_PARAM_ID_FWI, 1, gs_paramBuffer);
     ALOGE("MwIf> TypeAB set configs done !!\n");
     return NFA_STATUS_OK;
@@ -4332,7 +4230,7 @@ MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
     {
         ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF");
         if((gx_device.activate_ntf.protocol == NFC_PROTOCOL_T2T) &&
-        (NFA_GetNCIVersion() >= NCI_VERSION_2_0)) {
+        (gs_nciVersion >= NCI_VERSION_2_0)) {
             gx_status = NFA_SendRawFrame((uint8_t *)RW_TAG_SLP_REQ,sizeof(RW_TAG_SLP_REQ),0);
             ALOGD("MwIf>%s:T2T Sleep Request",__FUNCTION__);
         }
@@ -4355,19 +4253,11 @@ MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
 MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
                                      uint8_t cmd_params_len,
                                      uint8_t *p_cmd_params,
-#if (ANDROID_O == TRUE)
-                                     tNFA_VSC_CBACK *p_cback)
-#else
                                      tNFA_NXP_NCI_RSP_CBACK *p_cback)
-#endif
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-#if (ANDROID_O == TRUE || ANDROID_P == TRUE)
     gx_status = NFA_SendRawVsCommand (cmd_params_len, p_cmd_params, p_cback);
-#else
-    gx_status = NFA_SendNxpNciCommand (cmd_params_len, p_cmd_params, p_cback);
-#endif
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status, "MwIf> Error Could not send NxpNciCommand");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_NXPCFG_EVT_OFFSET+NCI_RSP_EVT),5000, "MwIf> Error in SendNxpNciCommand (SEM) !! \n",&(mwIfHdl->sLastQueueData));
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
@@ -4416,19 +4306,10 @@ tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
                                              tNFA_TECHNOLOGY_MASK technologies_switch_off,
                                              tNFA_TECHNOLOGY_MASK technologies_battery_off)
 {
-#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE && ANDROID_P == FALSE)
-     return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
-                                          technologies_switch_off,technologies_battery_off
-                                          );
-#else
-     return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
-                                          technologies_switch_off,technologies_battery_off,
-                                         0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE)
-                                         ,0x0
-#endif
-                                         );
-#endif
+
+    return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
+                                      technologies_switch_off,technologies_battery_off,
+                                     0x0, 0x0, 0x0);
 }
 
 /*Wrapper for MW EE Proto Routing API*/
@@ -4437,19 +4318,9 @@ tNFA_STATUS phMwIfi_EeSetDefaultProtoRouting (tNFA_HANDLE         ee_handle,
                                               tNFA_PROTOCOL_MASK  protocols_switch_off,
                                               tNFA_PROTOCOL_MASK  protocols_battery_off)
 {
-#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE && ANDROID_P == FALSE)
-    return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
-                                         protocols_switch_off,protocols_battery_off
-                                         );
-#else
 return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
                                          protocols_switch_off,protocols_battery_off,
-                                         0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE)
-                                         ,0x0
-#endif
-                                         );
-#endif
+                                         0x0,0x0,0x0);
 }
 #if ENABLE_AGC_DEBUG
 /**
@@ -4465,11 +4336,7 @@ MWIFSTATUS phMwIfi_SendAGCDebugCommand()
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     uint8_t abAgcDbgCmdBuf[] = {0x2F, 0x33, 0x04, 0x40, 0x00, 0x40, 0xD8};
     uint8_t abAgcValues[256];
-#if (ANDROID_O == TRUE)
-    gx_status = NFA_SendRawVsCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);
-#else
     gx_status = NFA_SendNxpNciCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);
-#endif
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status, "MwIf> Error Could not send NxpNciCommand");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_NXPCFG_EVT_OFFSET+NCI_AGC_DBG_RSP_EVT),1000, "MwIf> Error in SendNxpNciCommand (SEM) !! \n",&(mwIfHdl->sLastQueueData));
     /*Print the AGC Values*/
