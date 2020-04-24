@@ -27,3 +27,8 @@
 | android-10.0.0_r2                       | 11.11 (PN553/PN557/PN80T/PN81T) | NFC_AR_00_18C0_10.03.00_OpnSrc | DTA 11.11 |
 | android-p-preview 2               |  11.13 (SN100x) | NFC_NCIHALx_AR2000.09.00.1B_OpnSrc | DTA 11.13 |
 | android-10.0.0_r2                       | 11.13 (PN553/PN557/PN80T/PN81T) | NFC_AR_00_18C0_10.04.00_OpnSrc | DTA 11.13 |
+| aosp-master                     | 11.15 (SN1xx) | NFC_AR_00_6000_11.02.00_OpnSrc | DTA 11.15 |
+
+
+
+
