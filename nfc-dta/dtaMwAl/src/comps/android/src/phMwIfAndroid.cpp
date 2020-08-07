@@ -376,6 +376,10 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     abConfigIDData[1] = 0x03;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_TOTAL_DURATION, 0x02, abConfigIDData);
     mwIfHdl->sPrevMwIfDiscCfgParams = sConfigParams->sMwIfDiscCfgParams;
+    if(strlen(sConfigParams->aCertRelease) >= 10) {
+        ALOGD("MwIf>%s:Certifaction release string sizew is >= 10",__FUNCTION__);
+        return MWIFSTATUS_FAILED;
+    }
     strcpy(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, sConfigParams->aCertRelease);
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
@@ -1844,12 +1848,16 @@ void phMwIfi_NfaDevMgmtCallback (uint8_t uevent, tNFA_DM_CBACK_DATA *px_data)
     phMwIfi_PrintDMEventCode(uevent);
     Pgu_event = uevent;
 
-    if(px_data != NULL)
+    if(px_data == NULL)
     {
-        ALOGD ("MwIf>Status = ");
-        phMwIfi_PrintNfaStatusCode(px_data->status);
-        gx_status = px_data->status;
+        ALOGD ("MwIf>px_data is NULL");
+        gx_status = NFA_STATUS_FAILED;
+        return;
     }
+    ALOGD ("MwIf>Status = ");
+    phMwIfi_PrintNfaStatusCode(px_data->status);
+    gx_status = px_data->status;
+
     /**< Check if there was not any Timeout */
     if(uevent == NFA_DM_NFCC_TIMEOUT_EVT)
     {
@@ -1899,7 +1907,12 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
     phMWIf_eEvtType_t   eMwIfEvtType;
     ALOGD ("MwIf>%s:Enter:Event=0x%02x",__FUNCTION__,uevent);
     Pgu_event = uevent;
-    if(px_data != NULL)/* Get the Status */
+
+    if(px_data == NULL)
+    {
+        ALOGE("MwIf> No Data !!\n");
+    }
+    else /* Get the Status */
     {
         ALOGD ("MwIf>Status = 0x%02x - ",px_data->status);
         gx_status = px_data->status;
@@ -1917,7 +1930,10 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
             {
                 tNFA_DISC_RESULT disc_result;
                 memcpy(&disc_result,&px_data->disc_result, sizeof(tNFA_DISC_RESULT));
-                if(!Pgu_disoveredDeviceCount)
+                ALOGD ("MwIf>protocol = %d",px_data->disc_result.discovery_ntf.protocol);
+                ALOGD ("MwIf>rf_disc_id = %d",px_data->disc_result.discovery_ntf.rf_disc_id);
+                if((!Pgu_disoveredDeviceCount) ||
+                    (px_data->disc_result.discovery_ntf.protocol == NFC_PROTOCOL_T3T))
                 {
                     memcpy(&gx_discovery_result, &px_data->disc_result, sizeof(tNFA_DISC_RESULT));
                 }
@@ -2217,10 +2233,6 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                 gx_status = NFC_STATUS_BAD_RESP;
             break;
         }
-    }
-    else
-    {
-        ALOGE("MwIf>NO DATA !! \n");
     }
 
     if(bPushToQReqd)
@@ -2701,99 +2713,102 @@ void phMwIfi_NfaEeCallback(tNFA_EE_EVT xevent,tNFA_EE_CBACK_DATA *px_data)
     phMwIf_sQueueData_t* psQueueData = NULL;
     phMwIf_sHandle_t *   mwIfHdl = &g_mwIfHandle;
     phMwIfi_PrintNfaEeEventCode (xevent);
-    tNFA_EE_DISCOVER_REQ info = px_data->discover_req;
-    if(px_data != NULL)
+    if(px_data == NULL)
     {
-        ALOGE("DTA_EEREGCB> Callback Data Status = ");
-        phMwIfi_PrintNfaStatusCode(px_data->status);
-        gx_status = px_data->status;
-        switch (xevent)
+        ALOGE("MwIf> Error px_data is NULL !!\n");
+        gx_status = NFA_STATUS_FAILED;
+        return;
+    }
+    tNFA_EE_DISCOVER_REQ info = px_data->discover_req;
+    ALOGE("DTA_EEREGCB> Callback Data Status = ");
+    phMwIfi_PrintNfaStatusCode(px_data->status);
+    gx_status = px_data->status;
+    switch (xevent)
+    {
+        case NFA_EE_REGISTER_EVT:
         {
-            case NFA_EE_REGISTER_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Register Event Status = ");
-                phMwIfi_PrintNfaStatusCode(px_data->status);
-            }
-            break;
-            case NFA_EE_DEREGISTER_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Deregister Event Status = ");
-                phMwIfi_PrintNfaStatusCode(px_data->status);
-            }
-            break;
-            case NFA_EE_MODE_SET_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Mode Set Event Status = ");
-                phMwIfi_PrintNfaStatusCode(px_data->mode_set.status);
-            }
-            break;
-            case NFA_EE_SET_TECH_CFG_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Set Tech Route Event Status = ");
-                phMwIfi_PrintNfaStatusCode(px_data->set_tech);
-            }
-            break;
-            case NFA_EE_SET_PROTO_CFG_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Set Tech Route Event Status = ");
-                phMwIfi_PrintNfaStatusCode(px_data->set_proto);
-            }
-            break;
-            case NFA_EE_ACTION_EVT:
-            {
-                ALOGE("DTA_EEREGCB> EE Action Event = ");
-                tNFA_EE_ACTION action = px_data->action;
-                if (action.trigger == NFC_EE_TRIG_RF_PROTOCOL)
-                    ALOGE("RF Protocol Triggered\n");
-                else if (action.trigger == NFC_EE_TRIG_RF_TECHNOLOGY)
-                    ALOGE("RF Technology Triggered\n");
-                else
-                    ALOGE("Unknown Technology/Protocol Triggered\n");
-            }
-            break;
-            case NFA_EE_DISCOVER_REQ_EVT:
-            {
-                /*Set the configuration for UICC/ESE */
-                ALOGE("DTA_EEREGCB> No.of Secure Elements Discovered = %d \n", info.num_ee);
-                if(info.num_ee)
-                    ALOGE("DTA_EEREGCB> UICC/ESE Info Stored Successfully\n");
-                else
-                    ALOGE("DTA_EEREGCB> Check UICC...\n");
-            }
-            break;
-            case NFA_EE_NO_CB_ERR_EVT:
-                ALOGE("DTA_EEREGCB> NFA_EE_NO_CB_ERR_EVT \n");
-            break;
-            case NFA_EE_ADD_AID_EVT:
-            {
-                ALOGE("DTA_EEREGCB> NFA_EE_ADD_AID_EVT \n");
-            }
-            break;
-            case NFA_EE_REMOVE_AID_EVT:
-            {
-                ALOGE("DTA_EEREGCB> NFA_EE_REMOVE_AID_EVT \n");
-            }
-            break;
-            case NFA_EE_NEW_EE_EVT:
-            {
-                ALOGE("DTA_EEREGCB> NFA_EE_NEW_EE_EVT \n");
-            }
-            break;
-            default:
-                ALOGE("Default Event");
-            break;
+            ALOGE("DTA_EEREGCB> EE Register Event Status = ");
+            phMwIfi_PrintNfaStatusCode(px_data->status);
         }
+        break;
+        case NFA_EE_DEREGISTER_EVT:
+        {
+            ALOGE("DTA_EEREGCB> EE Deregister Event Status = ");
+            phMwIfi_PrintNfaStatusCode(px_data->status);
+        }
+        break;
+        case NFA_EE_MODE_SET_EVT:
+        {
+            ALOGE("DTA_EEREGCB> EE Mode Set Event Status = ");
+            phMwIfi_PrintNfaStatusCode(px_data->mode_set.status);
+        }
+        break;
+        case NFA_EE_SET_TECH_CFG_EVT:
+        {
+            ALOGE("DTA_EEREGCB> EE Set Tech Route Event Status = ");
+            phMwIfi_PrintNfaStatusCode(px_data->set_tech);
+        }
+        break;
+        case NFA_EE_SET_PROTO_CFG_EVT:
+        {
+            ALOGE("DTA_EEREGCB> EE Set Tech Route Event Status = ");
+            phMwIfi_PrintNfaStatusCode(px_data->set_proto);
+        }
+        break;
+        case NFA_EE_ACTION_EVT:
+        {
+            ALOGE("DTA_EEREGCB> EE Action Event = ");
+            tNFA_EE_ACTION action = px_data->action;
+            if (action.trigger == NFC_EE_TRIG_RF_PROTOCOL)
+                ALOGE("RF Protocol Triggered\n");
+            else if (action.trigger == NFC_EE_TRIG_RF_TECHNOLOGY)
+                ALOGE("RF Technology Triggered\n");
+            else
+                ALOGE("Unknown Technology/Protocol Triggered\n");
+        }
+        break;
+        case NFA_EE_DISCOVER_REQ_EVT:
+        {
+            /*Set the configuration for UICC/ESE */
+            ALOGE("DTA_EEREGCB> No.of Secure Elements Discovered = %d \n", info.num_ee);
+            if(info.num_ee)
+                ALOGE("DTA_EEREGCB> UICC/ESE Info Stored Successfully\n");
+            else
+                ALOGE("DTA_EEREGCB> Check UICC...\n");
+        }
+        break;
+        case NFA_EE_NO_CB_ERR_EVT:
+            ALOGE("DTA_EEREGCB> NFA_EE_NO_CB_ERR_EVT \n");
+        break;
+        case NFA_EE_ADD_AID_EVT:
+        {
+            ALOGE("DTA_EEREGCB> NFA_EE_ADD_AID_EVT \n");
+        }
+        break;
+        case NFA_EE_REMOVE_AID_EVT:
+        {
+            ALOGE("DTA_EEREGCB> NFA_EE_REMOVE_AID_EVT \n");
+        }
+        break;
+        case NFA_EE_NEW_EE_EVT:
+        {
+            ALOGE("DTA_EEREGCB> NFA_EE_NEW_EE_EVT \n");
+        }
+        break;
+        default:
+            ALOGE("Default Event");
+        break;
+    }
 
-        psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
-        memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
-        psQueueData->dwEvtType = NFA_EE_EVT_OFFSET + xevent;
-        if(px_data)
-            psQueueData->uEvtData.sEeCbData = *px_data;
-        if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
-        {
-            ALOGE("DTA_HCIREGCB> Error Could not Post Semaphore !!\n");
-            gx_status = NFA_STATUS_FAILED;
-        }
+    psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
+    memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
+    psQueueData->dwEvtType = NFA_EE_EVT_OFFSET + xevent;
+    if(px_data)
+        psQueueData->uEvtData.sEeCbData = *px_data;
+    if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
+    {
+        ALOGE("DTA_HCIREGCB> Error Could not Post Semaphore !!\n");
+        gx_status = NFA_STATUS_FAILED;
     }
 }
 
@@ -3027,15 +3042,15 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
                                  uint8_t* pData,
                                  uint32_t dwLength)
 {
-    uint64_t u64psize = 0;
+    uint32_t u32psize = 0;
     /* Initialize the Message */
     NDEF_MsgInit((uint8_t *)gs_paramBuffer,(uint32_t)600,
-              (uint32_t *)&u64psize);
+              (uint32_t *)&u32psize);
     if(mwIfHdl->sNdefDetectParams.eProtocolType == PHMWIF_PROTOCOL_T1T)
     {
         ALOGD("MwIf> Make an NDEF message \n");
         gx_status = NDEF_MsgAddRec((uint8_t *) gs_paramBuffer,
-                                    (uint32_t)600, (uint32_t *)&u64psize,
+                                    (uint32_t)600, (uint32_t *)&u32psize,
                                     0x01, /* TNF NFC Forum External */
                                     (uint8_t *) "U",
                                     (uint8_t) 1, /* Type */
@@ -3048,7 +3063,7 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
     {
         gx_status = NDEF_MsgAddRec ((uint8_t *)gs_paramBuffer,
                                     (uint32_t)400,
-                                    (uint32_t *)&u64psize,
+                                    (uint32_t *)&u32psize,
                                     0x01, /* TNF NFC Forum External */
                                     (uint8_t *)NULL,
                                     (uint8_t)0,/* Type */
@@ -3065,7 +3080,7 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
         return MWIFSTATUS_FAILED;
     }
     /* Write the NDEF Message */
-    gs_sizeParamBuffer = u64psize; /* Down size for u16 */
+    gs_sizeParamBuffer = u32psize; /* Down size for u16 */
     return MWIFSTATUS_SUCCESS;
 }
 
@@ -3216,12 +3231,11 @@ void phMwIfi_MapRfInterface(uint8_t* protocol, int *rf_interface)
         *rf_interface = NFC_INTERFACE_ISO_DEP;
         ALOGE("ISO-DEP interface");
         break;
-/*
-    case NFC_PROTOCOL_MIFARE:
+
+    case NFC_PROTOCOL_T3T:
         *rf_interface = NFC_INTERFACE_FRAME;
         ALOGE("FRAME RF interface");
         break;
-*/
 
     default:
         ALOGE("No matching protocol");
@@ -3975,6 +3989,12 @@ void phMwIfi_NfaLlcpClientCallback(tNFA_P2P_EVT eP2pEvent,tNFA_P2P_EVT_DATA *psP
         if(bPushToQReqd)
         {
             psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
+            if(psQueueData == NULL)
+            {
+                ALOGE("MwIf>%s Error Queue Data allocation\n",__FUNCTION__);
+                gx_status = NFA_STATUS_FAILED;
+                return;
+            }
             memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
             psQueueData->dwEvtType = NFA_P2P_EVT_OFFSET + eP2pEvent;
             if(psP2pEventData && psQueueData)
@@ -4270,31 +4290,39 @@ void phMwIfi_NfaNxpNciPropCommRspCallback(uint8_t event, uint16_t param_len, uin
     phMwIf_sQueueData_t *psQueueData = NULL;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     ALOGD("DEBUG> Data length = %d event = 0x%x\n",param_len, event);
-    if(p_param[3] == 0x00)
+    if(p_param == NULL)
     {
-        ALOGD("NFA_STATUS_OK\n");
+        ALOGE("MwIf>%s p_param is NULL\n",__FUNCTION__);
+        gx_status = NFA_STATUS_FAILED;
     }
     else
     {
+      if(p_param[3] == 0x00)
+      {
+        ALOGD("NFA_STATUS_OK\n");
+      }
+      else
+      {
         ALOGD("NFA_STATUS_FAILED\n");
-    }
+      }
 
-    psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
-    memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
-    psQueueData->dwEvtType = NFA_NXPCFG_EVT_OFFSET + event;
-    if(p_param)
-    {
-        if(param_len > MAX_NXPCFG_RSP_DATA)
-        {
+      psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
+      memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
+      psQueueData->dwEvtType = NFA_NXPCFG_EVT_OFFSET + event;
+      if(p_param)
+      {
+        if(param_len <= MAX_NXPCFG_RSP_DATA) {
+            psQueueData->uEvtData.sNxpCfgEvtData.dwSize = param_len;
+            memcpy(psQueueData->uEvtData.sNxpCfgEvtData.abCfgRspData,p_param,param_len);
+        } else {
             ALOGE("MwIf>RSP Data too high!! Length=0x%x",param_len);
         }
-        psQueueData->uEvtData.sNxpCfgEvtData.dwSize = param_len;
-        memcpy(psQueueData->uEvtData.sNxpCfgEvtData.abCfgRspData,p_param,param_len);
-    }
-    if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
-    {
+      }
+      if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
+      {
         ALOGE("MwIf>%s Error Could not Push to Queue\n",__FUNCTION__);
         gx_status = NFA_STATUS_FAILED;
+      }
     }
 
     ALOGD("MwIf>%s:Exit",__FUNCTION__);

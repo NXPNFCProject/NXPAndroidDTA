@@ -52,10 +52,10 @@ typedef struct phDtaLibi_sT3Tcmd
 }phDtaLibi_sT3Tcmd_t;
 
 static const uint8_t gs_abCheckNDEFCmd[]={
-        0x01,         /**<Number of Services*/
-        0x0B,0x00,    /**<NDEF Service 0x000B*/
-        0x01,         /**<Number of Blocks*/
-        0x80,0x00     /**<First Block with 2-byte Block bit set*/
+    0x01,         /**<Number of Services*/
+    0x0B,0x00,    /**<NDEF Service 0x000B*/
+    0x01,         /**<Number of Blocks*/
+    0x80,0x00     /**<First Block with 2-byte Block bit set*/
 };
 static const uint8_t gs_abCheckReadCmd[1+1*2+1+15*2] = {
     0x01,       /**< services */
@@ -317,6 +317,13 @@ DTASTATUS phDtaLibi_T3TOperations(phDtaLib_sTestProfile_t sTestProfile,
                    *bStopDiscReqd  = FALSE;
               }
             }
+      }
+      break;
+
+      case 0x000E:
+      case 0x000F:
+      {
+        phDtaLibi_T3TPoll(0x12FC,00,0x00);
       }
       break;
 

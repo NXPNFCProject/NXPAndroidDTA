@@ -169,15 +169,15 @@ DTASTATUS phDtaLib_DeInit() {
     phDtaLib_sQueueData_t* psQueueData=NULL;
     OSALSTATUS dwOsalStatus = 0;
     LOG_FUNCTION_ENTRY;
-    psQueueData = (phDtaLib_sQueueData_t*)malloc(sizeof(phDtaLib_sQueueData_t));
+
     if(!dtaLibHdl->bDtaInitialized)
     {
         phOsal_LogInfo((const uint8_t*)"DTALib>DTALib already DeInitialized!!.Just returning\n");
         return DTASTATUS_SUCCESS;
     }
-
-     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf De-Init\n");
-     phMwIf_DeInit(dtaLibHdl->mwIfHdl);
+    psQueueData = (phDtaLib_sQueueData_t*)malloc(sizeof(phDtaLib_sQueueData_t));
+    phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf De-Init\n");
+    phMwIf_DeInit(dtaLibHdl->mwIfHdl);
 
     dtaLibHdl->blStopCbMsgHandleThrd = TRUE;
     if (psQueueData)
@@ -195,12 +195,14 @@ DTASTATUS phDtaLib_DeInit() {
     {
         phOsal_LogErrorString((const uint8_t*)"DTALib> :Unable to Push to Queue", (const uint8_t*)__FUNCTION__);
         dtaLibHdl->blStopCbMsgHandleThrd = FALSE;
+        free(psQueueData);
         return DTASTATUS_FAILED;
     }
     dwOsalStatus = phOsal_ThreadDelete((void *)dtaLibHdl->dtaThreadHdl);
     if(dwOsalStatus != OSALSTATUS_SUCCESS)
     {
         phOsal_LogDebugString ((const uint8_t*)"DTALib>%s:Unable to Delete Thread ",(const uint8_t*)__FUNCTION__);
+        free(psQueueData);
         return DTASTATUS_FAILED;
     }
     phOsal_LogDebugString ((const uint8_t*)"DTALib>%s:phDtaLibi_CbMsgHandleThrd Thread delete successful ",(const uint8_t*)__FUNCTION__);
@@ -209,6 +211,7 @@ DTASTATUS phDtaLib_DeInit() {
     if(dwOsalStatus != OSALSTATUS_SUCCESS)
     {
         phOsal_LogDebug((const uint8_t*)"DTALib> Unable to Delete Queue\n");
+        free(psQueueData);
         return DTASTATUS_FAILED;
     }
 
@@ -216,6 +219,7 @@ DTASTATUS phDtaLib_DeInit() {
     if(dwOsalStatus != OSALSTATUS_SUCCESS)
     {
         phOsal_LogDebug((const uint8_t*)"DTALib> Unable to Delete qHdlCongestData Queue\n");
+        free(psQueueData);
         return DTASTATUS_FAILED;
     }
 
@@ -350,6 +354,9 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         dwMwIfStatus = phMwIf_LlcpRegisterServerConnLess(dtaLibHdl->mwIfHdl,
                                                           &sLlcpSrvrPrms,
                                                           &(dtaLibHdl->pvCLServerHandle));
+
+        PH_ON_ERROR_RETURN(MWIFSTATUS_SUCCESS,dwMwIfStatus,
+                (const uint8_t*)"DTALib> Error in registering Server Connection Less");
         dtaLibHdl->bLlcpInitialized = TRUE;
     }
 
@@ -429,10 +436,11 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
     dtaLibHdl->sConfigPrms.bPollBitRateTypeF = PHMWIF_NCI_BITRATE_212;
     if((dtaLibHdl->sTestProfile.Pattern_Number == 0x06) ||
        (dtaLibHdl->sTestProfile.Pattern_Number == 0x08) ||
-       (dtaLibHdl->sTestProfile.Pattern_Number == 0x0A))
+       (dtaLibHdl->sTestProfile.Pattern_Number == 0x0A) ||
+       (dtaLibHdl->sTestProfile.Pattern_Number == 0x0F))
     {
         dtaLibHdl->sConfigPrms.bPollBitRateTypeF = PHMWIF_NCI_BITRATE_424;
-        phOsal_LogDebugString ((const uint8_t*)"DTALib>Configured TypeF Poll Bitrate to 424Kbps for pattern number 0x06,0x08,0x09 & 0x0A",
+        phOsal_LogDebugString ((const uint8_t*)"DTALib>Configured TypeF Poll Bitrate to 424Kbps for pattern number 0x06,0x08,0x09,0x0A & 0x0F",
                                 (const uint8_t*)__FUNCTION__);
     }
     if(dtaLibHdl->sTestProfile.Pattern_Number == 0x09)
@@ -528,7 +536,7 @@ DTASTATUS phDtaLib_DisableDiscovery() {
  */
 DTASTATUS phDtaLib_GetIUTInfo(phDtaLib_sIUTInfo_t* psIUTInfo) {
     phDtaLib_sHandle_t*   dtaLibHdl = &g_DtaLibHdl;
-    phMwIf_sVersionInfo_t sVersionInfo;
+    phMwIf_sVersionInfo_t sVersionInfo = {0, 0, 0, 0};
     LOG_FUNCTION_ENTRY;
 
     phOsal_LogDebugString((const uint8_t*)"DTALib>Version:",(const uint8_t*)DTALIB_VERSION_STR);
@@ -570,24 +578,28 @@ void phDtaLibi_EvtCb(void* mwIfHandle,
     LOG_FUNCTION_ENTRY;
     phOsal_LogDebugU32h((const uint8_t*)"DTALib> :DTA Event cb Handle=",(size_t)(mwIfHandle));
 
+    if(puEvtData == NULL)
+    {
+        phOsal_LogErrorString((const uint8_t*)"DTALib> :Error:puEvtData is NULL", (const uint8_t*)__FUNCTION__);
+        return;
+    }
     /*Prepare Data to push to Queue*/
     psQueueData = (phDtaLib_sQueueData_t*)malloc(sizeof(phDtaLib_sQueueData_t));
-    if (psQueueData)
-    {
-        psQueueData->uEvtType.eDpEvtType = eEvtType;
-        if(puEvtData)
-            psQueueData->uEvtInfo.uDpEvtInfo = *puEvtData;
-    }
-    else
+    if (psQueueData == NULL)
     {
         phOsal_LogErrorString((const uint8_t*)"DTALib> :Error:Unable to allocate memory", (const uint8_t*)__FUNCTION__);
         return;
     }
+    psQueueData->uEvtType.eDpEvtType = eEvtType;
+    if(puEvtData)
+        psQueueData->uEvtInfo.uDpEvtInfo = *puEvtData;
+
     switch (eEvtType) {
     case PHMWIF_CE_DATA_EVT:
         if(!puEvtData->sData.pvDataBuf)
         {
             phOsal_LogErrorString((const uint8_t*)"DTALib>: Invalid Data Recvd in P2P",(const uint8_t*)__FUNCTION__);
+            free(psQueueData);
             return;
         }
 
@@ -625,7 +637,11 @@ void phDtaLibi_EvtCb(void* mwIfHandle,
 
     dwOsalStatus = phOsal_QueuePush(dtaLibHdl->queueHdl, psQueueData, 0);
     if(dwOsalStatus != OSALSTATUS_SUCCESS)
+    {
         phOsal_LogErrorString((const uint8_t*)"DTALib> :Unable to Push to Queue", (const uint8_t*)__FUNCTION__);
+        free(psQueueData);
+        return;
+    }
     else
     {
         phOsal_LogDebugString((const uint8_t*)"DTALib> : ", (const uint8_t*)__FUNCTION__);
@@ -1110,17 +1126,12 @@ void phDtaLib_RegisterCallback( void *dtaApplHdl, phdtaLib_EvtCb_t dtaApplCb)
 }
 
 DTASTATUS phDtaLib_SetConfig(phDtaLib_sDiscParams_t* discParams){
-    MWIFSTATUS dwMwIfStatus = 0;
     LOG_FUNCTION_ENTRY;
 
     if(phDtaLibi_UpdateConfigPrams(discParams) != MWIFSTATUS_SUCCESS)
     {
         phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in Initializing",(const uint8_t*)__FUNCTION__);
             return MWIFSTATUS_FAILED;
-    }
-    if(dwMwIfStatus != DTASTATUS_SUCCESS){
-        phOsal_LogErrorString((const uint8_t*)"DTALib> :Set configuration is unsuccessful", (const uint8_t*)__FUNCTION__);
-        return DTASTATUS_FAILED;
     }
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;

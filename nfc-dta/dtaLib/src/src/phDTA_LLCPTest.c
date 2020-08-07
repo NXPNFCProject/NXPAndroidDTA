@@ -202,7 +202,12 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             psLlcpConnOrientedData->dwBuffLength = sLlcpConnOrientedData.dwBuffLength;
 
             phOsal_LogDebug((const uint8_t*)"DTALib>LLCP: link is congested, data pushed to queue");
-            phOsal_QueuePush(psDtaLibHdl->qHdlCongestData, psLlcpConnOrientedData, 0);
+            dwMwIfStatus = phOsal_QueuePush(psDtaLibHdl->qHdlCongestData, psLlcpConnOrientedData, 0);
+            if(dwMwIfStatus != OSALSTATUS_SUCCESS)
+            {
+              phOsal_LogErrorString((const uint8_t*)"DTALib>LLCP::Could not push to queue", (const uint8_t*)__FUNCTION__);
+              return dwMwIfStatus;
+            }
             return DTASTATUS_SUCCESS;
         }
         else
@@ -364,7 +369,7 @@ DTASTATUS phDtaLibi_LlcpHandleUncongestedEvent()
             phMwIf_sBuffParams_t               *psLlcpConnOrientedData;
             phOsal_LogDebug((const uint8_t*)"DTALib>LLCP: Pulling Data from Q");
             dwOsalStatus = phOsal_QueuePull(psDtaLibHdl->qHdlCongestData,(void**) &psLlcpConnOrientedData,10);
-            if (dwOsalStatus != 0) {
+            if((dwOsalStatus != 0) || (psLlcpConnOrientedData == NULL)) {
                 phOsal_LogErrorU32h((const uint8_t*)"Status = ", dwOsalStatus);
                 if(dwOsalStatus == OSALSTATUS_Q_UNDERFLOW){
                     phOsal_LogDebug((const uint8_t*)"DTALib>LLCP: Q UNDERFLOW");

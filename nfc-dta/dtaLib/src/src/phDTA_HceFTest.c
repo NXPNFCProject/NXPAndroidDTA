@@ -107,12 +107,6 @@ DTASTATUS phDtaLibi_HceFOperations()
                 free(psQueueData);
       } while (sQueueData.uEvtType.eDpEvtType != PHMWIF_CE_DATA_EVT);
 
-      if (dwOsalStatus != OSALSTATUS_SUCCESS)
-      {
-           phOsal_LogError((const uint8_t*)"DTALib> Error Failed to receive the First packet !! \n");
-           return dwOsalStatus;
-       }
-
        //phOsal_LogDebugU32d((const uint8_t*)"DTALib>sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf = ",(size_t)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
        phOsal_LogBuffer((const uint8_t*)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
        if(!sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf)

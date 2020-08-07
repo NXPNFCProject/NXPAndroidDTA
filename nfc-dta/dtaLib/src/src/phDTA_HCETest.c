@@ -118,7 +118,7 @@ DTASTATUS phDtaLibi_HceOperations()
                                         dwSizeOfSendBuff,
                                         resultBuffer,
                                          &dwSizeOfResultBuff);
-            if(gx_status != MWIFSTATUS_SUCCESS)
+            if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
             {
                  phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
                  break;
@@ -132,7 +132,7 @@ DTASTATUS phDtaLibi_HceOperations()
                                         dwSizeOfSendBuff,
                                         resultBuffer,
                                         &dwSizeOfResultBuff);
-            if(gx_status != MWIFSTATUS_SUCCESS)
+            if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
             {
                  phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
                  break;
@@ -148,7 +148,7 @@ DTASTATUS phDtaLibi_HceOperations()
                                         dwSizeOfSendBuff,
                                         resultBuffer,
                                         &dwSizeOfResultBuff);
-        if(gx_status != MWIFSTATUS_SUCCESS)
+        if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
         {
              phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
              break;

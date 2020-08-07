@@ -102,6 +102,11 @@ DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t TestProfile,
             }
 
             /*Send the received buffer back-Loopback*/
+            if(dwSizeOfResultBuff<2 || dwSizeOfResultBuff>400)
+            {
+              dwMwIfStatus = DTASTATUS_FAILED;
+              break;
+            }
             memcpy(loopBakBuffer,resultBuffer,dwSizeOfResultBuff-2);
             dwSizeOfLoopBakBuff = dwSizeOfResultBuff-2;
             dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,

@@ -379,7 +379,8 @@ OSALSTATUS phOsal_QueueFlush(void* pvQueueHandle)
         if(dwOsalStatus != OSALSTATUS_Q_UNDERFLOW)
         {
             phOsal_LogError((const uint8_t*)"Osal> Flushed an object from Q");
-            free(pvQueueData);
+            if(pvQueueData != NULL)
+                free(pvQueueData);
         }
     }while(dwOsalStatus != OSALSTATUS_Q_UNDERFLOW);
 

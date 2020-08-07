@@ -168,6 +168,10 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     jfieldID certVerNumberId = env->GetFieldID(phdtaclass, "certificationVerNum","Ljava/lang/String;");
     jstring certString = (jstring)env->GetObjectField(phDtaLibsDiscParamst, certVerNumberId);
     const char *str = env->GetStringUTFChars(certString,NULL);
+    if(strlen(str) >= 10) {
+        phOsal_LogDebug((const uint8_t*)"DTAJni> Certifaction release string size is >= 10");
+        return DTASTATUS_FAILED;
+    }
     strcpy(sTestProfile.Certification_Release, str);
     phOsal_LogDebugString((const uint8_t*)"DTAJni DEBUG> Certification_Release = ",(const uint8_t*)sTestProfile.Certification_Release);
     env->ReleaseStringUTFChars( certString, str);
