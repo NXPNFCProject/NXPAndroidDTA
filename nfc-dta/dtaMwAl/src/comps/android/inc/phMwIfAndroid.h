@@ -130,6 +130,33 @@ do{\
     free(psQueueData);\
 }while(g_dwEvtType != event)
 
+#define PH_WAIT_FOR_CBACK_EVT2(queueHdl,event1,event2,timeout,message,qdata) \
+do{\
+    OSALSTATUS dwStatus;\
+    phMwIf_sQueueData_t*         psQueueData;\
+    dwStatus = phOsal_QueuePull(queueHdl,(void**)&psQueueData, timeout);\
+    if (dwStatus == OSALSTATUS_Q_UNDERFLOW) {\
+            ALOGE("MwIf> %s:%d Timeout receiving event:%d or %d", __FUNCTION__,__LINE__,event1,event2);\
+            ALOGE(message);\
+            return MWIFSTATUS_FAILED;\
+        }\
+    if (dwStatus != OSALSTATUS_SUCCESS) {\
+        ALOGE("MwIf> %s:%d Error in receiving event:%d or %d", __FUNCTION__,__LINE__,event1,event2);\
+        ALOGE(message);\
+        return MWIFSTATUS_FAILED;\
+    }\
+    g_dwEvtType = psQueueData->dwEvtType;\
+    if(((g_dwEvtType == NFA_DEACTIVATED_EVT) || (g_dwEvtType == NFA_CE_DEACTIVATED_EVT)) && (((event1 != NFA_DEACTIVATED_EVT)||(event2 != NFA_CE_DEACTIVATED_EVT)) || (g_dwEvtType == NFA_RW_INTF_ERROR_EVT))){\
+        ALOGE("MwIf> %s:%d Recvd Deactivated Evt while waiting for Evt %d or %d", __FUNCTION__,__LINE__,event1,event2);\
+        if((event1 == NFA_RF_DISCOVERY_STOPPED_EVT)||(event2 == NFA_RF_DISCOVERY_STOPPED_EVT)){\
+            ALOGE("MwIf>Deactivated Evt expected during Disc stop");}\
+        else {ALOGE(message);\
+              free(psQueueData);\
+            return MWIFSTATUS_FAILED;}}\
+    ALOGE("MWIf>>Recvd Evt=%d while waiting for evt=%d or %d",g_dwEvtType,event1,event2);\
+    *(qdata) = *psQueueData;\
+    free(psQueueData);\
+}while((g_dwEvtType != event1) && (g_dwEvtType != event2))
 /** end section MACRO DEFINES */
 
 /** \ingroup grp_mwif_lib
@@ -165,8 +192,11 @@ typedef enum phMwIf_eNciSetConfig
     PHMWIF_NCI_CONFIG_LA_PLATFORM_CFG           = 0x31,    /**< Listen A : Platform Configuration value to be sent in Byte 2 of SENS_RES */
     PHMWIF_NCI_CONFIG_LA_SEL_INFO               = 0x32,    /**< Listen A : This value is used to generate SEL_RES */
     PHMWIF_NCI_CONFIG_LA_NFCID1                 = 0x33,    /**< Listen A : NFCID1 */
+    PHMWIF_NCI_CONFIG_LF_T3T_IDENTIFIERS_1      = 0x40,    /**< Listen F : LF_T3T_IDENTIFIERS parameter SHALL be used to generate the SENSF_RES */
     PHMWIF_NCI_CONFIG_LF_CON_BITR_F             = 0x54,    /**< Listen F : Configures the bit rates to listen for */
     PHMWIF_NCI_CONFIG_LF_PROTOCOL_TYPE          = 0x50,    /**< Listen F : Protocols supported by the NFC Forum Device in Listen Mode for NFC-F */
+    PHMWIF_NCI_CONFIG_LF_T3T_FLAGS              = 0x53,    /**< Listen F : A bit field indicating which LF_T3T_IDENTIFIERS are enabled in the process to create a response to a SENSF_REQ. */
+    PHMWIF_NCI_CONFIG_LF_RD_ALLOWED             = 0x55,    /**< Listen F : The NFCC MAY include RD bytes in its SENSF_RES if it receives a SENSF_REQ with RC set to 0x02 */
     PHMWIF_NCI_CONFIG_LI_BIT_RATE               = 0x5B,    /**< Listen ISO-DEP : Maximum supported bit rate */
     PHMWIF_NCI_CONFIG_LN_WT                     = 0x60,    /**< Listen NFC-DEP : Waiting Time */
     PHMWIF_NCI_CONFIG_RF_FIELD_INFO             = 0x80,    /**< RF Field Information Configuration Parameter */
@@ -175,6 +205,9 @@ typedef enum phMwIf_eNciSetConfig
     PHMWIF_NCI_CONFIG_PF_BIT_RATE               = 0x18,    /**< Poll F : The initial bit rate */
     PHMWIF_NCI_CONFIG_PF_RC_CODE                = 0x19,    /**< Poll F : Value of RC to use in SENSF_REQ */
     PHMWIF_NCI_CONFIG_COUNTER                   = 0x86,    /**< New command for COUNTER setting*/
+    PHMWIF_NCI_CONFIG_PACM_BIT_RATE             = 0x68,    /**< ACM : The initial bit rate */
+    PHMWIF_NCI_CONFIG_NFC_ACTIVE_POLL_MODE      = 0x03,    /**< ACM : Active Poll Mode */
+    PHMWIF_NCI_CONFIG_NFC_ACTIVE_LISTEN_MODE    = 0x83     /**< ACM : Active Listen Mode */
 }phMwIf_eNciSetConfig_t;
 
 typedef enum eDtaDeviceState
@@ -247,6 +280,8 @@ typedef struct phMwIf_sHandle
     uint16_t                    nfcHceFHandle;        /**< Handle used for HCEF operations */
     uint32_t                    routingProtocols;     /**< Contains the details of protocols routing */
     phMwIf_sDiscCfgPrms_t       sPrevMwIfDiscCfgParams;
+
+    uint8_t                     u8NfcDepLnWtConfigVal;  /**< Contains NFC-DEP Listen Mode Wait Time Config Value*/
 }phMwIf_sHandle_t;
 
 #define NCI_MSG_TYPE_MASK         0xE0
@@ -298,6 +333,8 @@ tNFA_STATUS phMwIfi_EeGetInfo(phMwIf_sHandle_t *mwIfHdl,
                               phMwIf_eCeDevType_t eDevType);
 MWIFSTATUS  phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle);
 MWIFSTATUS  phMwIfi_CeRegisterAID(phMwIf_sHandle_t* mwIfHandle);
+MWIFSTATUS  phMwIfi_CeDeRegisterAID(phMwIf_sHandle_t* mwIfHandle);
+
 
 void        phMwIfi_NfaNxpNciAgcDbgRspCallback(uint8_t NxpNci_Event,
                                     uint16_t param_len, uint8_t *p_param);
@@ -305,6 +342,8 @@ void        phMwIfi_NfaNxpNciPropCommRspCallback(uint8_t NxpNci_Event,
                                     uint16_t param_len, uint8_t *p_param);
 void        phMwIfi_NfaConnCallback(uint8_t ConnCb_Event,
                                     tNFA_CONN_EVT_DATA *ConnCb_Event_Data);
+void        phMwIfi_NdefHandlerCallback(uint8_t ndefEvent,
+                                        tNFA_NDEF_EVT_DATA* ndefEventData);
 void        phMwIfi_NfaDevMgmtCallback(uint8_t DevMgmtCb_Event,
                                        tNFA_DM_CBACK_DATA *DevMgmtCb_Event_Data);
 
@@ -354,6 +393,8 @@ MWIFSTATUS phMwIfi_ReadNdef(void*                 mwIfHandle,
                                    phMwIf_sBuffParams_t* psBuffParams);
 MWIFSTATUS phMwIfi_HandleT2TCmd(void*                  mwIfHandle,
                                 phMwIf_sT2TParams_t*   psTagParams);
+MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
+                                phMwIf_sT5TParams_t*   psTagParams);
 
 void       phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
                                                bool*               pblPushToQReqd,

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2020 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -95,12 +95,15 @@ public class PhDTAUIMainActivity extends Activity implements
     /*RF Technolgy group view elements*/
     private CheckBox chkBoxPollP2p, chkBoxPollRdWt,
                      chkBoxListenP2p, chkBoxListenUicc, chkBoxListenHce, chkBoxListenEse,
-                     chkBoxPollP2PA, chkBoxPollP2PB, chkBoxPollP2PF,
-                     chkBoxPollRDWTA, chkBoxPollRDWTB, chkBoxPollRDWTF ,
-                     chkBoxListenP2PA, chkBoxListenP2PB, chkBoxListenP2PF,
-                     chkBoxListenUICCA, chkBoxListenUICCB, chkBoxListenUICCF,
-                     chkBoxListenHCEA, chkBoxListenHCEB, chkBoxListenHCEF,
-                     chkBoxListenESEA, chkBoxListenESEB, chkBoxListenESEF;
+                     chkBoxPollP2PA, chkBoxPollP2PB, chkBoxPollP2PF, chkBoxPollP2PV,
+                     chkBoxPollRDWTA, chkBoxPollRDWTB, chkBoxPollRDWTF, chkBoxPollRDWTV,
+                     chkBoxListenP2PA, chkBoxListenP2PB, chkBoxListenP2PF, chkBoxListenP2PV,
+                     chkBoxListenUICCA, chkBoxListenUICCB, chkBoxListenUICCF, chkBoxListenUICCV,
+                     chkBoxListenHCEA, chkBoxListenHCEB, chkBoxListenHCEF, chkBoxListenHCEV,
+                     chkBoxListenESEA, chkBoxListenESEB, chkBoxListenESEF, chkBoxListenESEV,
+                     chkBoxP2pAcmIni, chkBoxP2pAcmTar,
+                     chkBoxP2pAcmINIA, chkBoxP2pAcmINIB, chkBoxP2pAcmINIF, chkBoxP2pAcmINIV,
+                     chkBoxP2pAcmTARA, chkBoxP2pAcmTARB, chkBoxP2pAcmTARF, chkBoxP2pAcmTARV;
 
     /*Auto test execution mode view elements*/
     private CheckBox customMessage,showMessage;
@@ -124,7 +127,7 @@ public class PhDTAUIMainActivity extends Activity implements
 
     private boolean onClickColoringRunning = false,
                     checkNfcServiceDialog = false ,
-                    isRunClickedAtlLeastOnce = false;
+                    isRunClickedAtLeastOnce = false;
 
     private String currentStatusStopped = "Current Status: <font color='red'> Stopped</font>" ,
             currentStatusRunning = "Current Status: <font color='#006600'> Running</font>" ,
@@ -146,7 +149,7 @@ public class PhDTAUIMainActivity extends Activity implements
      */
     public static InetAddress inetAddress;
     public static int portNumber;
-    public final static String DTA_GUI_VERSION = "10.01";
+    public final static String DTA_GUI_VERSION = "12.02";
 
     /**
      * TO know whether Run button or Stop button is clicked
@@ -198,8 +201,11 @@ public class PhDTAUIMainActivity extends Activity implements
     /**  LLCP Pattern Number Key */
     public final String BUNDLED_PARAMS_LLCP_PATTERN_KEY = "llcp_pattern";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1200 = "1200";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1201 = "1201";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1240 = "1240";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1241 = "1241";
     public final String BUNDLED_PARAMS_LLCP_PATTERN_1280 = "1280";
+    public final String BUNDLED_PARAMS_LLCP_PATTERN_1281 = "1281";
 
 /** SNEP Related Parameter for AutomaTest */
     public final String BUNDLED_PARAMS_SNEP_KEY             = "snep";   // SNEP Key
@@ -290,7 +296,13 @@ public class PhDTAUIMainActivity extends Activity implements
         setFindViewByID();
         /*Disable Technologies not supported*/
         chkBoxListenP2PB.setEnabled(false);
+        chkBoxListenP2PV.setEnabled(false);
         chkBoxPollP2PB.setEnabled(false);
+        chkBoxPollP2PV.setEnabled(false);
+        chkBoxP2pAcmINIB.setEnabled(false);
+        chkBoxP2pAcmINIV.setEnabled(false);
+        chkBoxP2pAcmTARB.setEnabled(false);
+        chkBoxP2pAcmTARV.setEnabled(false);
         if(PhUtilities.DTA_DEBUG_MODE){
             nxpHelperMainActivity.setdtaDebugFlag(true);
             tsnRelativeLyt.setVisibility(View.VISIBLE);
@@ -302,7 +314,7 @@ public class PhDTAUIMainActivity extends Activity implements
             /*When view is invisible, initializing the variables with 00
              * to avoid Number format exception*/
             nxpHelperMainActivity.setsTimeSlotNumberF("00");
-            nxpHelperMainActivity.setsConnectionDeviceLimit("00");
+            nxpHelperMainActivity.setsConnectionDeviceLimit("01");
         }
         /**
          * Error Pop up start /
@@ -409,9 +421,13 @@ public class PhDTAUIMainActivity extends Activity implements
                        android.R.layout.simple_spinner_item);
         adapterCleanPatternNumber = ArrayAdapter
                 .createFromResource(PhDTAUIMainActivity.this, R.array.clean_pattern_numbers, android.R.layout.simple_spinner_item);
-       adapterPatternNumberDefault.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-       adapterPatternNumberLlcp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-       adapterCleanPatternNumber.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterPatternNumberDefault.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterPatternNumberLlcp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adapterCleanPatternNumber.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        certificationVersion.setSelection(4); /** Set CR12 by default  */
+        timeSlotNumberF.setSelection(1); /** Set TSNF to F3 by default  */
+        connectionDeviceLimit.setSelection(1); /** Set CDL to 01 by default  */
+
         /**
          * Set the adapter for the device spinner
          */
@@ -433,7 +449,7 @@ public class PhDTAUIMainActivity extends Activity implements
          */
 
         /** Appear disappear for Custom */
-        appearDissappearOFViews();
+        appearDisappearOfViews();
         handleAllTheModesEvent();
 
         /** Parse Intent on Create */
@@ -456,7 +472,7 @@ public class PhDTAUIMainActivity extends Activity implements
             //** Handle LLCP commands received from AutomaTest */
             handleAutomaTestLLCPCommands(bundledParams);
 
-            //** Handle LLCP commands received from AutomaTest */
+            //** Handle SNEP commands received from AutomaTest */
             handleAutomaTestSNEPCommands(bundledParams);
 
             //** START & STOP button Implementaion for Automation */
@@ -488,6 +504,26 @@ public class PhDTAUIMainActivity extends Activity implements
                 if ( DpPatternInt>=0 && DpPatternInt <= 15) {
                     Log.d(PhUtilities.UI_TAG, "DP Pattern number set");
                     this.spinnerPatterNum.setSelection(DpPatternInt);
+                }
+                else if (DpPatternInt == 17)
+                {
+                    Log.d(PhUtilities.UI_TAG, "DP Pattern number 11 set");
+                    this.spinnerPatterNum.setSelection(16);
+                }
+                else if (DpPatternInt == 18)
+                {
+                    Log.d(PhUtilities.UI_TAG, "DP Pattern number 12 set");
+                    this.spinnerPatterNum.setSelection(17);
+                }
+                else if (DpPatternInt == 33)
+                {
+                    Log.d(PhUtilities.UI_TAG, "DP Pattern number 21 set");
+                    this.spinnerPatterNum.setSelection(18);
+                }
+                else if (DpPatternInt == 49)
+                {
+                    Log.d(PhUtilities.UI_TAG, "DP Pattern number 31 set");
+                    this.spinnerPatterNum.setSelection(19);
                 }
                 else {
                     Log.d(PhUtilities.UI_TAG, "DP default Pattern number set");
@@ -654,11 +690,20 @@ public class PhDTAUIMainActivity extends Activity implements
                 case BUNDLED_PARAMS_LLCP_PATTERN_1200:
                     this.spinnerPatterNum.setSelection(0);
                     break;
-                case BUNDLED_PARAMS_LLCP_PATTERN_1240:
+                case BUNDLED_PARAMS_LLCP_PATTERN_1201:
                     this.spinnerPatterNum.setSelection(1);
                     break;
-                case BUNDLED_PARAMS_LLCP_PATTERN_1280:
+                case BUNDLED_PARAMS_LLCP_PATTERN_1240:
                     this.spinnerPatterNum.setSelection(2);
+                    break;
+                case BUNDLED_PARAMS_LLCP_PATTERN_1241:
+                    this.spinnerPatterNum.setSelection(3);
+                    break;
+                case BUNDLED_PARAMS_LLCP_PATTERN_1280:
+                    this.spinnerPatterNum.setSelection(4);
+                    break;
+                case BUNDLED_PARAMS_LLCP_PATTERN_1281:
+                    this.spinnerPatterNum.setSelection(5);
                     break;
                 default:
                     this.spinnerPatterNum.setSelection(0);
@@ -885,6 +930,7 @@ public class PhDTAUIMainActivity extends Activity implements
                 chkBoxPollRDWTA.setChecked(false);
         case R.id.b_p2p_poll_check_box:
         case R.id.f_p2p_poll_check_box:
+        case R.id.v_p2p_poll_check_box:
             if(chkBoxPollP2PF.isChecked())
                 chkBoxPollRDWTF.setChecked(true);
             else
@@ -898,6 +944,7 @@ public class PhDTAUIMainActivity extends Activity implements
             else
                 chkBoxPollP2PA.setChecked(false);
         case R.id.b_rdwt_poll_check_box:
+        case R.id.v_rdwt_poll_check_box:
         case R.id.f_rdwt_poll_check_box:
             if(chkBoxPollRDWTF.isChecked())
                 chkBoxPollP2PF.setChecked(true);
@@ -909,20 +956,21 @@ public class PhDTAUIMainActivity extends Activity implements
         case R.id.a_p2p_listen_check_box:
         case R.id.b_p2p_listen_check_box:
         case R.id.f_p2p_listen_check_box:
+        case R.id.v_p2p_listen_check_box:
             handleListenP2pTechCheckBoxEvent();
             break;
 
         case R.id.a_uicc_listen_check_box:
         case R.id.b_uicc_listen_check_box:
         case R.id.f_uicc_listen_check_box:
+        case R.id.v_uicc_listen_check_box:
             handleListenUiccTechCheckBoxEvent();
             break;
 
         case R.id.a_hce_listen_check_box:
-            handleListenHceATechCheckBoxEvent();
-            break;
         case R.id.b_hce_listen_check_box:
-            handleListenHceBTechCheckBoxEvent();
+        case R.id.v_hce_listen_check_box:
+            handleListenHceABVTechCheckBoxEvent();
             break;
         case R.id.f_hce_listen_check_box:
             handleListenHceFTechCheckBoxEvent();
@@ -931,11 +979,30 @@ public class PhDTAUIMainActivity extends Activity implements
         case R.id.a_ese_listen_check_box:
         case R.id.b_ese_listen_check_box:
         case R.id.f_ese_listen_check_box:
+        case R.id.v_ese_listen_check_box:
             handleListenEseTechCheckBoxEvent();
             break;
 
-        }
+        case R.id.p2p_acm_initiator_check_box:
+            handleP2pAcmIniCheckBoxEvent();
+            break;
+        case R.id.a_p2p_acm_initiator_check_box:
+        case R.id.b_p2p_acm_initiator_check_box:
+        case R.id.f_p2p_acm_initiator_check_box:
+        case R.id.v_p2p_acm_initiator_check_box:
+            handleP2pAcmIniTechCheckBoxEvent();
+            break;
 
+        case R.id.p2p_acm_target_check_box:
+            handleP2pAcmTarCheckBoxEvent();
+            break;
+        case R.id.a_p2p_acm_target_check_box:
+        case R.id.b_p2p_acm_target_check_box:
+        case R.id.f_p2p_acm_target_check_box:
+        case R.id.v_p2p_acm_target_check_box:
+            handleP2pAcmTarTechCheckBoxEvent();
+            break;
+        }
     }
 
     private void technologyError(String message) {
@@ -950,7 +1017,7 @@ public class PhDTAUIMainActivity extends Activity implements
     }
     private void checkForAnalogTestMode(){
         if(editTextCustomPatternNum.getText().toString().equals("1000")){
-            /*In Analog mode Enable Poll[A,B,F(212&424)] & Listen[F-P2P & HCEType A&B]*/
+            /*In Analog mode Enable Poll[A,B,F(212&424),V] & Listen[F-P2P & HCEType A, B & F]*/
             Log.i(PhUtilities.UI_TAG,"Enabling configurations for Analog mode");
             chkBoxPollP2p.setChecked(true);
             chkBoxPollRdWt.setChecked(true);
@@ -958,33 +1025,52 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenHce.setChecked(true);
             chkBoxListenUicc.setChecked(false);
             chkBoxListenEse.setChecked(false);
+            chkBoxP2pAcmIni.setChecked(false);
+            chkBoxP2pAcmTar.setChecked(false);
 
             chkBoxPollP2PA.setChecked(true);
             chkBoxPollP2PB.setChecked(false);
             chkBoxPollP2PF.setChecked(true);
+            chkBoxPollP2PV.setChecked(false);
 
             chkBoxPollRDWTA.setChecked(true);
             chkBoxPollRDWTB.setChecked(true);
             chkBoxPollRDWTF.setChecked(true);
+            chkBoxPollRDWTV.setChecked(true);
 
             chkBoxListenP2PA.setChecked(false);
             chkBoxListenP2PB.setChecked(false);
             chkBoxListenP2PF.setChecked(true);
+            chkBoxListenP2PV.setChecked(false);
 
             chkBoxListenHCEA.setChecked(true);
             chkBoxListenHCEB.setChecked(true);
             chkBoxListenHCEF.setChecked(false);
+            chkBoxListenHCEV.setChecked(true);
             chkBoxListenHCEA.setEnabled(true);
             chkBoxListenHCEB.setEnabled(true);
             chkBoxListenHCEF.setEnabled(true);
+            chkBoxListenHCEV.setEnabled(true);
 
             chkBoxListenUICCA.setChecked(false);
             chkBoxListenUICCB.setChecked(false);
             chkBoxListenUICCF.setChecked(false);
+            chkBoxListenUICCV.setChecked(false);
 
             chkBoxListenESEA.setChecked(false);
             chkBoxListenESEB.setChecked(false);
             chkBoxListenESEF.setChecked(false);
+            chkBoxListenESEV.setChecked(false);
+
+            chkBoxP2pAcmINIA.setChecked(false);
+            chkBoxP2pAcmINIB.setChecked(false);
+            chkBoxP2pAcmINIF.setChecked(false);
+            chkBoxP2pAcmINIV.setChecked(false);
+
+            chkBoxP2pAcmTARA.setChecked(false);
+            chkBoxP2pAcmTARB.setChecked(false);
+            chkBoxP2pAcmTARF.setChecked(false);
+            chkBoxP2pAcmTARV.setChecked(false);
         }
     }
 
@@ -1005,22 +1091,37 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxPollP2PA.setOnClickListener(this);
         chkBoxPollP2PB.setOnClickListener(this);
         chkBoxPollP2PF.setOnClickListener(this);
+        chkBoxPollP2PV.setOnClickListener(this);
         chkBoxPollRDWTA.setOnClickListener(this);
         chkBoxPollRDWTB.setOnClickListener(this);
         chkBoxPollRDWTF.setOnClickListener(this);
+        chkBoxPollRDWTV.setOnClickListener(this);
         chkBoxListenP2PA.setOnClickListener(this);
         chkBoxListenP2PB.setOnClickListener(this);
         chkBoxListenP2PF.setOnClickListener(this);
+        chkBoxListenP2PV.setOnClickListener(this);
         chkBoxListenUICCA.setOnClickListener(this);
         chkBoxListenUICCB.setOnClickListener(this);
         chkBoxListenUICCF.setOnClickListener(this);
+        chkBoxListenUICCV.setOnClickListener(this);
         chkBoxListenHCEA.setOnClickListener(this);
         chkBoxListenHCEB.setOnClickListener(this);
         chkBoxListenHCEF.setOnClickListener(this);
+        chkBoxListenHCEV.setOnClickListener(this);
         chkBoxListenESEA.setOnClickListener(this);
         chkBoxListenESEB.setOnClickListener(this);
         chkBoxListenESEF.setOnClickListener(this);
-
+        chkBoxListenESEV.setOnClickListener(this);
+        chkBoxP2pAcmIni.setOnClickListener(this);
+        chkBoxP2pAcmTar.setOnClickListener(this);
+        chkBoxP2pAcmINIA.setOnClickListener(this);
+        chkBoxP2pAcmINIB.setOnClickListener(this);
+        chkBoxP2pAcmINIF.setOnClickListener(this);
+        chkBoxP2pAcmINIV.setOnClickListener(this);
+        chkBoxP2pAcmTARA.setOnClickListener(this);
+        chkBoxP2pAcmTARB.setOnClickListener(this);
+        chkBoxP2pAcmTARF.setOnClickListener(this);
+        chkBoxP2pAcmTARV.setOnClickListener(this);
     }
 
     private void enableDiscovery() {
@@ -1041,7 +1142,7 @@ public class PhDTAUIMainActivity extends Activity implements
                             if(phNXPJniHelper.startPhDtaLibInit()==0){
                             Log.e(PhUtilities.UI_TAG, "DTA is Initializing");
                             }else{
-                            Log.e(PhUtilities.UI_TAG, "Already DTA is Initialized");
+                            Log.e(PhUtilities.UI_TAG, "DTA is already Initialized");
                             }
                             getUpdatesFromView();
                             phNXPJniHelper.enableDiscovery(phDtaLibStructureObj);
@@ -1057,7 +1158,7 @@ public class PhDTAUIMainActivity extends Activity implements
         }
     }
 
-    private void automodeOnRunButtonPressed() {
+    private void autoModeOnRunButtonPressed() {
         Log.d(PhUtilities.UI_TAG, "Looping into Auto Mode");
         editTextCustomPatternNum.setHint("Custom");
         editTextCustomPatternNum.setEnabled(false);
@@ -1114,8 +1215,11 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxListenEse.setEnabled(true);
 
         chkBoxListenUicc.setChecked(false);
-        chkBoxListenHce.setChecked(false);
+        chkBoxListenHce.setChecked(true);
         chkBoxListenEse.setChecked(false);
+
+        chkBoxP2pAcmIni.setChecked(false);
+        chkBoxP2pAcmTar.setChecked(false);
 
         chkBoxLlcp.setEnabled(true);
         chkBoxSnep.setEnabled(true);
@@ -1142,6 +1246,8 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxListenUicc.setEnabled(true);
         chkBoxListenHce.setEnabled(true);
         chkBoxListenEse.setEnabled(true);
+        chkBoxP2pAcmIni.setEnabled(true);
+        chkBoxP2pAcmTar.setEnabled(true);
         chkBoxLlcp.setEnabled(true);
         chkBoxSnep.setEnabled(true);
         editTextCustomPatternNum.setEnabled(true);
@@ -1189,26 +1295,43 @@ public class PhDTAUIMainActivity extends Activity implements
 
         chkBoxPollP2PA.setEnabled(false);
         chkBoxPollP2PF.setEnabled(false);
+        chkBoxPollP2PV.setEnabled(false);
 
         chkBoxPollRDWTA.setEnabled(false);
         chkBoxPollRDWTB.setEnabled(false);
         chkBoxPollRDWTF.setEnabled(false);
+        chkBoxPollRDWTV.setEnabled(false);
 
         chkBoxListenP2PA.setEnabled(false);
         chkBoxListenP2PF.setEnabled(false);
+        chkBoxListenP2PV.setEnabled(false);
 
         chkBoxListenUICCA.setEnabled(false);
         chkBoxListenUICCB.setEnabled(false);
         chkBoxListenUICCF.setEnabled(false);
-
+        chkBoxListenUICCV.setEnabled(false);
 
         chkBoxListenHCEA.setEnabled(false);
         chkBoxListenHCEB.setEnabled(false);
         chkBoxListenHCEF.setEnabled(false);
+        chkBoxListenHCEV.setEnabled(false);
 
         chkBoxListenESEA.setEnabled(false);
         chkBoxListenESEB.setEnabled(false);
         chkBoxListenESEF.setEnabled(false);
+        chkBoxListenESEV.setEnabled(false);
+
+        chkBoxP2pAcmIni.setEnabled(false);
+        chkBoxP2pAcmINIA.setEnabled(false);
+        chkBoxP2pAcmINIB.setEnabled(false);
+        chkBoxP2pAcmINIF.setEnabled(false);
+        chkBoxP2pAcmINIV.setEnabled(false);
+
+        chkBoxP2pAcmTar.setEnabled(false);
+        chkBoxP2pAcmTARA.setEnabled(false);
+        chkBoxP2pAcmTARB.setEnabled(false);
+        chkBoxP2pAcmTARF.setEnabled(false);
+        chkBoxP2pAcmTARV.setEnabled(false);
     }
 
     /** Disable all the buttons */
@@ -1238,29 +1361,45 @@ public class PhDTAUIMainActivity extends Activity implements
 
         chkBoxPollP2PA.setEnabled(false);
         chkBoxPollP2PF.setEnabled(false);
+        chkBoxPollP2PV.setEnabled(false);
 
         chkBoxPollRDWTA.setEnabled(false);
         chkBoxPollRDWTB.setEnabled(false);
         chkBoxPollRDWTF.setEnabled(false);
+        chkBoxPollRDWTV.setEnabled(false);
 
         chkBoxListenP2PA.setEnabled(false);
         chkBoxListenP2PF.setEnabled(false);
+        chkBoxListenP2PV.setEnabled(false);
 
         chkBoxListenUICCA.setEnabled(false);
         chkBoxListenUICCB.setEnabled(false);
         chkBoxListenUICCF.setEnabled(false);
-
+        chkBoxListenUICCV.setEnabled(false);
 
         chkBoxListenHCEA.setEnabled(false);
         chkBoxListenHCEB.setEnabled(false);
         chkBoxListenHCEF.setEnabled(false);
+        chkBoxListenHCEV.setEnabled(false);
 
         chkBoxListenESEA.setEnabled(false);
         chkBoxListenESEB.setEnabled(false);
         chkBoxListenESEF.setEnabled(false);
+        chkBoxListenESEV.setEnabled(false);
 
         chkBoxLlcpConnectPduPrms.setEnabled(false);
 
+        chkBoxP2pAcmIni.setEnabled(false);
+        chkBoxP2pAcmINIA.setEnabled(false);
+        chkBoxP2pAcmINIB.setEnabled(false);
+        chkBoxP2pAcmINIF.setEnabled(false);
+        chkBoxP2pAcmINIV.setEnabled(false);
+
+        chkBoxP2pAcmTar.setEnabled(false);
+        chkBoxP2pAcmTARA.setEnabled(false);
+        chkBoxP2pAcmTARB.setEnabled(false);
+        chkBoxP2pAcmTARF.setEnabled(false);
+        chkBoxP2pAcmTARV.setEnabled(false);
     }
 
     /** Enable the Custom Message and Show Message from user actions */
@@ -1515,10 +1654,7 @@ public class PhDTAUIMainActivity extends Activity implements
                     "get Connection device limit " + connectionDeviceLimit.getSelectedItem().toString());
             nxpHelperMainActivity.setsConnectionDeviceLimit(connectionDeviceLimit.getSelectedItem().toString());
             break;
-
         }
-
-
     }
 
     @Override
@@ -1552,7 +1688,7 @@ public class PhDTAUIMainActivity extends Activity implements
             if(PhUtilities.NDK_IMPLEMENTATION==true && phNXPJniHelper.startPhDtaLibInit()==0){
                 Log.e(PhUtilities.UI_TAG, "DTA is Initializing");
             }else{
-                Log.e(PhUtilities.UI_TAG, "Already DTA is Initialized");
+                Log.e(PhUtilities.UI_TAG, "DTA is already Initialized");
             }
         }
     }
@@ -1569,34 +1705,52 @@ public class PhDTAUIMainActivity extends Activity implements
         phDtaLibStructureObj.listenUicc = chkBoxListenUicc.isChecked();
         phDtaLibStructureObj.listenHce  = chkBoxListenHce.isChecked();
         phDtaLibStructureObj.listenEse  = chkBoxListenEse.isChecked();
+        phDtaLibStructureObj.p2pAcmInitiator  = chkBoxP2pAcmIni.isChecked();
+        phDtaLibStructureObj.p2pAcmTarget  = chkBoxP2pAcmTar.isChecked();
 
         phDtaLibStructureObj.initializeRfTechObjs();
         phDtaLibStructureObj.pollP2pRfTech.technologyA = chkBoxPollP2PA.isChecked();
         phDtaLibStructureObj.pollP2pRfTech.technologyB = chkBoxPollP2PB.isChecked();
         phDtaLibStructureObj.pollP2pRfTech.technologyF = chkBoxPollP2PF.isChecked();
+        phDtaLibStructureObj.pollP2pRfTech.technologyV = chkBoxPollP2PV.isChecked();
 
         phDtaLibStructureObj.pollRdWtRfTech.technologyA = chkBoxPollRDWTA.isChecked();
         phDtaLibStructureObj.pollRdWtRfTech.technologyB = chkBoxPollRDWTB.isChecked();
         phDtaLibStructureObj.pollRdWtRfTech.technologyF = chkBoxPollRDWTF.isChecked();
+        phDtaLibStructureObj.pollRdWtRfTech.technologyV = chkBoxPollRDWTV.isChecked();
 
         phDtaLibStructureObj.listenUiccRfTech.technologyA = chkBoxListenUICCA.isChecked();
         phDtaLibStructureObj.listenUiccRfTech.technologyB = chkBoxListenUICCB.isChecked();
         phDtaLibStructureObj.listenUiccRfTech.technologyF = chkBoxListenUICCF.isChecked();
+        phDtaLibStructureObj.listenUiccRfTech.technologyV = chkBoxListenUICCV.isChecked();
 
         phDtaLibStructureObj.listenHceRfTech.technologyA = chkBoxListenHCEA.isChecked();
         phDtaLibStructureObj.listenHceRfTech.technologyB = chkBoxListenHCEB.isChecked();
         phDtaLibStructureObj.listenHceRfTech.technologyF = chkBoxListenHCEF.isChecked();
+        phDtaLibStructureObj.listenHceRfTech.technologyV = chkBoxListenHCEV.isChecked();
 
         phDtaLibStructureObj.listenEseRfTech.technologyA = chkBoxListenESEA.isChecked();
         phDtaLibStructureObj.listenEseRfTech.technologyB = chkBoxListenESEB.isChecked();
         phDtaLibStructureObj.listenEseRfTech.technologyF = chkBoxListenESEF.isChecked();
+        phDtaLibStructureObj.listenEseRfTech.technologyV = chkBoxListenESEV.isChecked();
 
         phDtaLibStructureObj.listenP2pRfTech.technologyA = chkBoxListenP2PA.isChecked();
         phDtaLibStructureObj.listenP2pRfTech.technologyB = chkBoxListenP2PB.isChecked();
         phDtaLibStructureObj.listenP2pRfTech.technologyF = chkBoxListenP2PF.isChecked();
+        phDtaLibStructureObj.listenP2pRfTech.technologyV = chkBoxListenP2PV.isChecked();
 
-        phDtaLibStructureObj.enableLlcp    = chkBoxLlcp.isChecked();
-        phDtaLibStructureObj.enableSnep    = chkBoxSnep.isChecked();
+        phDtaLibStructureObj.p2pAcmIniRfTech.technologyA = chkBoxP2pAcmINIA.isChecked();
+        phDtaLibStructureObj.p2pAcmIniRfTech.technologyB = chkBoxP2pAcmINIB.isChecked();
+        phDtaLibStructureObj.p2pAcmIniRfTech.technologyF = chkBoxP2pAcmINIF.isChecked();
+        phDtaLibStructureObj.p2pAcmIniRfTech.technologyV = chkBoxP2pAcmINIV.isChecked();
+
+        phDtaLibStructureObj.p2pAcmTarRfTech.technologyA = chkBoxP2pAcmTARA.isChecked();
+        phDtaLibStructureObj.p2pAcmTarRfTech.technologyB = chkBoxP2pAcmTARB.isChecked();
+        phDtaLibStructureObj.p2pAcmTarRfTech.technologyF = chkBoxP2pAcmTARF.isChecked();
+        phDtaLibStructureObj.p2pAcmTarRfTech.technologyV = chkBoxP2pAcmTARV.isChecked();
+
+        phDtaLibStructureObj.enableLlcp = chkBoxLlcp.isChecked();
+        phDtaLibStructureObj.enableSnep = chkBoxSnep.isChecked();
         phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
         phDtaLibStructureObj.certificationVerNum = nxpHelperMainActivity.getsCertificationVersion();
         phDtaLibStructureObj.timeSlotNumberF = Integer.parseInt(nxpHelperMainActivity.getsTimeSlotNumberF(), 16);
@@ -1605,30 +1759,46 @@ public class PhDTAUIMainActivity extends Activity implements
         phDtaLibStructureObj.enableParamsInLlcpConnectPdu =
                 chkBoxLlcpConnectPduPrms.isChecked();
 
-        Log.d(PhUtilities.UI_TAG, "PollP2P:Y/N:A:B:F =" + phDtaLibStructureObj.pollP2P +
+        Log.d(PhUtilities.UI_TAG, "PollP2P:Y/N:A:B:F:V =" + phDtaLibStructureObj.pollP2P +
                 ":" + phDtaLibStructureObj.pollP2pRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.pollP2pRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.pollP2pRfTech.technologyF);
-        Log.d(PhUtilities.UI_TAG, "PollRdWt:Y/N:A:B:F =" + phDtaLibStructureObj.pollRdWt +
+                ":" + phDtaLibStructureObj.pollP2pRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.pollP2pRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "PollRdWt:Y/N:A:B:F:V =" + phDtaLibStructureObj.pollRdWt +
                 ":" + phDtaLibStructureObj.pollRdWtRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.pollRdWtRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.pollRdWtRfTech.technologyF);
-        Log.d(PhUtilities.UI_TAG, "ListenP2P:Y/N:A:B:F =" + phDtaLibStructureObj.listenP2P +
+                ":" + phDtaLibStructureObj.pollRdWtRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.pollRdWtRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "ListenP2P:Y/N:A:B:F:V =" + phDtaLibStructureObj.listenP2P +
                 ":" + phDtaLibStructureObj.listenP2pRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.listenP2pRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.listenP2pRfTech.technologyF);
-        Log.d(PhUtilities.UI_TAG, "ListenHCE:Y/N:A:B:F =" + phDtaLibStructureObj.listenHce +
+                ":" + phDtaLibStructureObj.listenP2pRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.listenP2pRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "ListenHCE:Y/N:A:B:F:V =" + phDtaLibStructureObj.listenHce +
                 ":" + phDtaLibStructureObj.listenHceRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.listenHceRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.listenHceRfTech.technologyF);
-        Log.d(PhUtilities.UI_TAG, "ListenUICC:Y/N:A:B:F =" + phDtaLibStructureObj.listenUicc +
+                ":" + phDtaLibStructureObj.listenHceRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.listenHceRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "ListenUICC:Y/N:A:B:F:V =" + phDtaLibStructureObj.listenUicc +
                 ":" + phDtaLibStructureObj.listenUiccRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.listenUiccRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.listenUiccRfTech.technologyF);
-        Log.d(PhUtilities.UI_TAG, "ListenEse:Y/N:A:B:F =" + phDtaLibStructureObj.listenEse +
+                ":" + phDtaLibStructureObj.listenUiccRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.listenUiccRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "ListenEse:Y/N:A:B:F:V =" + phDtaLibStructureObj.listenEse +
                 ":" + phDtaLibStructureObj.listenEseRfTech.technologyA + ":" +
                 ":" + phDtaLibStructureObj.listenEseRfTech.technologyB + ":" +
-                ":" + phDtaLibStructureObj.listenEseRfTech.technologyF);
+                ":" + phDtaLibStructureObj.listenEseRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.listenEseRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "P2pAcmInitiator:Y/N:A:B:F:V =" + phDtaLibStructureObj.p2pAcmInitiator +
+                ":" + phDtaLibStructureObj.p2pAcmIniRfTech.technologyA + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmIniRfTech.technologyB + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmIniRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmIniRfTech.technologyV);
+        Log.d(PhUtilities.UI_TAG, "P2pAcmTarget:Y/N:A:B:F:V =" + phDtaLibStructureObj.p2pAcmTarget +
+                ":" + phDtaLibStructureObj.p2pAcmTarRfTech.technologyA + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmTarRfTech.technologyB + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmTarRfTech.technologyF + ":" +
+                ":" + phDtaLibStructureObj.p2pAcmTarRfTech.technologyV);
         Log.d(PhUtilities.UI_TAG, "patternNum ="
                 + phDtaLibStructureObj.patternNum);
         Log.d(PhUtilities.UI_TAG, "timeSlotNumberF ="
@@ -1713,6 +1883,8 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxListenP2p = (CheckBox) findViewById(R.id.p2p_listen_check_box);
         chkBoxListenUicc = (CheckBox) findViewById(R.id.uicc_listen_check_box);
         chkBoxListenHce = (CheckBox) findViewById(R.id.hce_listen_check_box);
+        chkBoxP2pAcmIni = (CheckBox) findViewById(R.id.p2p_acm_initiator_check_box);
+        chkBoxP2pAcmTar = (CheckBox) findViewById(R.id.p2p_acm_target_check_box);
         chkBoxLlcpConnectPduPrms=(CheckBox) findViewById(R.id.llcp_content_check_box);
         chkBoxListenEse = (CheckBox) findViewById(R.id.ese_listen_check_box);
         chkBoxLlcp = (CheckBox) findViewById(R.id.llcp_check_box);
@@ -1746,21 +1918,35 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxPollP2PA = (CheckBox) findViewById(R.id.a_p2p_poll_check_box);
         chkBoxPollP2PB = (CheckBox) findViewById(R.id.b_p2p_poll_check_box);
         chkBoxPollP2PF = (CheckBox) findViewById(R.id.f_p2p_poll_check_box);
+        chkBoxPollP2PV = (CheckBox) findViewById(R.id.v_p2p_poll_check_box);
         chkBoxPollRDWTA= (CheckBox) findViewById(R.id.a_rdwt_poll_check_box);
         chkBoxPollRDWTB= (CheckBox) findViewById(R.id.b_rdwt_poll_check_box);
         chkBoxPollRDWTF= (CheckBox) findViewById(R.id.f_rdwt_poll_check_box);
+        chkBoxPollRDWTV= (CheckBox) findViewById(R.id.v_rdwt_poll_check_box);
         chkBoxListenP2PA=(CheckBox) findViewById(R.id.a_p2p_listen_check_box);
         chkBoxListenP2PB=(CheckBox) findViewById(R.id.b_p2p_listen_check_box);
         chkBoxListenP2PF=(CheckBox) findViewById(R.id.f_p2p_listen_check_box);
+        chkBoxListenP2PV=(CheckBox) findViewById(R.id.v_p2p_listen_check_box);
         chkBoxListenUICCA= (CheckBox) findViewById(R.id.a_uicc_listen_check_box);
         chkBoxListenUICCB= (CheckBox) findViewById(R.id.b_uicc_listen_check_box);
         chkBoxListenUICCF= (CheckBox) findViewById(R.id.f_uicc_listen_check_box);
+        chkBoxListenUICCV= (CheckBox) findViewById(R.id.v_uicc_listen_check_box);
         chkBoxListenHCEA= (CheckBox) findViewById(R.id.a_hce_listen_check_box);
         chkBoxListenHCEB= (CheckBox) findViewById(R.id.b_hce_listen_check_box);
         chkBoxListenHCEF= (CheckBox) findViewById(R.id.f_hce_listen_check_box);
+        chkBoxListenHCEV= (CheckBox) findViewById(R.id.v_hce_listen_check_box);
         chkBoxListenESEA= (CheckBox) findViewById(R.id.a_ese_listen_check_box);
         chkBoxListenESEB= (CheckBox) findViewById(R.id.b_ese_listen_check_box);
         chkBoxListenESEF= (CheckBox) findViewById(R.id.f_ese_listen_check_box);
+        chkBoxListenESEV= (CheckBox) findViewById(R.id.v_ese_listen_check_box);
+        chkBoxP2pAcmINIA= (CheckBox) findViewById(R.id.a_p2p_acm_initiator_check_box);
+        chkBoxP2pAcmINIB= (CheckBox) findViewById(R.id.b_p2p_acm_initiator_check_box);
+        chkBoxP2pAcmINIF= (CheckBox) findViewById(R.id.f_p2p_acm_initiator_check_box);
+        chkBoxP2pAcmINIV= (CheckBox) findViewById(R.id.v_p2p_acm_initiator_check_box);
+        chkBoxP2pAcmTARA= (CheckBox) findViewById(R.id.a_p2p_acm_target_check_box);
+        chkBoxP2pAcmTARB= (CheckBox) findViewById(R.id.b_p2p_acm_target_check_box);
+        chkBoxP2pAcmTARF= (CheckBox) findViewById(R.id.f_p2p_acm_target_check_box);
+        chkBoxP2pAcmTARV= (CheckBox) findViewById(R.id.v_p2p_acm_target_check_box);
     }
 
     @Override
@@ -1782,7 +1968,7 @@ public class PhDTAUIMainActivity extends Activity implements
         break;
         }
     }
-    private void appearDissappearOFViews() {
+    private void appearDisappearOfViews() {
         if (PhUtilities.APPEAR_CUSTOM) {
             editTextCustomPatternNum.setVisibility(View.VISIBLE);
         } else if (PhUtilities.DISAPPER_CUSTOM) {
@@ -1876,7 +2062,10 @@ public class PhDTAUIMainActivity extends Activity implements
 
     private void handleStartButtonEvent(){
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        boolean technologySelectionerror =chkBoxListenP2p.isChecked() || chkBoxListenUicc.isChecked() || chkBoxListenHce.isChecked() || chkBoxListenEse.isChecked() || chkBoxPollP2p.isChecked() || chkBoxPollRdWt.isChecked();
+        boolean technologySelectionerror = chkBoxListenP2p.isChecked() || chkBoxListenUicc.isChecked()
+                                            || chkBoxListenHce.isChecked() || chkBoxListenEse.isChecked()
+                                            || chkBoxPollP2p.isChecked() || chkBoxPollRdWt.isChecked()
+                                            || chkBoxP2pAcmIni.isChecked() || chkBoxP2pAcmTar.isChecked();
         if(!mNfcAdapter.isEnabled() && technologySelectionerror){
             runBtn.setClickable(false);
             txtVwAppStatus.setText(Html.fromHtml(currentStatusInitializing),TextView.BufferType.SPANNABLE);
@@ -1971,7 +2160,7 @@ public class PhDTAUIMainActivity extends Activity implements
         /*** NDK implementation */
         // loadJNILibrary();
 
-        isRunClickedAtlLeastOnce = true;
+        isRunClickedAtLeastOnce = true;
 
         if (PhUtilities.NDK_IMPLEMENTATION) {
             // SOM
@@ -1997,7 +2186,7 @@ public class PhDTAUIMainActivity extends Activity implements
 
                 }
             } else if (radioBtnAutoMode.isChecked()) {
-                automodeOnRunButtonPressed();
+                autoModeOnRunButtonPressed();
                 }
         }
 
@@ -2324,6 +2513,8 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenUicc.setChecked(false);
             chkBoxListenHce.setChecked(false);
             chkBoxListenEse.setChecked(false);
+            chkBoxP2pAcmIni.setChecked(false);
+            chkBoxP2pAcmTar.setChecked(false);
             chkBoxListenP2p.setChecked(true);
             chkBoxPollP2p.setChecked(true);
             chkBoxPollRdWt.setChecked(true);
@@ -2336,6 +2527,8 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenUicc.setEnabled(true);
             chkBoxListenHce.setEnabled(true);
             chkBoxListenEse.setEnabled(true);
+            chkBoxP2pAcmIni.setEnabled(true);
+            chkBoxP2pAcmTar.setEnabled(true);
             spinnerPatterNum.setAdapter(adapterPatternNumberDefault);
             editTextCustomPatternNum.setEnabled(true);
         }
@@ -2367,9 +2560,11 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxPollRDWTA.setChecked(true);
             chkBoxPollRDWTB.setChecked(true);
             chkBoxPollRDWTF.setChecked(true);
+            chkBoxPollRDWTV.setChecked(true);
             chkBoxPollRDWTA.setEnabled(true);
             chkBoxPollRDWTB.setEnabled(true);
             chkBoxPollRDWTF.setEnabled(true);
+            chkBoxPollRDWTV.setEnabled(true);
         }else{
             chkBoxPollP2PA.setChecked(false);
             chkBoxPollP2PF.setChecked(false);
@@ -2379,9 +2574,11 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxPollRDWTA.setChecked(false);
             chkBoxPollRDWTB.setChecked(false);
             chkBoxPollRDWTF.setChecked(false);
+            chkBoxPollRDWTV.setChecked(false);
             chkBoxPollRDWTA.setEnabled(false);
             chkBoxPollRDWTB.setEnabled(false);
             chkBoxPollRDWTF.setEnabled(false);
+            chkBoxPollRDWTV.setEnabled(false);
         }
     }
 
@@ -2411,12 +2608,11 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenP2PA.setEnabled(false);
             chkBoxListenP2PF.setEnabled(false);
         }
-        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()) && (!chkBoxListenHCEV.isChecked()))
         {
             chkBoxListenHce.setChecked(false);
             enableTechChkBoxsForModes();
         }
-
     }
 
     private void handleListenUICCCheckBoxEvent() {
@@ -2424,16 +2620,20 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenUICCA.setChecked(true);
             chkBoxListenUICCB.setChecked(true);
             chkBoxListenUICCF.setChecked(true);
+            chkBoxListenUICCV.setChecked(false);
             chkBoxListenUICCA.setEnabled(true);
             chkBoxListenUICCB.setEnabled(true);
             chkBoxListenUICCF.setEnabled(true);
+            chkBoxListenUICCV.setEnabled(false);
         }else if(!chkBoxListenUicc.isChecked()){
             chkBoxListenUICCA.setChecked(false);
             chkBoxListenUICCB.setChecked(false);
             chkBoxListenUICCF.setChecked(false);
+            chkBoxListenUICCV.setChecked(false);
             chkBoxListenUICCA.setEnabled(false);
             chkBoxListenUICCB.setEnabled(false);
             chkBoxListenUICCF.setEnabled(false);
+            chkBoxListenUICCV.setEnabled(false);
         }
     }
 
@@ -2442,16 +2642,20 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenHCEA.setChecked(true);
             chkBoxListenHCEB.setChecked(true);
             chkBoxListenHCEF.setChecked(false);
+            chkBoxListenHCEV.setChecked(false);
             chkBoxListenHCEA.setEnabled(true);
             chkBoxListenHCEB.setEnabled(true);
             chkBoxListenHCEF.setEnabled(true);
+            chkBoxListenHCEV.setEnabled(false);
         }else if(!chkBoxListenHce.isChecked()){
             chkBoxListenHCEA.setChecked(false);
             chkBoxListenHCEB.setChecked(false);
             chkBoxListenHCEF.setChecked(false);
+            chkBoxListenHCEV.setChecked(false);
             chkBoxListenHCEA.setEnabled(false);
             chkBoxListenHCEB.setEnabled(false);
             chkBoxListenHCEF.setEnabled(false);
+            chkBoxListenHCEV.setEnabled(false);
         }
 
         /* Enabling Listen P2P to default when HCE-F is not checked */
@@ -2466,45 +2670,56 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenESEA.setChecked(true);
             chkBoxListenESEB.setChecked(true);
             chkBoxListenESEF.setChecked(true);
+            chkBoxListenESEV.setChecked(false);
             chkBoxListenESEA.setEnabled(true);
             chkBoxListenESEB.setEnabled(true);
             chkBoxListenESEF.setEnabled(true);
+            chkBoxListenESEV.setEnabled(false);
         }else if(!chkBoxListenEse.isChecked()){
             chkBoxListenESEA.setChecked(false);
             chkBoxListenESEB.setChecked(false);
             chkBoxListenESEF.setChecked(false);
+            chkBoxListenESEV.setChecked(false);
             chkBoxListenESEA.setEnabled(false);
             chkBoxListenESEB.setEnabled(false);
             chkBoxListenESEF.setEnabled(false);
+            chkBoxListenESEV.setEnabled(false);
         }
     }
 
     private void handlePollP2pTechCheckBoxEvent() {
-        if((!chkBoxPollP2PA.isChecked()) && (!chkBoxPollP2PB.isChecked()) && (!chkBoxPollP2PF.isChecked())){
+        if((!chkBoxPollP2PA.isChecked()) && (!chkBoxPollP2PB.isChecked()) &&
+           (!chkBoxPollP2PF.isChecked()) && (!chkBoxPollP2PV.isChecked())){
                 chkBoxPollP2p.setChecked(false);
         }
         /*Poll A&F state is common for P2P and RdWt mode.
-         * So check for state of Technologies in RdWt mode also and then enable/disable chkboxes accordingly*/
-        if((!chkBoxPollRDWTA.isChecked()) && (!chkBoxPollRDWTB.isChecked()) && (!chkBoxPollRDWTF.isChecked())){
+         * So check for state of Technologies in RdWt mode also and then
+           enable/disable chkboxes accordingly*/
+        if((!chkBoxPollRDWTA.isChecked()) && (!chkBoxPollRDWTB.isChecked()) &&
+           (!chkBoxPollRDWTF.isChecked()) && (!chkBoxPollRDWTV.isChecked())){
             chkBoxPollRdWt.setChecked(false);
         }
         enableTechChkBoxsForModes();
     }
 
     private void handlePollRdWrtTechCheckBoxEvent() {
-        if((!chkBoxPollRDWTA.isChecked()) && (!chkBoxPollRDWTB.isChecked()) && (!chkBoxPollRDWTF.isChecked())){
+        if((!chkBoxPollRDWTA.isChecked()) && (!chkBoxPollRDWTB.isChecked()) &&
+           (!chkBoxPollRDWTF.isChecked()) && (!chkBoxPollRDWTV.isChecked())){
                 chkBoxPollRdWt.setChecked(false);
         }
         /*Poll A&F state is common for P2P and RdWt mode.
-        * So check for state of Technologies in P2P mode also and then enable/disable chkboxes accordingly*/
-        if((!chkBoxPollP2PA.isChecked()) && (!chkBoxPollP2PB.isChecked()) && (!chkBoxPollP2PF.isChecked())){
+        * So check for state of Technologies in P2P mode also and then
+          enable/disable chkboxes accordingly*/
+        if((!chkBoxPollP2PA.isChecked()) && (!chkBoxPollP2PB.isChecked()) &&
+           (!chkBoxPollP2PF.isChecked()) && (!chkBoxPollP2PV.isChecked())){
             chkBoxPollP2p.setChecked(false);
         }
         enableTechChkBoxsForModes();
     }
 
     private void handleListenP2pTechCheckBoxEvent() {
-        if((!chkBoxListenP2PA.isChecked()) && (!chkBoxListenP2PB.isChecked()) && (!chkBoxListenP2PF.isChecked()))
+        if((!chkBoxListenP2PA.isChecked()) && (!chkBoxListenP2PB.isChecked()) &&
+           (!chkBoxListenP2PF.isChecked()) && (!chkBoxListenP2PV.isChecked()))
         {
             chkBoxListenP2p.setChecked(false);
             enableTechChkBoxsForModes();
@@ -2512,27 +2727,17 @@ public class PhDTAUIMainActivity extends Activity implements
     }
 
     private void handleListenUiccTechCheckBoxEvent() {
-        if((!chkBoxListenUICCA.isChecked()) && (!chkBoxListenUICCB.isChecked()) && (!chkBoxListenUICCF.isChecked()))
+        if((!chkBoxListenUICCA.isChecked()) && (!chkBoxListenUICCB.isChecked()) &&
+           (!chkBoxListenUICCF.isChecked()) && (!chkBoxListenUICCV.isChecked()))
         {
                 chkBoxListenUicc.setChecked(false);
                 enableTechChkBoxsForModes();
         }
     }
 
-    private void handleListenHceATechCheckBoxEvent(){
-        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
-        {
-            chkBoxListenHce.setChecked(false);
-            enableTechChkBoxsForModes();
-        }
-
-        if(chkBoxListenHCEF.isChecked()){
-            chkBoxListenHCEF.setChecked(false);
-        }
-    }
-
-    private void handleListenHceBTechCheckBoxEvent(){
-        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+    private void handleListenHceABVTechCheckBoxEvent(){
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) &&
+           (!chkBoxListenHCEF.isChecked())&& (!chkBoxListenHCEV.isChecked()))
         {
             chkBoxListenHce.setChecked(false);
             enableTechChkBoxsForModes();
@@ -2544,7 +2749,8 @@ public class PhDTAUIMainActivity extends Activity implements
     }
 
     private void handleListenHceFTechCheckBoxEvent() {
-        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) && (!chkBoxListenHCEF.isChecked()))
+        if((!chkBoxListenHCEA.isChecked()) && (!chkBoxListenHCEB.isChecked()) &&
+           (!chkBoxListenHCEF.isChecked()) && (!chkBoxListenHCEV.isChecked()))
         {
                 chkBoxListenHce.setChecked(false);
                 enableTechChkBoxsForModes();
@@ -2556,14 +2762,18 @@ public class PhDTAUIMainActivity extends Activity implements
                 chkBoxListenP2p.setChecked(false);
                 chkBoxListenP2PA.setChecked(false);
                 chkBoxListenP2PF.setChecked(false);
+                chkBoxListenP2PV.setChecked(false);
                 chkBoxListenP2PA.setEnabled(false);
                 chkBoxListenP2PF.setEnabled(false);
+                chkBoxListenP2PV.setEnabled(false);
                 Toast.makeText(PhDTAUIMainActivity.this, "P2P Listen is disabled, when HCE-F is selected", Toast.LENGTH_SHORT).show();
-            }else if((chkBoxListenHCEA.isChecked() || chkBoxListenHCEB.isChecked())){
+            }else if(chkBoxListenHCEA.isChecked() || chkBoxListenHCEB.isChecked()
+                    || chkBoxListenHCEV.isChecked()){
                 Toast.makeText(PhDTAUIMainActivity.this, "HCE-A and HCE-B is disabled, when HCE-F is selected ", Toast.LENGTH_SHORT).show();
             }
             chkBoxListenHCEA.setChecked(false);
             chkBoxListenHCEB.setChecked(false);
+            chkBoxListenHCEV.setChecked(false);
         } else { /* Enable P2P by default when HCE-F is not checked */
             chkBoxListenP2p.setChecked(true);
             handleListenP2PCheckBoxEvent();
@@ -2571,9 +2781,72 @@ public class PhDTAUIMainActivity extends Activity implements
     }
 
     private void handleListenEseTechCheckBoxEvent() {
-        if((!chkBoxListenESEA.isChecked()) && (!chkBoxListenESEB.isChecked()) && (!chkBoxListenESEF.isChecked()))
+        if((!chkBoxListenESEA.isChecked()) && (!chkBoxListenESEB.isChecked()) &&
+           (!chkBoxListenESEF.isChecked()) && (!chkBoxListenESEV.isChecked()))
         {
                 chkBoxListenEse.setChecked(false);
+                enableTechChkBoxsForModes();
+        }
+    }
+
+    private void handleP2pAcmIniCheckBoxEvent() {
+        if(chkBoxP2pAcmIni.isChecked()){
+            chkBoxP2pAcmINIA.setChecked(true);
+            chkBoxP2pAcmINIB.setChecked(false);
+            chkBoxP2pAcmINIF.setChecked(true);
+            chkBoxP2pAcmINIV.setChecked(false);
+            chkBoxP2pAcmINIA.setEnabled(true);
+            chkBoxP2pAcmINIB.setEnabled(false);
+            chkBoxP2pAcmINIF.setEnabled(true);
+            chkBoxP2pAcmINIV.setEnabled(false);
+        }else if(!chkBoxP2pAcmIni.isChecked()){
+            chkBoxP2pAcmINIA.setChecked(false);
+            chkBoxP2pAcmINIB.setChecked(false);
+            chkBoxP2pAcmINIF.setChecked(false);
+            chkBoxP2pAcmINIV.setChecked(false);
+            chkBoxP2pAcmINIA.setEnabled(false);
+            chkBoxP2pAcmINIB.setEnabled(false);
+            chkBoxP2pAcmINIF.setEnabled(false);
+            chkBoxP2pAcmINIV.setEnabled(false);
+        }
+    }
+
+    private void handleP2pAcmTarCheckBoxEvent() {
+        if(chkBoxP2pAcmTar.isChecked()){
+            chkBoxP2pAcmTARA.setChecked(true);
+            chkBoxP2pAcmTARB.setChecked(false);
+            chkBoxP2pAcmTARF.setChecked(true);
+            chkBoxP2pAcmTARV.setChecked(false);
+            chkBoxP2pAcmTARA.setEnabled(true);
+            chkBoxP2pAcmTARB.setEnabled(false);
+            chkBoxP2pAcmTARF.setEnabled(true);
+            chkBoxP2pAcmTARV.setEnabled(false);
+        }else if(!chkBoxP2pAcmTar.isChecked()){
+            chkBoxP2pAcmTARA.setChecked(false);
+            chkBoxP2pAcmTARB.setChecked(false);
+            chkBoxP2pAcmTARF.setChecked(false);
+            chkBoxP2pAcmTARV.setChecked(false);
+            chkBoxP2pAcmTARA.setEnabled(false);
+            chkBoxP2pAcmTARB.setEnabled(false);
+            chkBoxP2pAcmTARF.setEnabled(false);
+            chkBoxP2pAcmTARV.setEnabled(false);
+        }
+    }
+
+    private void handleP2pAcmIniTechCheckBoxEvent() {
+        if((!chkBoxP2pAcmINIA.isChecked()) && (!chkBoxP2pAcmINIB.isChecked()) &&
+           (!chkBoxP2pAcmINIF.isChecked()) && (!chkBoxP2pAcmINIV.isChecked()))
+        {
+                chkBoxP2pAcmIni.setChecked(false);
+                enableTechChkBoxsForModes();
+        }
+    }
+
+    private void handleP2pAcmTarTechCheckBoxEvent() {
+        if((!chkBoxP2pAcmTARA.isChecked()) && (!chkBoxP2pAcmTARB.isChecked()) &&
+           (!chkBoxP2pAcmTARF.isChecked()) && (!chkBoxP2pAcmTARV.isChecked()))
+        {
+                chkBoxP2pAcmTar.setChecked(false);
                 enableTechChkBoxsForModes();
         }
     }
@@ -2581,10 +2854,12 @@ public class PhDTAUIMainActivity extends Activity implements
     private void handleAllTheModesEvent(){
         handlePollP2PCheckBoxEvent();
         handlePollRDWTCheckBoxEvent();
-        handleListenP2PCheckBoxEvent();
         handleListenUICCCheckBoxEvent();
         handleListenHCECheckBoxEvent();
         handleListenESECheckBoxEvent();
+        handleListenP2PCheckBoxEvent();
+        handleP2pAcmIniCheckBoxEvent();
+        handleP2pAcmTarCheckBoxEvent();
     }
 
     public PhDtaLibStructure getPhDtaLibStructureObj() {
@@ -2606,36 +2881,64 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxPollP2PB.setEnabled(true);
         if(chkBoxPollP2PF.isChecked())
             chkBoxPollP2PF.setEnabled(true);
+        if(chkBoxPollP2PV.isChecked())
+            chkBoxPollP2PV.setEnabled(true);
         if(chkBoxPollRDWTA.isChecked())
             chkBoxPollRDWTA.setEnabled(true);
         if(chkBoxPollRDWTB.isChecked())
             chkBoxPollRDWTB.setEnabled(true);
         if(chkBoxPollRDWTF.isChecked())
             chkBoxPollRDWTF.setEnabled(true);
+        if(chkBoxPollRDWTV.isChecked())
+            chkBoxPollRDWTV.setEnabled(true);
         if(chkBoxListenP2PA.isChecked())
             chkBoxListenP2PA.setEnabled(true);
         if(chkBoxListenP2PB.isChecked())
             chkBoxListenP2PB.setEnabled(true);
         if(chkBoxListenP2PF.isChecked())
             chkBoxListenP2PF.setEnabled(true);
+        if(chkBoxListenP2PV.isChecked())
+            chkBoxListenP2PV.setEnabled(true);
         if(chkBoxListenUICCA.isChecked())
             chkBoxListenUICCA.setEnabled(true);
         if(chkBoxListenUICCB.isChecked())
             chkBoxListenUICCB.setEnabled(true);
         if(chkBoxListenUICCF.isChecked())
             chkBoxListenUICCF.setEnabled(true);
+        if(chkBoxListenUICCV.isChecked())
+            chkBoxListenUICCV.setEnabled(true);
         if(chkBoxListenHCEA.isChecked())
             chkBoxListenHCEA.setEnabled(true);
         if(chkBoxListenHCEB.isChecked())
             chkBoxListenHCEB.setEnabled(true);
         if(chkBoxListenHCEF.isChecked())
             chkBoxListenHCEF.setEnabled(true);
+        if(chkBoxListenHCEV.isChecked())
+            chkBoxListenHCEV.setEnabled(true);
         if(chkBoxListenESEA.isChecked())
             chkBoxListenESEA.setEnabled(true);
         if(chkBoxListenESEB.isChecked())
             chkBoxListenESEB.setEnabled(true);
         if(chkBoxListenESEF.isChecked())
             chkBoxListenESEF.setEnabled(true);
+        if(chkBoxListenESEV.isChecked())
+            chkBoxListenESEV.setEnabled(true);
+        if(chkBoxP2pAcmINIA.isChecked())
+            chkBoxP2pAcmINIA.setEnabled(true);
+        if(chkBoxP2pAcmINIB.isChecked())
+            chkBoxP2pAcmINIB.setEnabled(true);
+        if(chkBoxP2pAcmINIF.isChecked())
+            chkBoxP2pAcmINIF.setEnabled(true);
+        if(chkBoxP2pAcmINIV.isChecked())
+            chkBoxP2pAcmINIV.setEnabled(true);
+        if(chkBoxP2pAcmTARA.isChecked())
+            chkBoxP2pAcmTARA.setEnabled(true);
+        if(chkBoxP2pAcmTARB.isChecked())
+            chkBoxP2pAcmTARB.setEnabled(true);
+        if(chkBoxP2pAcmTARF.isChecked())
+            chkBoxP2pAcmTARF.setEnabled(true);
+        if(chkBoxP2pAcmTARV.isChecked())
+            chkBoxP2pAcmTARV.setEnabled(true);
     }
 
     private void enableTechChkBoxsForModes(){
@@ -2650,10 +2953,12 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxPollRDWTA.setEnabled(true);
             chkBoxPollRDWTB.setEnabled(true);
             chkBoxPollRDWTF.setEnabled(true);
+            chkBoxPollRDWTV.setEnabled(true);
         }else{
             chkBoxPollRDWTA.setEnabled(false);
             chkBoxPollRDWTB.setEnabled(false);
             chkBoxPollRDWTF.setEnabled(false);
+            chkBoxPollRDWTV.setEnabled(false);
         }
         if(chkBoxListenP2p.isChecked()){
             chkBoxListenP2PA.setEnabled(true);
@@ -2666,30 +2971,59 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenUICCA.setEnabled(true);
             chkBoxListenUICCB.setEnabled(true);
             chkBoxListenUICCF.setEnabled(true);
+            chkBoxListenUICCV.setEnabled(false);
         }else{
             chkBoxListenUICCA.setEnabled(false);
             chkBoxListenUICCB.setEnabled(false);
             chkBoxListenUICCF.setEnabled(false);
+            chkBoxListenUICCV.setEnabled(false);
         }
         if(chkBoxListenHce.isChecked()){
             chkBoxListenHCEA.setEnabled(true);
             chkBoxListenHCEB.setEnabled(true);
             chkBoxListenHCEF.setEnabled(true);
+            chkBoxListenHCEV.setEnabled(false);
         }else{
             chkBoxListenHCEA.setEnabled(false);
             chkBoxListenHCEB.setEnabled(false);
             chkBoxListenHCEF.setEnabled(false);
+            chkBoxListenHCEV.setEnabled(false);
         }
         if(chkBoxListenEse.isChecked()){
             chkBoxListenESEA.setEnabled(true);
             chkBoxListenESEB.setEnabled(true);
             chkBoxListenESEF.setEnabled(true);
+            chkBoxListenESEV.setEnabled(false);
         }else{
             chkBoxListenESEA.setEnabled(false);
             chkBoxListenESEB.setEnabled(false);
             chkBoxListenESEF.setEnabled(false);
+            chkBoxListenESEV.setEnabled(false);
+        }
+        if(chkBoxP2pAcmIni.isChecked()){
+            chkBoxP2pAcmINIA.setEnabled(true);
+            chkBoxP2pAcmINIB.setEnabled(false);
+            chkBoxP2pAcmINIF.setEnabled(true);
+            chkBoxP2pAcmINIV.setEnabled(false);
+        }else{
+            chkBoxP2pAcmINIA.setEnabled(false);
+            chkBoxP2pAcmINIB.setEnabled(false);
+            chkBoxP2pAcmINIF.setEnabled(false);
+            chkBoxP2pAcmINIV.setEnabled(false);
+        }
+        if(chkBoxP2pAcmTar.isChecked()){
+            chkBoxP2pAcmTARA.setEnabled(true);
+            chkBoxP2pAcmTARB.setEnabled(false);
+            chkBoxP2pAcmTARF.setEnabled(true);
+            chkBoxP2pAcmTARV.setEnabled(false);
+        }else{
+            chkBoxP2pAcmTARA.setEnabled(false);
+            chkBoxP2pAcmTARB.setEnabled(false);
+            chkBoxP2pAcmTARF.setEnabled(false);
+            chkBoxP2pAcmTARV.setEnabled(false);
         }
     }
+
     private void checkDefaultTechChkBxsForModes(){
         if(chkBoxPollP2p.isChecked()){
             chkBoxPollP2PA.setChecked(true);
@@ -2702,10 +3036,12 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxPollRDWTA.setChecked(true);
             chkBoxPollRDWTB.setChecked(true);
             chkBoxPollRDWTF.setChecked(true);
+            chkBoxPollRDWTV.setChecked(true);
         }else{
             chkBoxPollRDWTA.setChecked(false);
             chkBoxPollRDWTB.setChecked(false);
             chkBoxPollRDWTF.setChecked(false);
+            chkBoxPollRDWTV.setChecked(false);
         }
         if(chkBoxListenP2p.isChecked()){
             chkBoxListenP2PA.setChecked(true);
@@ -2718,28 +3054,56 @@ public class PhDTAUIMainActivity extends Activity implements
             chkBoxListenUICCA.setChecked(true);
             chkBoxListenUICCB.setChecked(true);
             chkBoxListenUICCF.setChecked(true);
+            chkBoxListenUICCV.setChecked(false);
         }else{
             chkBoxListenUICCA.setChecked(false);
             chkBoxListenUICCB.setChecked(false);
             chkBoxListenUICCF.setChecked(false);
+            chkBoxListenUICCV.setChecked(false);
         }
         if(chkBoxListenHce.isChecked()){
             chkBoxListenHCEA.setChecked(true);
             chkBoxListenHCEB.setChecked(true);
             chkBoxListenHCEF.setChecked(true);
+            chkBoxListenHCEV.setChecked(false);
         }else{
             chkBoxListenHCEA.setChecked(false);
             chkBoxListenHCEB.setChecked(false);
             chkBoxListenHCEF.setChecked(false);
+            chkBoxListenHCEV.setChecked(false);
         }
         if(chkBoxListenEse.isChecked()){
             chkBoxListenESEA.setChecked(true);
             chkBoxListenESEB.setChecked(true);
             chkBoxListenESEF.setChecked(true);
+            chkBoxListenESEV.setChecked(false);
         }else{
             chkBoxListenESEA.setChecked(false);
             chkBoxListenESEB.setChecked(false);
             chkBoxListenESEF.setChecked(false);
+            chkBoxListenESEV.setChecked(false);
+        }
+        if(chkBoxP2pAcmIni.isChecked()){
+            chkBoxP2pAcmINIA.setChecked(true);
+            chkBoxP2pAcmINIB.setChecked(false);
+            chkBoxP2pAcmINIF.setChecked(true);
+            chkBoxP2pAcmINIV.setChecked(false);
+        }else{
+            chkBoxP2pAcmINIA.setChecked(false);
+            chkBoxP2pAcmINIB.setChecked(false);
+            chkBoxP2pAcmINIF.setChecked(false);
+            chkBoxP2pAcmINIV.setChecked(false);
+        }
+        if(chkBoxP2pAcmTar.isChecked()){
+            chkBoxP2pAcmTARA.setChecked(true);
+            chkBoxP2pAcmTARB.setChecked(false);
+            chkBoxP2pAcmTARF.setChecked(true);
+            chkBoxP2pAcmTARV.setChecked(false);
+        }else{
+            chkBoxP2pAcmTARA.setChecked(false);
+            chkBoxP2pAcmTARB.setChecked(false);
+            chkBoxP2pAcmTARF.setChecked(false);
+            chkBoxP2pAcmTARV.setChecked(false);
         }
     }
 }

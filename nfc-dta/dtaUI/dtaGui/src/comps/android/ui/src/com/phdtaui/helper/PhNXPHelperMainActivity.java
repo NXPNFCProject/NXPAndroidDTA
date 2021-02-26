@@ -89,6 +89,7 @@ public class PhNXPHelperMainActivity {
         this.dtaDebugFlag = dtaDebugFlag;
         Log.d(PhUtilities.UI_TAG, "Set DTA debug flag = " + this.dtaDebugFlag);
     }
+
     /**
      * This method creates a new file with given file name if file already
      * exists in the specified directory then file writes data into it

@@ -14,6 +14,12 @@
   limitations under the License.
 */
 
+/*
+ * CR12_ON_AR12_CHANGE
+ * THREAD_PRIO_SUPPORT
+ *   Set it to TRUE if Priority need to be set to phDtaLibi_CbMsgHandleThrd()
+ */
+
 cc_library_shared {
     name: "libdta",
 
@@ -39,6 +45,11 @@ cc_library_shared {
     ],
     local_include_dirs: [
         "inc/",
+    ],
+    cflags: [
+        "-DTHREAD_PRIO_SUPPORT=FALSE",
+        "-DNFC_NXP_P2P_PERFORMANCE_TESTING=FALSE",
+        "-DENABLE_CR12_SUPPORT=TRUE",
     ],
     srcs: [
         "src/src/*.c",

@@ -63,9 +63,9 @@ DTASTATUS phDtaLibi_HceOperations()
 {
     MWIFSTATUS    dwMwIfStatus = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
-    uint8_t bSendBuffer[400];
+    uint8_t bSendBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
     uint32_t dwSizeOfSendBuff=0;
-    uint8_t resultBuffer[400];
+    uint8_t resultBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
     uint32_t dwSizeOfResultBuff=0;
 
     LOG_FUNCTION_ENTRY;
@@ -110,6 +110,18 @@ DTASTATUS phDtaLibi_HceOperations()
         else if((resultBuffer[0] == 0x80)&&(resultBuffer[1] == 0xEE)&&
         (resultBuffer[2] == 0x00)&&(resultBuffer[3] == 0x00))
         {
+          if (strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR12") == 0x00)
+          {
+            phOsal_LogDebug((const uint8_t*)"DTALib> HCE Operations for loopback data");
+            memcpy(bSendBuffer,resultBuffer,dwSizeOfResultBuff);
+            bSendBuffer[dwSizeOfResultBuff] = 0x90;
+            bSendBuffer[dwSizeOfResultBuff+1] = 0x00;
+            dwSizeOfResultBuff = dwSizeOfResultBuff+2;
+            dwSizeOfSendBuff = dwSizeOfResultBuff;
+          }
+          else
+          {
+            phOsal_LogDebug((const uint8_t*)"DTALib> HCE Operations for Status Word");
             memcpy(bSendBuffer,gStatusWordData,gStatusWordDataLength);
             dwSizeOfSendBuff = gStatusWordDataLength;
             dwSizeOfResultBuff = sizeof(resultBuffer);
@@ -137,6 +149,7 @@ DTASTATUS phDtaLibi_HceOperations()
                  phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
                  break;
             }
+          }
         }
         else
         {
@@ -155,7 +168,7 @@ DTASTATUS phDtaLibi_HceOperations()
         }
     } while (dwMwIfStatus == MWIFSTATUS_SUCCESS);
 
-    return MWIFSTATUS_SUCCESS;
+    return dwMwIfStatus;
 }
 
 #ifdef __cplusplus

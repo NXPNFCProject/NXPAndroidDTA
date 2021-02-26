@@ -33,12 +33,19 @@
         <item>0D</item>
         <item>0E</item>
         <item>0F</item>
+        <item>11</item>
+        <item>12</item>
+        <item>21</item>
+        <item>31</item>
     </string-array>
 
     <string-array name="pattern_number_llcp">
         <item >1200</item>
+        <item >1201</item>
         <item >1240</item>
+        <item >1241</item>
         <item >1280</item>
+        <item >1281</item>
     </string-array>
 
     <string-array name="snep_client_test_cases">

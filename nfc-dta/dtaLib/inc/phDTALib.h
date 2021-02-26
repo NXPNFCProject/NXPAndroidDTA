@@ -98,6 +98,10 @@ typedef enum phDtaLib_eP2PType
 #define DTALIB_RFTECHNOLOGY_MASK_A    0x01    /**< NFC Technology A */
 #define DTALIB_RFTECHNOLOGY_MASK_B    0x02    /**< NFC Technology B */
 #define DTALIB_RFTECHNOLOGY_MASK_F    0x04    /**< NFC Technology F */
+#define DTALIB_RFTECHNOLOGY_MASK_V    0x08    /**< NFC Technology V */
+#define DTALIB_RFTECHNOLOGY_MASK_A_ACTIVE    0x40    /**< NFC Technology A_ACTIVE */
+#define DTALIB_RFTECHNOLOGY_MASK_F_ACTIVE    0x80    /**< NFC Technology F_ACTIVE */
+
 typedef uint32_t phDtaLib_RfTechMask;
 
 /** \ingroup grp_dta_lib
@@ -110,6 +114,8 @@ typedef struct phDtaLib_sDiscParams
     phDtaLib_RfTechMask dwListenHCE;  /**< Technologies to enable for Host Card Emulation in Listen Mode*/
     phDtaLib_RfTechMask dwListenESE;  /**< Technologies to enable for Card Emulation from Ese in Listen Mode*/
     phDtaLib_RfTechMask dwListenUICC; /**< Technologies to enable for Card Emulation from UICC in Listen Mode*/
+    phDtaLib_RfTechMask dwP2pAcmIni;  /**< Technologies to enable for P2P-ACM in Initiator Mode*/
+    phDtaLib_RfTechMask dwP2pAcmTar;  /**< Technologies to enable for P2P-ACM in Target Mode*/
 }phDtaLib_sDiscParams_t;
 
 typedef struct phDtaLib_sIUTInfo

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2020 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -603,6 +603,128 @@ DTASTATUS phDtaLibi_T3TCmd(phDtaLibi_sT3Tcmd_t *psT3TcmdPrms)
     PH_ON_ERROR_RETURN(DTASTATUS_SUCCESS,gx_status,(const uint8_t*)"DTALib>T3T: Error in Felica Check !! \n");
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
+}
+
+DTASTATUS phDtaLibi_T3TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile,
+                                                    phMWIf_sActivatedEvtInfo_t* psT3TActivationParams)
+{
+  DTASTATUS  dwDtaStatus = DTASTATUS_FAILED;
+  phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
+  phMwIf_uTagOpsParams_t sTagOpsParams;
+  phMwIf_sNdefDetectParams_t* psNdefDetectParams;
+  dtaLibHdl->sT3TActivationParams = *psT3TActivationParams;
+
+  LOG_FUNCTION_ENTRY;
+
+  phOsal_LogDebugString((const uint8_t*)"DTALib> :", (const uint8_t*)__FUNCTION__);
+  phOsal_LogDebugU32h((const uint8_t*)"DTALib>T3T:pattern number = ", sTestProfile.Pattern_Number);
+  sTagOpsParams.sBuffParams.pbBuff = gs_ndefReadWriteBuff;
+  switch(sTestProfile.Pattern_Number)
+  {
+    case 0x0001:
+    {
+      /* Pattern Numbers to test READ functionality */
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T3T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T3T:Device is not NDEF Compliant\n");
+        break;
+      }
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T3T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib> T3T:Read NDEF \n");
+        dwDtaStatus = phDtaLibi_ReadNDEF(&sTagOpsParams);
+        if (dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib> T3T:Error Could not read data !!\n");
+          break;
+        }
+        memset(gs_ndefReadWriteBuff, 0, sizeof(gs_ndefReadWriteBuff));
+        memcpy(gs_ndefReadWriteBuff,sTagOpsParams.sBuffParams.pbBuff, sTagOpsParams.sBuffParams.dwBuffLength);
+        gs_sizeNdefRWBuff = sTagOpsParams.sBuffParams.dwBuffLength;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T3T:NDEF READ Length: ", gs_sizeNdefRWBuff);
+      }
+    }
+    break;
+
+    /* Pattern Numbers to test WRITE functionality */
+    case 0x0002:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T3T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T3T:Device is not NDEF Compliant\n");
+        break;
+      }
+
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T3T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib>T3T:Write NDEF Message \n");
+        sTagOpsParams.sBuffParams.dwBuffLength = gs_sizeNdefRWBuff;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T3T:NDEF WRITE Length: ", sTagOpsParams.sBuffParams.dwBuffLength);
+        dwDtaStatus = phDtaLibi_WriteNDEF(&sTagOpsParams);
+        if(dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib>T3T:Device is not NDEF Complaint\n");
+          break;
+        }
+      }
+    }
+    break;
+
+    case 0x0003:
+    {
+      // TC_T3T_NDA_BV_1 test case
+      phOsal_LogDebug((const uint8_t*)"DTALib> : Type 3 Tag Operation READ / WRITE to READ-ONLY Test Functionality");
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T3T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T3T:Device is not NDEF Compliant\n");
+        break;
+      }
+      dwDtaStatus = phDtaLibi_SetTagReadOnly(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib> T3T:Error Could not set tag readonly !!\n");
+        break;
+      }
+    }
+    break;
+
+    case 0x0000:
+    case 0x0004:
+    case 0x0005:
+    case 0x0006:
+    case 0x0007:
+    case 0x0008:
+    case 0x000A:
+    case 0x000B:
+    case PHDTALIB_PATTERN_NUM_ANALOG_TEST:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T3T:Perform NDEF Check for other PN \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T3T:Device is not NDEF Compliant\n");
+        break;
+      }
+    }
+    break;
+
+    default:
+      phOsal_LogError((const uint8_t*)"DTALib>T3T: Error Pattern Number not valid for T3T !! \n");
+    break;
+  }
+  usleep(4000000);
+  LOG_FUNCTION_EXIT;
+  return dwDtaStatus;
 }
 
 #ifdef __cplusplus
