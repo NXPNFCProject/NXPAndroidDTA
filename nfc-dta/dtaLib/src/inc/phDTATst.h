@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2020 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#define DTALIB_VERSION_STR "NFCDTA_12.11"
-#define DTALIBVERSION_MAJOR (0x12)
-#define DTALIBVERSION_MINOR (0x11)
+#define DTALIB_VERSION_STR "NFCDTA_11.19"
+#define DTALIBVERSION_MAJOR (0x11)
+#define DTALIBVERSION_MINOR (0x19)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -89,29 +89,12 @@ static const char gs_abOutboundClService[]    = "urn:nfc:sn:dta-cl-echo-out";
     LLCP related constants */
 /**< LLCP Connection Oriented Functionality setting up by SAP or  Connection-less Functionality */
 #define    PHDTALIB_LLCP_CO_SET_SAP_OR_CL   0x1200
-#define    PHDTALIB_LLCP_CO_SET_SAP_OR_CL_NFCF424   0x1201
 /**< LLCP Connection Oriented Functionality setting-up by name or  Connection-less Functionality */
 #define    PHDTALIB_LLCP_CO_SET_NAME_OR_CL  0x1240
-#define    PHDTALIB_LLCP_CO_SET_NAME_OR_CL_NFCF424  0x1241
 /**< LLCP Connection Oriented Functionality setting up by using SNL or  Connection-less Functionality */
 #define    PHDTALIB_LLCP_CO_SET_SNL_OR_CL   0x1280
-#define    PHDTALIB_LLCP_CO_SET_SNL_OR_CL_NFCF424   0x1281
 /*Delay Time before sending the loopback data for connectionless service.As per DTA spec 3000ms */
 #define    TDELAY_CL_IN_MS                  3000
-
-/**< P2PACM NFCA 106 bit-rate Pattern Number as defined Test Case Mapping Table */
-#define    PHDTALIB_P2PACM_NFCA_PN_00      0x00
-/**< P2PACM NFCF-212 bit-rate Pattern Number as defined Test Case Mapping Table */
-#define    PHDTALIB_P2PACM_NFCF_212_PN_01  0x01
-/**< P2PACM NFCF-424 bit-rate Pattern Number as defined Test Case Mapping Table */
-#define    PHDTALIB_P2PACM_NFCF_424_PN_02  0x02
-/**< P2PACM NFCA 106 bit-rate to higher bit-rate Pattern Number as defined Test Case Mapping Table */
-#define    PHDTALIB_P2PACM_NFCA_PN_03      0x03
-
-#define PHDTALIB_MAX_NDEFTAG_RW_BUFFER_SIZE   131076    /**< NDDEF Tag maximum buffer size (128KB)*/
-/**< Buffer for NDEF Read Write Data during operations */
-extern uint8_t gs_ndefReadWriteBuff[PHDTALIB_MAX_NDEFTAG_RW_BUFFER_SIZE];
-extern uint32_t gs_sizeNdefRWBuff;
 
 typedef struct phDtaLib_sHandle {
     void*                           dtaApplHdl;              /**<Application handle*/
@@ -139,7 +122,6 @@ typedef struct phDtaLib_sHandle {
     void*                           qHdlCongestData;
     BOOLEAN                         bIsLlcpCoRemoteClientDisconnected;      /**Flag to indicate the connection status of the remote client*/
     phMwIf_sConfigParams_t          sConfigPrms;                /** Underlying Configuration params */
-    uint8_t                         llcpConnStatus;             /** Check LLCP Connection Status */
 } phDtaLib_sHandle_t;
 
 typedef union phDtaLib_eEvtType
@@ -375,7 +357,6 @@ extern DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t sTestProfile);
  *
  */
 extern DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t sTestProfile);
-extern DTASTATUS phDtaLibi_T2TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile);
 
 /**
  * \ingroup grp_dta_lib internal function
@@ -395,8 +376,6 @@ extern DTASTATUS phDtaLibi_T2TOperations_DynamicExecution(phDtaLib_sTestProfile_
 extern DTASTATUS phDtaLibi_T3TOperations(phDtaLib_sTestProfile_t sTestProfile,
                                          phMWIf_sActivatedEvtInfo_t* psT3TActivationParams,BOOLEAN* bStartDiscReqd,
                                          BOOLEAN* bStopDiscReqd);
-extern DTASTATUS phDtaLibi_T3TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile,
-                                                          phMWIf_sActivatedEvtInfo_t* psT3TActivationParams);
 
 /**
  * \ingroup grp_dta_lib internal function
@@ -415,21 +394,6 @@ extern DTASTATUS phDtaLibi_T3TOperations_DynamicExecution(phDtaLib_sTestProfile_
 extern DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t sTestProfile,
                                          BOOLEAN* blStartDiscReqd,
                                          BOOLEAN* blStopDiscReqd);
-extern DTASTATUS phDtaLibi_T4TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile);
-
-/**
- * \ingroup grp_dta_lib internal function
- * \brief Function to Handle T5T Tag operations(Read/Write)
- *
- * Function To Handle T5T Tag operations(Read/Write) based on the pattern number configured
- *
- * \param[in] sTestProfile              Tag testing required params
- *
- * \retval #DTASTATUS_SUCCESS           T5T Tag read/write operations is successful
- * \retval #DTASTATUS_FAILED            T5T Tag read/write operations is Unsuccessful
- *
- */
-extern DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile);
 
 /**
  * \ingroup grp_dta_lib internal function

@@ -1,5 +1,6 @@
 /*
-* Copyright (C) 2015-2020 NXP Semiconductors
+* Copyright (C) 2015-2019 NXP Semiconductors
+* Copyright 2020 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -29,16 +30,7 @@
 #include <semaphore.h>
 #include <sys/resource.h>
 #include "data_types.h"
-#if(ANDROID_O == TRUE)
-#include "_OverrideLog.h"
-#elif(ANDROID_P == TRUE)
 #include "logging.h"
-#elif(ANDROID_S == TRUE)
-#include "logging.h"
-#else
-#include "OverrideLog.h"
-#endif
-
 
 #include <buildcfg.h>
 #include <nci_defs.h>
@@ -61,17 +53,6 @@
 #include "phMwIfAndroid.h"
 #include "phMwIfLib_NfcAdaptWrap.h"
 
-// CR12_ON_AR12_CHANGE
-/*
- * Only T5T need to be tested in DTA
- * However, M/W will support both T4T and 15693
- * Middleware cannot be changed
- * So hardcoded the T5T tag here
- */
-#undef NFA_PROTOCOL_T5T
-#define NFA_PROTOCOL_T5T    0x06
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -91,14 +72,11 @@ EE events*/
 #define  NCI_RSP_EVT 0x42
 #define  NCI_AGC_DBG_RSP_EVT 0x73
 #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
-#define  PHMWIF_LLCP_MAX_MIU LLCP_MAX_MIU
+#define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
 #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
-#define  PHMWIF_MAX_DISC_DEVICES 05
-
-#define  PHMWIF_MAX_NDEFTAG_RW_BUFFER_SIZE   131076    /**< NDDEF Tag maximum buffer size 128KB*/
 
 static uint8_t gs_nciVersion = 0;   /**< To assign NCI version */
-static uint8_t gs_paramBuffer[PHMWIF_MAX_NDEFTAG_RW_BUFFER_SIZE];/**< Buffer for passing Data during operations */
+static uint8_t gs_paramBuffer[600];/**< Buffer for passing Data during operations */
 uint32_t gs_sizeParamBuffer;
 volatile tNFA_STATUS gx_status = NFA_STATUS_FAILED;
 
@@ -110,7 +88,7 @@ tNFA_HANDLE NfaAidHandle;
 static uint8_t Pgu_event; /**< To indicate the Last event that occurred from any Call Back */
 
 static uint8_t Pgu_disoveredDeviceCount = 0;/**< To Store the number of devices detected in discovery */
-static uint8_t Pgs_cbTempBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];/**< Buffer for Data copy in Call back */
+static uint8_t Pgs_cbTempBuffer[400];/**< Buffer for Data copy in Call back */
 static uint16_t Pgui_cbTempBufferLength;/**< Length of CB buffer */
 bool gb_device_connected = FALSE; /**< Indicates if the device is connected or not */
 bool gb_device_ndefcompliant = FALSE; /**< Indicates the is NDEF compliant or not */
@@ -120,9 +98,9 @@ tNFA_CE_ACTIVATED   gx_se_device;
 tNFA_NDEF_DETECT    gx_ndef_detected;
 tNFA_NDEF_EVT_DATA  gx_ndef_data;/**< Variable containing NDEF data when Ndef RD/WR is performed */
 tNFA_HANDLE         gx_ndef_type_handle;
-tNFA_DISC_RESULT    gx_discovery_result[PHMWIF_MAX_DISC_DEVICES];
-static uint8_t gs_Hce_Aid[] = {0x31,0x4E,0x46,0x43,0x2E,0x53,0x59,0x53,0x2E,0x44,0x44,0x46,0x30,0x31};
-uint8_t gs_Hce_Aid_len = 0x0E;
+tNFA_DISC_RESULT    gx_discovery_result;
+uint8_t gs_Uicc_Aid[] = {0xA0,0x00,0x00,0x00,0x18,0x30,0x80,0x05,0x00,0x65,0x63,0x68,0x6F,0x00};
+uint8_t gs_Uicc_Aid_len = 0x0E;
 tNFA_HANDLE NfaHostHandle           = 0x400; /*Handle For HCE/LLCP*/
 tNFA_HANDLE NfaHciHandle;
 
@@ -148,7 +126,6 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = &g_mwIfHandle;
     OSALSTATUS dwOsalStatus = OSALSTATUS_FAILED;
-    MWIFSTATUS dwMwifStatus = MWIFSTATUS_FAILED;
     phOsal_QueueCreateParams_t sQueueCreatePrms;
 
     ALOGD("MwIf>%s:enter",__FUNCTION__);
@@ -199,17 +176,8 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
     if(phMwIfi_InitRouting(mwIfHdl) != NFA_STATUS_OK){
         ALOGE("MwIf>%s:Routing initialization Failed",__FUNCTION__);
     }
-
-    dwMwifStatus = NFA_RegisterNDefTypeHandler(TRUE, NFA_TNF_DEFAULT, (uint8_t*)"", 0, phMwIfi_NdefHandlerCallback);
-    if(MWIFSTATUS_SUCCESS != dwMwifStatus)
-    {
-        ALOGD("MwIf>MwIf Register callback Failed !\n");
-        return MWIFSTATUS_FAILED;
-    }
-
     *mwIfHandle = (void*)mwIfHdl;
     gs_nciVersion = NFA_GetNCIVersion();
-    ALOGD("MwIf>NCI Version %d\n", gs_nciVersion);
     if(gs_nciVersion == NCI_VERSION_1_0)
     {
         NfaUiccHandle = NfaUiccHandle_NCI_1_0;
@@ -221,7 +189,7 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
 MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfigParams)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *)mwIfHandle;
-    uint8_t abConfigIDData[20];
+    uint8_t abConfigIDData[16];
     MWIFSTATUS dwMwifStatus = MWIFSTATUS_SUCCESS;
     ALOGD("MwIf>%s:enter",__FUNCTION__);
 
@@ -289,8 +257,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     }
     else if((strcmp(sConfigParams->aCertRelease, "CR9") == 0x00) ||
             (strcmp(sConfigParams->aCertRelease, "CR10") == 0x00) ||
-            (strcmp(sConfigParams->aCertRelease, "CR11") == 0x00) ||
-            (strcmp(sConfigParams->aCertRelease, "CR12") == 0x00))
+            (strcmp(sConfigParams->aCertRelease, "CR11") == 0x00))
     {
         abConfigIDData[0] = 0x03;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
@@ -321,23 +288,11 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
             abConfigIDData[0] = 0x80;
             phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
         }
-        else if(sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_212)
-        {
-            /*Configure TypeF Polling with Bitrate 212 using value 0x01*/
-            abConfigIDData[0] = 0x01;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
-        }
-        else if(sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424)
-        {
-            /*Configure TypeF Polling with Bitrate 424 using value 0x02*/
-            abConfigIDData[0] = 0x02;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
-        }
     }
     else if((sConfigParams->bPollBitRateTypeF & PHMWIF_NCI_BITRATE_424)
             && (sConfigParams->bEnableAnalog != TRUE))
     {
-        /*Configure TypeF Polling Bitrate to 424 for pattern 0x05,0x06,0x08,0x0A as per DTA Spec*/
+        /*Configure TypeF Polling Bitrate to 424 for pattern 0x06,0x08,0x0A as per DTA Spec*/
         abConfigIDData[0] = 0x02;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 1, abConfigIDData);
     }
@@ -347,7 +302,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 0x01, abConfigIDData);
     }
 
-    if(sConfigParams->bNfcdepPollBitRateHigh == TRUE)
+  if(sConfigParams->bNfcdepPollBitRateHigh == TRUE)
     {
         abConfigIDData[0] = 0x00;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PN_NFC_DEP_SPEED, 1, abConfigIDData);
@@ -360,53 +315,16 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
 
     if(sConfigParams->bEnableLlcp == TRUE)
     {
-        mwIfHdl->u8NfcDepLnWtConfigVal = abConfigIDData[0] = 0x0A;
+        abConfigIDData[0] = 0x0A;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LN_WT, 0x01, abConfigIDData);
         abConfigIDData[0] = 0x0F;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFCDEP_OP, 0x01, abConfigIDData);
     }
     else
     {
-        mwIfHdl->u8NfcDepLnWtConfigVal = abConfigIDData[0] = 0x08;
+        abConfigIDData[0] = 0x08;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LN_WT, 0x01, abConfigIDData);
     }
-
-    if(strcmp(sConfigParams->aCertRelease, "CR12") == 0x00)
-    {
-        if(sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmIni)
-        {
-            phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: Initiator",(const uint8_t*)__FUNCTION__);
-            if(sConfigParams->bEnablePollBitRateTypeA_P2PACM == TRUE)
-            {
-                abConfigIDData[0] = 0x00;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 106",(const uint8_t*)__FUNCTION__);
-            }
-            else if(sConfigParams->bEnablePollBitRateTypeF_P2PACM & PHMWIF_NCI_BITRATE_424)
-            {
-                abConfigIDData[0] = 0x02;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 424",(const uint8_t*)__FUNCTION__);
-            }
-            else // For P2PACM deafult bit-rate config is NFCF-212 as per NCI 2.1
-            {
-                abConfigIDData[0] = 0x01;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 212",(const uint8_t*)__FUNCTION__);
-            }
-
-            abConfigIDData[0] = 0x01;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_POLL_MODE, 0x01, abConfigIDData);
-        }
-
-        if(sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmTar)
-        {
-            abConfigIDData[0] = 0x01;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_LISTEN_MODE, 0x01, abConfigIDData);
-            phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: Target",(const uint8_t*)__FUNCTION__);
-        }
-    }
-
     /*Do custom Set Config from MWIF*/
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_TAG_DETECTOR_CFG, 0x01, abConfigIDData);
@@ -440,39 +358,11 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     abConfigIDData[0] = 0x06;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_CON_BITR_F, 0x01, abConfigIDData);
     if(sConfigParams->sMwIfDiscCfgParams.discParams.dwListenP2P == P2P_DISABLED)
-    {
-        abConfigIDData[0] = 0x12;
-        abConfigIDData[1] = 0xFC;
-        abConfigIDData[2] = 0x02;
-        abConfigIDData[3] = 0xFE;
-        abConfigIDData[4] = 0x1C;
-        abConfigIDData[5] = 0x1E;
-        abConfigIDData[6] = 0x1A;
-        abConfigIDData[7] = 0x1F;
-        abConfigIDData[8] = 0x1A;
-        abConfigIDData[9] = 0x1C;
-        abConfigIDData[10] = 0x18;
-        abConfigIDData[11] = 0x19;
-        abConfigIDData[12] = 0x1A;
-        abConfigIDData[13] = 0x1B;
-        abConfigIDData[14] = 0x1C;
-        abConfigIDData[15] = 0x1D;
-        abConfigIDData[16] = 0x1E;
-        abConfigIDData[17] = 0x1F;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_T3T_IDENTIFIERS_1, 0x12, abConfigIDData);
-        abConfigIDData[0] = 0x01;
-        abConfigIDData[1] = 0x00;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_T3T_FLAGS, 0x02, abConfigIDData);
-        abConfigIDData[0] = 0x01;
-        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_RD_ALLOWED, 0x01, abConfigIDData);
-        abConfigIDData[0] = 0x00; /** Protocol Type value */
-    }
+        abConfigIDData[0] = 0x00;
     else
-    {
-        abConfigIDData[0] = 0x02; /** Protocol Type value */
-    }
+        abConfigIDData[0] = 0x02;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LF_PROTOCOL_TYPE, 0x01, abConfigIDData);
-    abConfigIDData[0] = 0x02;
+    abConfigIDData[0] = 0x00;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LI_BIT_RATE, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x01;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_RF_FIELD_INFO, 0x01, abConfigIDData);
@@ -491,27 +381,9 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         return MWIFSTATUS_FAILED;
     }
     strcpy(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, sConfigParams->aCertRelease);
-    mwIfHdl->sPrevMwIfDiscCfgParams.selectP2pProtocol = sConfigParams->selP2pProto;
-
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
-
-/**
-* Get NFC-DEP Listen mode Wait Time Value
-*/
-MWIFSTATUS phMwIf_GetNfcDepLnWtConfigVal(void* mwIfHandle, uint8_t *pu8LnWtVal)
-{
-    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    ALOGD("MwIf>%s:enter",__FUNCTION__);
-
-    ALOGD("MwIf>%s:Configured NfcDep LN_WT Val: %d",__FUNCTION__, mwIfHdl->u8NfcDepLnWtConfigVal);
-    *pu8LnWtVal = mwIfHdl->u8NfcDepLnWtConfigVal;
-
-    ALOGD("MwIf>%s:exit",__FUNCTION__);
-    return MWIFSTATUS_SUCCESS;
-}
-
 /**
 * De-Initialize Middle-ware Interface Library
 */
@@ -778,7 +650,7 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle)
 MWIFSTATUS phMwIfi_SetDtaMode(void* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    uint32_t dtaMode = NFA_DTA_DEFAULT_MODE;
+    uint32_t dtaMode = NFA_DTA_DEFAULT_MODE | NFA_DTA_CR8;
     ALOGD ("MwIf>%s:Enter\n",__FUNCTION__);
 
     if(mwIfHdl->bLlcpEnabled)
@@ -982,8 +854,8 @@ MWIFSTATUS phMwIf_CeDeInit( void *mwIfHandle,   phMwIf_eCeDevType_t eDevType)
             return MWIFSTATUS_FAILED;
         }
     }
-    ALOGD ("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
+    ALOGD ("MwIf>%s:Exit\n",__FUNCTION__);
 }
 
 /**
@@ -1145,18 +1017,7 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
         mwIfHdl->t3tPMM[6] = 0xFF;
         mwIfHdl->t3tPMM[7] = 0xFF;
     }
-
-    /*Register Callback for NFCEE Events*/
-    gx_status = NFA_EeRegister(phMwIfi_NfaEeCallback);
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf>ERROR EE Register !!\n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_REGISTER_EVT),5000,
-            "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
-
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, mwIfHdl->t3tPMM ,phMwIfi_NfaConnCallback);
-#else
-    gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
-#endif
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf>ERROR EE Register !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT,5000,
             "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
@@ -1270,7 +1131,6 @@ MWIFSTATUS phMwIfi_HceFConfigure(void* mwIfHandle)
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultProtoRouting ",&(mwIfHdl->sLastQueueData));
-    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
 
     return MWIFSTATUS_SUCCESS;
 }
@@ -1329,14 +1189,11 @@ MWIFSTATUS phMwIfi_HceDeInit(void* mwIfHandle)
     /*Disable AID registered for Card Emulation from HCE*/
     if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
     {
-        MWIFSTATUS dwMwIfStatus;
-
-        dwMwIfStatus = phMwIfi_CeDeRegisterAID(mwIfHdl);
-        if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
-        {
-            ALOGD("MwIf> Error in CE AID De-Register\n");
-            return dwMwIfStatus;
-        }
+        ALOGD ("MwIf> HCE AID Handle De-registration =0x%x\n",NfaAidHandle);
+        gx_status = NFA_CeDeregisterAidOnDH(NfaAidHandle);
+        PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"NFA CE_AID De-registration Fail!! \n");
+        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT,5000,
+                "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
     }
 
     /*DERegister Callback for NFCEE Events*/
@@ -1364,13 +1221,6 @@ MWIFSTATUS phMwIfi_HceFDeInit(void* mwIfHandle)
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT, 5000,
             "MwIf> ERROR in EeDeregister",&(mwIfHdl->sLastQueueData));
     mwIfHdl->nfcHceFHandle = 0;
-
-    /*DERegister Callback for NFCEE Events*/
-    gx_status = NFA_EeDeregister(phMwIfi_NfaEeCallback);
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE DeRegister");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_DEREGISTER_EVT), 5000,
-            "MwIf> ERROR in EeDeregister",&(mwIfHdl->sLastQueueData));
-
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -1443,10 +1293,6 @@ MWIFSTATUS phMwIf_TagCmd(void*                  mwIfHandle,
                                             (phMwIf_sT2TParams_t*)psTagParams);
     break;
     case PHMWIF_PROTOCOL_T3T:
-    break;
-    case PHMWIF_PROTOCOL_T5T:
-        dwMwIfStatus = phMwIfi_HandleT5TCmd(mwIfHandle,
-                                            (phMwIf_sT5TParams_t*)psTagParams);
     break;
     case PHMWIF_PROTOCOL_ISO_DEP:
     break;
@@ -1526,164 +1372,6 @@ MWIFSTATUS phMwIfi_HandleT2TCmd(void*                  mwIfHandle,
 }
 
 /**
- * Handle commands specific to T5T Tags
- * */
-MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
-                                phMwIf_sT5TParams_t*   psTagParams)
-{
-    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    ALOGD("MwIf>%s:Enter",__FUNCTION__);
-
-    if((!mwIfHandle) || (!psTagParams))
-        return MWIFSTATUS_INVALID_PARAM;
-
-    switch(psTagParams->eT5TCmd)
-    {
-        case PHMWIF_T5T_READ_CMD: /*Read block of data*/
-        {
-            ALOGD("MwIf>%s:Reading data from Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
-
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
-            gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum);
-#else
-            gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
-#endif /* CR12_ON_AR12_CHANGE */
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error starting T5T Blk read !! \n");
-
-            /*Wait until Read is completed*/
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,5000,
-            "MwIf>Error in Tag Read ",&(mwIfHdl->sLastQueueData));
-
-            memcpy(psTagParams->sBuffParams.pbBuff,Pgs_cbTempBuffer,Pgui_cbTempBufferLength);
-            psTagParams->sBuffParams.dwBuffLength = Pgui_cbTempBufferLength;
-            /*Reset Buffer Data length to avoid using previous chained data */
-            Pgui_cbTempBufferLength = 0;
-            phMwIfi_PrintBuffer(psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength,"T5T Data Read:");
-         }
-        break;
-
-        case PHMWIF_T5T_READ_MULTIPLE_CMD: /*read multiple blocks*/
-        {
-            ALOGD("MwIf>%s:Reading data from multiple Blocks =%d",__FUNCTION__,psTagParams->dwNumOfBlocks);
-
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
-            gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks);
-#else
-            gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks,(uint8_t)psTagParams->reqFlag);
-#endif /* CR12_ON_AR12_CHANGE */
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error starting T5T multiple blocks read !! \n");
-
-            /*Wait until Read is completed*/
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,5000,
-            "MwIf>Error in Tag Read ",&(mwIfHdl->sLastQueueData));
-
-            memcpy(psTagParams->sBuffParams.pbBuff,Pgs_cbTempBuffer,Pgui_cbTempBufferLength);
-            psTagParams->sBuffParams.dwBuffLength = Pgui_cbTempBufferLength;
-            /*Reset Buffer Data length to avoid using previous chained data */
-            Pgui_cbTempBufferLength = 0;
-            phMwIfi_PrintBuffer(psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength,"T5T Data Read:");
-        }
-        break;
-
-        case PHMWIF_T5T_WRITE_CMD: /*Write Block of data*/
-        {
-            ALOGD("MwIf>%s:Writing data to Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
-            phMwIfi_PrintBuffer(psTagParams->sBuffParams.pbBuff,4,"T5T Data Write:");
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
-            gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff);
-#else
-            gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff,(uint8_t)psTagParams->reqFlag);
-#endif /* CR12_ON_AR12_CHANGE */
-            PH_ON_ERROR_EXIT(NFA_STATUS_OK, gx_status,"MwIf> Error starting T5T Blk write !!\n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT, 5000,
-            "MwIf> Tag/Device T5T Blk write Error (SEM) !!",&(mwIfHdl->sLastQueueData));
-        }
-        break;
-
-        case PHMWIF_T5T_INVENTORY_REQ_CMD: /*T5T Inventory Command*/
-        {
-            uint8_t afi = 0x00;//[] = {0x00, 0x00};
-            ALOGD("MwIf>%s: T5T Inventory Request Command",__FUNCTION__);
-
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
-            gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid);
-#else
-            gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid,(uint8_t)psTagParams->reqFlag);
-#endif /* CR12_ON_AR12_CHANGE */
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T inventory!! \n");
-            /*Wait until Inventory is completed*/
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Inventory Request ",&(mwIfHdl->sLastQueueData));
-         }
-        break;
-
-        case PHMWIF_T5T_SELECT_UID_CMD: /*T5T Select Command*/
-        {
-            ALOGD("MwIf>%s: T5T Selcet UID Command",__FUNCTION__);
-            gx_status = NFA_RwI93Select((uint8_t *)psTagParams->t5tUid);
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Select Tag!! \n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Selection ",&(mwIfHdl->sLastQueueData));
-        }
-        break;
-
-        case PHMWIF_T5T_STAY_QUIET_CMD: /*T5T Stay Quiet Command*/
-        {
-            ALOGD("MwIf>%s: T5T Stay Quiet Command",__FUNCTION__);
-            gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Stay Quiet!! \n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Stay Quiet",&(mwIfHdl->sLastQueueData));
-        }
-        break;
-
-        case PHMWIF_T5T_LOCK_SINGLE_BLOCK_CMD: /*T5T Lock Block Command*/
-        {
-            ALOGD("MwIf>%s: T5T Lock Block %d",__FUNCTION__,psTagParams->dwBlockNum);
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
-            gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum);
-#else
-            gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
-#endif /* CR12_ON_AR12_CHANGE */
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Lock Block!! \n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Lock Block",&(mwIfHdl->sLastQueueData));
-        }
-        break;
-        case PHMWIF_T5T_REQ_FLAG_CMD: /*T5T Request Flag Command*/
-        {
-            ALOGD("MwIf>%s: T5T Request Flag Command",__FUNCTION__);
-#if (ENABLE_CR12_SUPPORT == TRUE) /* CR12_ON_AR12_CHANGE */
-            if(psTagParams->reqFlag == 0x02/*T5T_REQ_FLAG_NAMS*/)
-            {
-                gx_status = NFA_RwI93SetAddressingMode(1);
-            }
-            else if(psTagParams->reqFlag == 0x22/*T5T_REQ_FLAG_AMS*/)
-            {
-                gx_status = NFA_RwI93SetAddressingMode(0);
-            }
-            else
-            {
-                ALOGE("MwIf>%s: Error T5T Request Flag!! not processed %d\n",__FUNCTION__, psTagParams->reqFlag);
-            }
-#else
-            gx_status = NFA_RwI93SetReqFlag((uint8_t)psTagParams->reqFlag);
-#endif
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Request Flag!! \n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Request Flag",&(mwIfHdl->sLastQueueData));
-        }
-        break;
-        default:
-            ALOGE("MwIf>%s:Error:Wrong Tag Command Type",__FUNCTION__);
-            return MWIFSTATUS_FAILED;
-        break;
-    }
-    ALOGD("MwIf>%s:Exit",__FUNCTION__);
-    return MWIFSTATUS_SUCCESS;
-}
-
-/**
 * Read NDEF data from tag
 */
 MWIFSTATUS phMwIfi_ReadNdef(void* mwIfHandle,
@@ -1691,54 +1379,14 @@ MWIFSTATUS phMwIfi_ReadNdef(void* mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
-    psBuffParams->dwBuffLength = 0;
-    gs_sizeParamBuffer=0;
-    memset(gs_paramBuffer, 0, sizeof(gs_paramBuffer));
-    memset(psBuffParams->pbBuff, 0, sizeof(psBuffParams->pbBuff));
     gx_status = NFA_RwReadNDef();
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status,"MwIf> ERROR in NFA_RWReadNDef !!\n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_READ_CPLT_EVT,20000,
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_READ_CPLT_EVT,5000,
             "MwIf> ERROR in NFA_RWReadNDef",&(mwIfHdl->sLastQueueData));
-    if(gx_status == NFA_STATUS_OK)
-    {
-      psBuffParams->pbBuff = gs_paramBuffer;
-      psBuffParams->dwBuffLength = gs_sizeParamBuffer;
-      phMwIfi_PrintBuffer((uint8_t *)(psBuffParams->pbBuff), (uint16_t)(psBuffParams->dwBuffLength), (const char *)"MwIf> : ReadNdef Data");
-    }
     ALOGD("MwIf>:NDEF Buffer Length:%d\n",psBuffParams->dwBuffLength);
+
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
-}
-
-void phMwIfi_NdefHandlerCallback(tNFA_NDEF_EVT event,
-                                 tNFA_NDEF_EVT_DATA* eventData)
-{
-  ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
-  ALOGD("MwIf> event=%u, eventData=%p", event, eventData);
-
-  switch (event)
-  {
-    case NFA_NDEF_REGISTER_EVT:
-    {
-      tNFA_NDEF_REGISTER& ndef_reg = eventData->ndef_reg;
-      ALOGD("MwIf> NFA_NDEF_REGISTER_EVT; status=0x%X; h=0x%hu", ndef_reg.status, ndef_reg.ndef_type_handle);
-    }
-    break;
-
-    case NFA_NDEF_DATA_EVT:
-    {
-      ALOGD("MwIf> NFA_NDEF_DATA_EVT; data_len = %u", eventData->ndef_data.len);
-      memset(gs_paramBuffer, 0, sizeof(gs_paramBuffer));
-      memcpy(gs_paramBuffer, eventData->ndef_data.p_data, eventData->ndef_data.len);
-      gs_sizeParamBuffer = eventData->ndef_data.len;
-    }
-    break;
-
-    default:
-      ALOGE("MwIf> Unknown event %u ????", event);
-    break;
-  }
-  ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
 }
 
 /**
@@ -1766,26 +1414,18 @@ MWIFSTATUS phMwIfi_WriteNdef(void* mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
-    if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
+
+    gx_status = phMwIfi_CreateNdefMsg(mwIfHdl,
+                                      pData,
+                                      length);
+    if(gx_status != MWIFSTATUS_SUCCESS)
     {
-        phMwIfi_PrintBuffer((uint8_t *)pData, (uint16_t)length, (const char *)"WriteNDEF Data  : ");
-        gx_status = NFA_RwWriteNDef(pData,length);
+        ALOGE("MwIf> Error Could not create the NDEF message\n");
+        return MWIFSTATUS_FAILED;
     }
-    else
-    {
-        gx_status = phMwIfi_CreateNdefMsg(mwIfHdl,
-                                          pData,
-                                          length);
-        if(gx_status != MWIFSTATUS_SUCCESS)
-        {
-            ALOGE("MwIf> Error Could not create the NDEF message\n");
-            return MWIFSTATUS_FAILED;
-        }
-        phMwIfi_PrintBuffer((uint8_t *)gs_paramBuffer, (uint16_t)gs_sizeParamBuffer, (const char *)"WriteNDEF Data  : ");
-        gx_status = NFA_RwWriteNDef(gs_paramBuffer,gs_sizeParamBuffer);
-    }
+    gx_status = NFA_RwWriteNDef(gs_paramBuffer,gs_sizeParamBuffer);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR in NFA_RWWriteNDef !!\n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_WRITE_CPLT_EVT, 20000,
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_WRITE_CPLT_EVT, 5000,
             "MwIf> ERROR in NFA_RWWriteNDef",&(mwIfHdl->sLastQueueData));
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
@@ -1808,12 +1448,12 @@ MWIFSTATUS phMwIfi_CheckNdef(void*                       mwIfHandle,
 
     if(!gb_device_ndefcompliant)
     {
-      ALOGD("MwIf> Tag is NOT NDEF Complaint \n");
+      ALOGD("MwIf> Tag is an NOT NDEF Complaint \n");
       return MWIFSTATUS_FAILED;
     }
 
     memcpy(&sTagOpsParams->sNdefDetectParams, &mwIfHdl->sNdefDetectParams, sizeof(mwIfHdl->sNdefDetectParams));
-    ALOGD("MwIf> Tag is NDEF Complaint \n");
+    ALOGD("MwIf> Tag is an NDEF Complaint \n");
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -1905,7 +1545,6 @@ tNFA_STATUS phMwIfi_StackInit(phMwIf_sHandle_t *mwIfHdl)
                                    NFA Enable\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DM_EVT_OFFSET+NFA_DM_ENABLE_EVT,15000,
             "MwIf> ERROR NFA Enable (SEM)",&(mwIfHdl->sLastQueueData));
-    ALOGD ("MwIf> NFA Enable Complete\n");
     return MWIFSTATUS_SUCCESS;
 }
 
@@ -1974,55 +1613,23 @@ tNFA_STATUS phMwIfi_SelectDevice(){
     if(gb_discovery_notify)
     {
         int rfInterface;
-        uint8_t count=0;
-        uint8_t protocol = gx_discovery_result[count].discovery_ntf.protocol;
+        uint8_t protocol = gx_discovery_result.discovery_ntf.protocol;
         gb_discovery_notify = FALSE;
         ALOGD("MwIf>%s:Handling Discovery Notification",__FUNCTION__);
-        for(;count<Pgu_disoveredDeviceCount;count++)
-        {
-            protocol = gx_discovery_result[count].discovery_ntf.protocol;
-            phMwIfi_MapRfInterface(&protocol, &rfInterface);
-            ALOGD("MwIf>Protocol = 0x%x", protocol);
-            ALOGD("MwIf>rfInterface = 0x%x", rfInterface);
-            if((count == 0) && ((gx_discovery_result[count].discovery_ntf.protocol == NFA_PROTOCOL_ISO_DEP) ||
-                                (gx_discovery_result[count].discovery_ntf.protocol == NFA_PROTOCOL_T5T)))
-            {
-                break;
-            }
-            else if(count == 1)
-            {
-                if (gx_discovery_result[count].discovery_ntf.protocol == NFA_PROTOCOL_T3T)
-                {
-                    if(mwIfHdl->sPrevMwIfDiscCfgParams.selectP2pProtocol == 0x01)
-                    {
-                        count = 0;
-                    }
-                    break;
-                }
-                else if(gx_discovery_result[count-1].discovery_ntf.protocol == NFA_PROTOCOL_NFC_DEP)
-                {
-                    count = 0;
-                    break;
-                }
-            }
-        }
-        protocol = gx_discovery_result[count].discovery_ntf.protocol;
         phMwIfi_MapRfInterface(&protocol, &rfInterface);
-        gx_status = NFA_Select(gx_discovery_result[count].discovery_ntf.rf_disc_id,
-                               gx_discovery_result[count].discovery_ntf.protocol,
+
+        gx_status = NFA_Select(gx_discovery_result.discovery_ntf.rf_disc_id,
+                               gx_discovery_result.discovery_ntf.protocol,
                                rfInterface);
         PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SELECT_RESULT_EVT,5000,
                 "MwIf> ERROR NFA Select",&(mwIfHdl->sLastQueueData));
-        Pgu_disoveredDeviceCount = 0; /* Clear the Counter */
-
-        if(protocol == NFA_PROTOCOL_NFC_DEP)
-        {
-            phMwIf_DisableDiscovery(mwIfHdl);
-            phMwIf_EnableDiscovery(mwIfHdl);
-        }
     }
     /*Restart the discovery*/
     sPrevdiscCfgParams = mwIfHdl->sDiscCfg;
+#if (NFC_NXP_P2P_PERFORMANCE_TESTING == FALSE)
+    phMwIf_DisableDiscovery(mwIfHdl);
+    phMwIf_EnableDiscovery(mwIfHdl);
+#endif
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -2044,23 +1651,11 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
     ALOGD ("MwIf> ListenHCE :0x%x\n",discCfgParams->discParams.dwListenHCE);
     ALOGD ("MwIf> ListenESE :0x%x\n",discCfgParams->discParams.dwListenESE);
     ALOGD ("MwIf> ListenUICC:0x%x\n",discCfgParams->discParams.dwListenUICC);
-    ALOGD ("MwIf> dwP2pAcmIni :0x%x\n",discCfgParams->discParams.dwP2pAcmIni);
-    ALOGD ("MwIf> dwP2pAcmTar :0x%x\n",discCfgParams->discParams.dwP2pAcmTar);
     ALOGD ("MwIf> Certification_Release:%s\n",discCfgParams->Certification_Release);
 
     /*Set Polling Discovery configuration: Polling Mask is common for both
      * ReadWrite Mode as well as P2P mode*/
-    if (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
-    {
-        techMask = discCfgParams->discParams.dwPollP2P |
-                   discCfgParams->discParams.dwPollRdWrt |
-                   discCfgParams->discParams.dwP2pAcmIni;
-    }
-    else
-    {
-        techMask = discCfgParams->discParams.dwPollP2P |
-                   discCfgParams->discParams.dwPollRdWrt;
-    }
+    techMask = (discCfgParams->discParams.dwPollP2P | discCfgParams->discParams.dwPollRdWrt);
     if(!techMask)
     {
         ALOGE ("MwIf> %s:Polling configuration is NULL\n",__FUNCTION__);
@@ -2088,16 +1683,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
     {
         ALOGD ("MwIf> %s: Configuring Listen Discovery \n",__FUNCTION__);
         /*Set P2P Configuration*/
-        if (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
-        {
-            techMask = discCfgParams->discParams.dwListenP2P |
-                       discCfgParams->discParams.dwP2pAcmTar;
-        }
-        else
-        {
-            techMask = discCfgParams->discParams.dwListenP2P;
-        }
-
+        techMask = discCfgParams->discParams.dwListenP2P;
         if(!techMask)
         {
             ALOGD ("MwIf> %s:P2P Listen Discovery configuration is NULL\n",__FUNCTION__);
@@ -2247,20 +1833,6 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
                 "MwIf> ERROR Disable ConfigureEseListen",&(mwIfHdl->sLastQueueData));
 #endif
     }
-
-    /*Disable AID registered for Card Emulation from HCE*/
-    if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
-    {
-        MWIFSTATUS dwMwIfStatus;
-
-        dwMwIfStatus = phMwIfi_CeDeRegisterAID(mwIfHdl);
-        if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
-        {
-            ALOGD("MwIf> Error in CE AID De-Register\n");
-            return dwMwIfStatus;
-        }
-    }
-
     ALOGD ("MwIf> %s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -2278,23 +1850,13 @@ void phMwIfi_NfaDevMgmtCallback (uint8_t uevent, tNFA_DM_CBACK_DATA *px_data)
 
     if(px_data == NULL)
     {
-        if(uevent == NFA_DM_DISABLE_EVT)
-        {
-            gx_status = NFA_STATUS_OK;
-        }
-        else
-        {
-            ALOGD ("MwIf>px_data is NULL");
-            gx_status = NFA_STATUS_FAILED;
-            return;
-        }
+        ALOGD ("MwIf>px_data is NULL");
+        gx_status = NFA_STATUS_FAILED;
+        return;
     }
-    else
-    {
-        ALOGD ("MwIf>Status = ");
-        phMwIfi_PrintNfaStatusCode(px_data->status);
-        gx_status = px_data->status;
-    }
+    ALOGD ("MwIf>Status = ");
+    phMwIfi_PrintNfaStatusCode(px_data->status);
+    gx_status = px_data->status;
 
     /**< Check if there was not any Timeout */
     if(uevent == NFA_DM_NFCC_TIMEOUT_EVT)
@@ -2370,18 +1932,21 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                 memcpy(&disc_result,&px_data->disc_result, sizeof(tNFA_DISC_RESULT));
                 ALOGD ("MwIf>protocol = %d",px_data->disc_result.discovery_ntf.protocol);
                 ALOGD ("MwIf>rf_disc_id = %d",px_data->disc_result.discovery_ntf.rf_disc_id);
-                memcpy(&gx_discovery_result[Pgu_disoveredDeviceCount], &px_data->disc_result, sizeof(tNFA_DISC_RESULT));
-                ++Pgu_disoveredDeviceCount; /* Increment counter for each notification */
-                if((disc_result.discovery_ntf.more == 0) ||
-                   ((disc_result.discovery_ntf.more == 1) &&
-                        (px_data->disc_result.discovery_ntf.protocol == NFA_PROTOCOL_T5T)))
+                if((!Pgu_disoveredDeviceCount) ||
+                    (px_data->disc_result.discovery_ntf.protocol == NFC_PROTOCOL_T3T))
                 {
+                    memcpy(&gx_discovery_result, &px_data->disc_result, sizeof(tNFA_DISC_RESULT));
+                }
+                ++Pgu_disoveredDeviceCount; /* Increment counter for each notification */
+
+                if(disc_result.discovery_ntf.more == 0)
+                {
+                    Pgu_disoveredDeviceCount = 0;/* Clear the Counter */
                     gb_discovery_notify = TRUE;
                     phOsal_SemaphorePost(mwIfHdl->pvSemIntgrnThrd);
                 }
                 else
                 {
-                    ALOGD ("MwIf>%s:Enter:else",__FUNCTION__);
                     return;
                 }
             }
@@ -2410,16 +1975,11 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                 gb_device_ndefcompliant = FALSE;
                 bPushToQReqd = TRUE;
                 /*gb_device_connected = FALSE;*/
-                ALOGD("MwIf>Device DisConnected, DeactivateType:%d", px_data->deactivated.type);
+                ALOGD("MwIf>Device DisConnected");
                 bCallbackReqd = TRUE;
                 if(px_data->deactivated.type == PHMWIF_DEACTIVATE_TYPE_IDLE)
                 {
-                    Pgu_disoveredDeviceCount = 0;/* Clear the Counter */
                     mwIfHdl->eDeviceState = DEVICE_IN_IDLE_STATE;
-                }
-                else if(px_data->deactivated.type == NFA_DEACTIVATE_TYPE_DISCOVERY)
-                {
-                    mwIfHdl->eDeviceState = DEVICE_IN_DISCOVERY_STARTED_STATE;
                 }
                 eMwIfEvtType = PHMWIF_DEACTIVATED_EVT;
                 uEvtInfo.eDeactivateType = (phMWIf_eDeactivateType_t) px_data->deactivated.type;
@@ -2453,6 +2013,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                     mwIfHdl->sNdefDetectParams.dwMaxSize         = px_data->ndef_detect.max_size;
                     mwIfHdl->sNdefDetectParams.dwCurSize         = px_data->ndef_detect.cur_size;
                     mwIfHdl->sNdefDetectParams.bNdefTypeFlags    = (phMwIf_eNdefTagType_t) px_data->ndef_detect.flags;
+
                 }
             }
             break;
@@ -2469,10 +2030,10 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                 else
                 {
                     /* Check for Size invalidation before copy */
-                    if(px_data->data.len >= PHMWIF_MAX_LOOPBACK_DATABUF_SIZE)
+                    if(px_data->data.len >= 400)
                     {
-                        ALOGD("MwIf> Error Data too big %d > %d !! \n",
-                        px_data->data.len, PHMWIF_MAX_LOOPBACK_DATABUF_SIZE);
+                        ALOGD("MwIf> Error Data too big %d > 400 !! \n",
+                        px_data->data.len);
                         gx_status = NFA_STATUS_BAD_LENGTH;
                         bCallbackReqd = FALSE;
                         bPushToQReqd  = FALSE;
@@ -2485,11 +2046,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
 /*DATA chaining needs to be handled by Applicaion from L-release onwards
  * In KK release and before, it was handled in middleware*/
 #ifdef APP_HANDLE_DATA_CHAINING
-                        #if((ANDROID_P == TRUE) || (ANDROID_S == TRUE))
-                        if(px_data->status == NFA_STATUS_CONTINUE)
-                        #else
                         if(px_data->status == NFC_STATUS_CONTINUE)
-                        #endif
                         {/*If its a chained Data dont publish the event. Wait for the last Data event*/
                             ALOGD("MwIf>Chained Data of Size=%d, Wait for last Data event before publishing\n",
                                     px_data->data.len);
@@ -2501,7 +2058,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                         {
                             ALOGD("MwIf>Complete Data block received");
                             phMwIfi_PrintBuffer(Pgs_cbTempBuffer,Pgui_cbTempBufferLength,"MwIf>Data =");
-                            if(gx_device.activate_ntf.protocol == NFA_PROTOCOL_NFC_DEP)
+                            if(gx_device.activate_ntf.protocol == NFC_PROTOCOL_NFC_DEP)
                             {
                                 bCallbackReqd = FALSE;
                                 bPushToQReqd = TRUE;
@@ -2604,42 +2161,19 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
             break;
             case NFA_CE_DATA_EVT:
             {
-                /* Check for Size invalidation before copy */
-                if(px_data->ce_data.p_data == NULL)
-                {
-                    ALOGD("MwIf>Error Data pointer invalid !! \n");
-                    gx_status = NFC_STATUS_BAD_RESP;
-                    bCallbackReqd = FALSE;
-                    bPushToQReqd  = FALSE;
-                }
-                else
-                {
-                    /* Check for Size invalidation before copy */
-                    if(px_data->ce_data.len >= PHMWIF_MAX_LOOPBACK_DATABUF_SIZE)
-                    {
-                        ALOGD("MwIf> Error CE Data too big %d > %d !! \n",
-                        px_data->ce_data.len, PHMWIF_MAX_LOOPBACK_DATABUF_SIZE);
-                        gx_status = NFA_STATUS_BAD_LENGTH;
-                        bCallbackReqd = FALSE;
-                        bPushToQReqd  = FALSE;
-                    }
-                    else
-                    {
-                        Pgui_cbTempBufferLength = px_data->ce_data.len;
-                        memcpy(Pgs_cbTempBuffer,px_data->ce_data.p_data,Pgui_cbTempBufferLength);
-                        phMwIfi_PrintBuffer(Pgs_cbTempBuffer,Pgui_cbTempBufferLength,"MwIf> CE DATA Received = ");
-                        bCallbackReqd = TRUE;
-                        bPushToQReqd = TRUE;
-                        eMwIfEvtType = PHMWIF_CE_DATA_EVT;
-                        uEvtInfo.sData.dwSize  = px_data->ce_data.len;
-                        uEvtInfo.sData.pvDataBuf = (void*)Pgs_cbTempBuffer;
-                    }
-                }
+                Pgui_cbTempBufferLength = px_data->ce_data.len;
+                memcpy(Pgs_cbTempBuffer,px_data->ce_data.p_data,Pgui_cbTempBufferLength);
+                phMwIfi_PrintBuffer(Pgs_cbTempBuffer,Pgui_cbTempBufferLength,"MwIf> CE DATA Received = ");
+                bCallbackReqd = TRUE;
+                bPushToQReqd = TRUE;
+                eMwIfEvtType = PHMWIF_CE_DATA_EVT;
+                uEvtInfo.sData.dwSize  = px_data->ce_data.len;
+                uEvtInfo.sData.pvDataBuf = (void*)Pgs_cbTempBuffer;
             }
             break;
             case NFA_CE_ACTIVATED_EVT :
                 /*gb_device_connected = TRUE;*/
-                bProtocol = NFA_PROTOCOL_ISO_DEP;
+                bProtocol = NFC_PROTOCOL_ISO_DEP;
                 mwIfHdl->eDeviceState = DEVICE_IN_POLL_ACTIVE_STATE;
                 ALOGD ("MwIf> *******CE ACTIVATION DATA *******\n");
                 phMwIfi_PrintNfaActivationParams(&px_data->ce_activated.activate_ntf);
@@ -2669,7 +2203,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                     ALOGD ("MwIf> NFA CE DeActivation type is SLEEP");
                 }
                 bCallbackReqd = TRUE;
-                eMwIfEvtType = PHMWIF_CE_DEACTIVATED_EVT;
+                eMwIfEvtType = PHMWIF_DEACTIVATED_EVT;
                 uEvtInfo.eDeactivateType = (phMWIf_eDeactivateType_t) px_data->ce_deactivated.type;
             break;
             case NFA_CE_LOCAL_TAG_CONFIGURED_EVT:
@@ -2819,62 +2353,49 @@ void phMwIfi_PrintNfaEeEventCode (tNFA_EE_EVT xevent)
         case NFA_EE_DISCOVER_REQ_EVT:
             ALOGD ("NFA_EE_DISCOVER_REQ_EVT\n");
         break;
-        #if(ANDROID_O == TRUE)
-        case NFA_EE_ROUT_ERR_EVT:
-            ALOGD ("NFA_EE_ROUT_ERR_EVT\n");
-        break;
-        #endif
         case NFA_EE_NO_MEM_ERR_EVT:
             ALOGD ("NFA_EE_NO_MEM_ERR_EVT\n");
         break;
-        #if(ANDROID_P == FALSE)
-        case NFA_EE_NO_CB_ERR_EVT:
-            ALOGD ("NFA_EE_NO_CB_ERR_EVT\n");
-        break;
-        #endif
+
         default:
             ALOGD ("Unknown event\n");
         break;
     }
 }
 
-// FIX ME //tNFC_PROTOCOL //tNFA_PROTOCOL
 void phMwIfi_PrintNfaProtocolCode (tNFC_PROTOCOL xprotocol)
 {
     switch (xprotocol)
     {
-        case NFC_PROTOCOL_UNKNOWN:      // FIX ME for NFA
-            ALOGD ("NFA_PROTOCOL_UNKNOWN\n");
+        case NFC_PROTOCOL_UNKNOWN:
+            ALOGD ("NFC_PROTOCOL_UNKNOWN\n");
         break;
-        case NFA_PROTOCOL_T1T:
-            ALOGD ("NFA_PROTOCOL_T1T\n");
+        case NFC_PROTOCOL_T1T:
+            ALOGD ("NFC_PROTOCOL_T1T\n");
         break;
-        case NFA_PROTOCOL_T2T:
-            ALOGD ("NFA_PROTOCOL_T2T\n");
+        case NFC_PROTOCOL_T2T:
+            ALOGD ("NFC_PROTOCOL_T2T\n");
         break;
-        case NFA_PROTOCOL_T3T:
-            ALOGD ("NFA_PROTOCOL_T3T\n");
+        case NFC_PROTOCOL_T3T:
+            ALOGD ("NFC_PROTOCOL_T3T\n");
         break;
-        case NFA_PROTOCOL_ISO_DEP:
-            ALOGD ("NFA_PROTOCOL_ISO_DEP\n");
+        case NFC_PROTOCOL_ISO_DEP:
+            ALOGD ("NFC_PROTOCOL_ISO_DEP\n");
         break;
-        case NFA_PROTOCOL_NFC_DEP:
-            ALOGD ("NFA_PROTOCOL_NFC_DEP\n");
-        break;
-        case NFA_PROTOCOL_T5T:
-            ALOGD ("NFA_PROTOCOL_T5T\n");
+        case NFC_PROTOCOL_NFC_DEP:
+            ALOGD ("NFC_PROTOCOL_NFC_DEP\n");
         break;
 /*
-        case NFA_PROTOCOL_B_PRIME:
-            ALOGD ("NFA_PROTOCOL_B_PRIME\n");
+        case NFC_PROTOCOL_B_PRIME:
+            ALOGD ("NFC_PROTOCOL_B_PRIME\n");
         break;
 
-        case NFA_PROTOCOL_15693:
-            ALOGD ("NFA_PROTOCOL_15693\n");
+        case NFC_PROTOCOL_15693:
+            ALOGD ("NFC_PROTOCOL_15693\n");
         break;
 
-        case NFA_PROTOCOL_KOVIO:
-            ALOGD ("NFA_PROTOCOL_KOVIO\n");
+        case NFC_PROTOCOL_KOVIO:
+            ALOGD ("NFC_PROTOCOL_KOVIO\n");
         break;
 */
         default:
@@ -2902,16 +2423,9 @@ void phMwIfi_PrintDiscoveryType (tNFC_DISCOVERY_TYPE xmode)
         case NFC_DISCOVERY_TYPE_POLL_F_ACTIVE:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_F_ACTIVE\n");
         break;
-#if((AOSP_MASTER_COMPILATION_SUPPORT == FALSE) && \
-        (ANDROID_O == TRUE || ANDROID_P == TRUE))
         case NFC_DISCOVERY_TYPE_POLL_V:
             ALOGD ("NFC_DISCOVERY_TYPE_POLL_V\n");
         break;
-#elif(AOSP_MASTER_COMPILATION_SUPPORT == FALSE)
-        case NFC_DISCOVERY_TYPE_POLL_ISO15693:
-            ALOGD ("NFC_DISCOVERY_TYPE_POLL_ISO15693\n");
-        break;
-#endif
         case NFC_DISCOVERY_TYPE_LISTEN_A:
             ALOGD ("NFC_DISCOVERY_TYPE_LISTEN_A\n");
         break;
@@ -3014,35 +2528,6 @@ void phMwIfi_PrintNfaStatusCode(tNFA_STATUS xstatus) {
     case NFA_STATUS_REJECTED:
        ALOGD("NFA_STATUS_REJECTED\n");
        break;
-#if(ANDROID_O == TRUE)
-    case NFA_STATUS_MSG_CORRUPTED:
-       ALOGD("NFA_STATUS_MSG_CORRUPTED\n");
-       break;
-    case NFA_STATUS_NOT_INITIALIZED:
-       ALOGD("NFA_STATUS_NOT_INITIALIZED\n");
-       break;
-    case NFA_STATUS_SYNTAX_ERROR :
-       ALOGD("NFA_STATUS_SYNTAX_ERROR\n");
-       break;
-    case NFA_STATUS_UNKNOWN_OID:
-        ALOGD("NFA_STATUS_UNKNOWN_OID\n");
-        break;
-    case NFA_STATUS_MSG_SIZE_TOO_BIG:
-        ALOGD("NFA_STATUS_MSG_SIZE_TOO_BIG\n");
-        break;
-    case NFA_STATUS_ACTIVATION_FAILED:
-        ALOGD("NFA_STATUS_ACTIVATION_FAILED\n");
-        break;
-    case NFA_STATUS_TEAR_DOWN:
-        ALOGD("NFA_STATUS_TEAR_DOWN\n");
-        break;
-    case NFA_STATUS_RF_TRANSMISSION_ERR:
-        ALOGD("NFA_STATUS_RF_TRANSMISSION_ERR\n");
-        break;
-    case NFA_STATUS_RF_PROTOCOL_ERR:
-        ALOGD("NFA_STATUS_RF_PROTOCOL_ERR\n");
-        break;
-#endif
     case NFA_STATUS_BUFFER_FULL:
        ALOGD("NFA_STATUS_BUFFER_FULL\n");
        break;
@@ -3064,38 +2549,6 @@ void phMwIfi_PrintNfaStatusCode(tNFA_STATUS xstatus) {
     case NFA_STATUS_TIMEOUT:
         ALOGD("NFA_STATUS_TIMEOUT\n");
         break;
-#if(ANDROID_O == TRUE)
-    case NFA_STATUS_EE_INTF_ACTIVE_FAIL:
-        ALOGD("NFA_STATUS_EE_INTF_ACTIVE_FAIL\n");
-        break;
-    case NFA_STATUS_EE_TRANSMISSION_ERR:
-        ALOGD("NFA_STATUS_EE_TRANSMISSION_ERR\n");
-        break;
-    case NFA_STATUS_EE_PROTOCOL_ERR:
-        ALOGD("NFA_STATUS_EE_PROTOCOL_ERR\n");
-        break;
-    case NFA_STATUS_EE_TIMEOUT:
-        ALOGD("NFA_STATUS_EE_TIMEOUT\n");
-        break;
-    case NFA_STATUS_CMD_STARTED:
-        ALOGD("NFA_STATUS_CMD_STARTED\n");
-        break;
-    case NFA_STATUS_HW_TIMEOUT:
-        ALOGD("NFA_STATUS_HW_TIMEOUTF\n");
-        break;
-    case NFA_STATUS_CONTINUE:
-        ALOGD("NFA_STATUS_CONTINUE\n");
-        break;
-    case NFA_STATUS_REFUSED:
-        ALOGD("NFA_STATUS_REFUSED\n");
-        break;
-    case NFA_STATUS_BAD_RESP:
-        ALOGD("NFA_STATUS_BAD_RESP\n");
-        break;
-    case NFA_STATUS_CMD_NOT_CMPLTD:
-        ALOGD("NCA_STATUS_CMD_NOT_CMPLTD\n");
-        break;
-#endif
     case NFA_STATUS_NO_BUFFERS:
         ALOGD("NFA_STATUS_NO_BUFFERS\n");
         break;
@@ -3267,7 +2720,6 @@ void phMwIfi_NfaEeCallback(tNFA_EE_EVT xevent,tNFA_EE_CBACK_DATA *px_data)
         return;
     }
     tNFA_EE_DISCOVER_REQ info = px_data->discover_req;
-
     ALOGE("DTA_EEREGCB> Callback Data Status = ");
     phMwIfi_PrintNfaStatusCode(px_data->status);
     gx_status = px_data->status;
@@ -3578,23 +3030,10 @@ MWIFSTATUS phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle)
 MWIFSTATUS phMwIfi_CeRegisterAID(phMwIf_sHandle_t* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    gx_status = NFA_CeRegisterAidOnDH (gs_Hce_Aid, gs_Hce_Aid_len, phMwIfi_NfaConnCallback);
+    gx_status = NFA_CeRegisterAidOnDH (gs_Uicc_Aid, gs_Uicc_Aid_len, phMwIfi_NfaConnCallback);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR Registering AID on DH !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT, 5000,
             "MwIf> ERROR NFA Stop Register AID on DH",&(mwIfHdl->sLastQueueData));
-
-    return NFA_STATUS_OK;
-}
-
-MWIFSTATUS phMwIfi_CeDeRegisterAID(phMwIf_sHandle_t* mwIfHandle)
-{
-    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-
-    ALOGD ("MwIf> HCE AID Handle De-registration =0x%x\n",NfaAidHandle);
-    gx_status = NFA_CeDeregisterAidOnDH(NfaAidHandle);
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"NFA CE_AID De-registration Fail!! \n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT,5000,
-            "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
 
     return NFA_STATUS_OK;
 }
@@ -3633,6 +3072,7 @@ MWIFSTATUS phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
                                     (uint8_t *)pData,
                                     (uint32_t)dwLength /* Pay load */
                                    );
+
     }
     if (gx_status != NFA_STATUS_OK)
     {
@@ -3660,9 +3100,9 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
     }
 
     phMwIfi_PrintBuffer((uint8_t *)pvInBuff,dwLenInBuff,"MwIf> TXVR Sending = ");
-    if(dwLenInBuff > PHMWIF_MAX_LOOPBACK_DATABUF_SIZE)
+    if(dwLenInBuff > 2048)
     {
-      ALOGE("MwIf> Error Buffer length %d > %d !! \n",dwLenInBuff, PHMWIF_MAX_LOOPBACK_DATABUF_SIZE);
+      ALOGE("MwIf> Error Buffer length %d > 400 !! \n",dwLenInBuff);
       return MWIFSTATUS_INVALID_PARAM;
     }
     if(pvInBuff == NULL)
@@ -3681,14 +3121,34 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
         ALOGD("MwIf>%s:Device Disconnected",__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
-    /*
-     * Wait for either Data or CeData event for 10 minutes
-     * If any error MW timeout will occur, so this time should cover
-     * most wait times
-     */
-    PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,NFA_CE_DATA_EVT,10*60*1000,
-            "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
 
+    switch(bProtocol)
+    {
+       case NFC_PROTOCOL_ISO_DEP:
+       {
+            if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
+            {
+                PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DATA_EVT,36000,
+                        "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+            }
+            else
+            {
+                PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,36000,
+                        "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+            }
+       }
+       break;
+       case NFC_PROTOCOL_NFC_DEP:
+       {
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,20000,
+                    "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+       }
+       break;
+       default:
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,5000,
+                    "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+       break;
+    }
     if(((Pgu_event != NFA_CE_DATA_EVT)  &&   (Pgu_event != NFA_DATA_EVT)) || gx_status != NFA_STATUS_OK)
     {
       ALOGE("MwIf> Error Did not get back data in TXVR (RX) !! \n");
@@ -3762,29 +3222,24 @@ void phMwIfi_MapRfInterface(uint8_t* protocol, int *rf_interface)
 {
     switch(*protocol)
     {
-        case NFA_PROTOCOL_T3T:
-            *rf_interface = NFA_INTERFACE_FRAME;
-            ALOGE("T3T - FRAME interface");
-            break;
+    case NFC_PROTOCOL_NFC_DEP:
+        *rf_interface = NFC_INTERFACE_NFC_DEP;
+        ALOGE("NFC-DEP interface");
+        break;
 
-        case NFA_PROTOCOL_NFC_DEP:
-            *rf_interface = NFA_INTERFACE_NFC_DEP;
-            ALOGE("NFC-DEP interface");
-            break;
+    case NFC_PROTOCOL_ISO_DEP:
+        *rf_interface = NFC_INTERFACE_ISO_DEP;
+        ALOGE("ISO-DEP interface");
+        break;
 
-        case NFA_PROTOCOL_ISO_DEP:
-            *rf_interface = NFA_INTERFACE_ISO_DEP;
-            ALOGE("ISO-DEP interface");
-            break;
+    case NFC_PROTOCOL_T3T:
+        *rf_interface = NFC_INTERFACE_FRAME;
+        ALOGE("FRAME RF interface");
+        break;
 
-        case NFA_PROTOCOL_T5T:
-            *rf_interface = NFA_INTERFACE_FRAME;
-            ALOGE("T5T - FRAME interface");
-            break;
-
-        default:
-            ALOGE("No matching protocol");
-            break;
+    default:
+        ALOGE("No matching protocol");
+        break;
     }
 }
 
@@ -4036,6 +3491,7 @@ MWIFSTATUS phMwIf_LlcpConnOrientedClientDisconnect( void*     pvMwIfHandle,
 
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
+
 }
 
 /**
@@ -4617,7 +4073,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
     phMwIfi_CopyActivationPrms(&puEvtInfo->sActivationPrms,&psActivationPrms->activate_ntf);
     switch(psActivationPrms->activate_ntf.protocol)
     {
-       case NFA_PROTOCOL_T1T:
+       case NFC_PROTOCOL_T1T:
        {
            ALOGD ("MwIf> T1T Card - HR[0] = 0x%x HR[1] = 0x%x \n",
            psActivationPrms->params.t1t.hr[0],
@@ -4627,7 +4083,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
            *peMwIfEvtType         = PHMWIF_T1T_TAG_ACTIVATED_EVT;
        }
        break;
-       case NFA_PROTOCOL_T2T:
+       case NFC_PROTOCOL_T2T:
        {
            phMwIfi_PrintBuffer(psActivationPrms->params.t2t.uid,10,
            "MwIf> T2T Card - UID= ");
@@ -4637,7 +4093,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
            *peMwIfEvtType = PHMWIF_T2T_TAG_ACTIVATED_EVT;
        }
        break;
-       case NFA_PROTOCOL_T3T:
+       case NFC_PROTOCOL_T3T:
        {
            phMwIfi_PrintBuffer16(psActivationPrms->params.t3t.p_system_codes,
            (uint16_t)psActivationPrms->params.t3t.num_system_codes,
@@ -4647,16 +4103,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
            usleep(1);
        }
        break;
-       case NFA_PROTOCOL_T5T:
-       {
-           phMwIfi_PrintBuffer(psActivationPrms->params.t2t.uid,10, "MwIf> T5T Card - UID= ");
-           phMwIfi_PrintBuffer(psActivationPrms->activate_ntf.rf_tech_param.param.pa.sens_res,2,"CHECK_T5T : ");
-           ALOGD("SAK: 0x%02X", psActivationPrms->activate_ntf.rf_tech_param.param.pa.sel_rsp);
-           *pblCallbackReqd = TRUE;
-           *peMwIfEvtType = PHMWIF_T5T_TAG_ACTIVATED_EVT;
-       }
-       break;
-       case NFA_PROTOCOL_ISO_DEP:
+       case NFC_PROTOCOL_ISO_DEP:
        {
            ALOGD("MwIf> T4T Card ");
            if(psActivationPrms->activate_ntf.rf_tech_param.mode == NFC_DISCOVERY_TYPE_POLL_A)
@@ -4683,7 +4130,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
            *peMwIfEvtType = PHMWIF_ISODEP_ACTIVATED_EVT;
        }
        break;
-       case NFA_PROTOCOL_NFC_DEP:
+       case NFC_PROTOCOL_NFC_DEP:
        {
            ALOGD("MwIf> NFC DEP Detected \n");
            switch(psActivationPrms->activate_ntf.rf_tech_param.mode)
@@ -4719,7 +4166,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
 
            *pblCallbackReqd = TRUE;
            *peMwIfEvtType = PHMWIF_NFCDEP_ACTIVATED_EVT;
-       }/*case NFA_PROTOCOL_NFC_DEP:*/
+       }/*case NFC_PROTOCOL_NFC_DEP:*/
        break;
        case NFC_PROTOCOL_UNKNOWN:
            ALOGE("MwIf> Handling Secure Element test cases \n");
@@ -4730,14 +4177,6 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
    }/*switch(psActivationPrms->activate_ntf.protocol)*/
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return;
-}
-
-MWIFSTATUS phMwIf_ConsumeDeactivatedEvent(void *mwIfHandle, uint32_t uwTimeoutMs)
-{
-    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DEACTIVATED_EVT,uwTimeoutMs,
-            "MwIf> Error in ReceiveData(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
-    return MWIFSTATUS_FAILED;
 }
 
 /**
@@ -4751,26 +4190,19 @@ MWIFSTATUS phMwIf_ReceiveData(void *mwIfHandle, void* pvOutBuff, uint32_t* dwLen
     if(mwIfHdl->eDeviceState != DEVICE_IN_POLL_ACTIVE_STATE)
     {
         ALOGD("MwIf>%s:Device Disconnected",__FUNCTION__);
-        /*
-         * Consume DEACTIVATE_EVT if any to avoid next test case failure
-         * (Next test case might receive DEACTIVATE_EVT, leading to test case failure)
-         */
-        /* Wait for Deactivated event */
-        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DATA_EVT,2000,
-                "MwIf> Error in ReceiveData(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
         return MWIFSTATUS_FAILED;
     }
 
     ALOGD("MwIf>%s:Waiting for Data",__FUNCTION__);
     switch(bProtocol)
     {
-       case NFA_PROTOCOL_ISO_DEP:
+       case NFC_PROTOCOL_ISO_DEP:
        {
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DATA_EVT,36000,
                     "MwIf> Error in ReceiveData(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
        }
        break;
-       case NFA_PROTOCOL_NFC_DEP:
+       case NFC_PROTOCOL_NFC_DEP:
        {
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,20000,
                     "MwIf> Error in ReceiveData(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
@@ -4804,55 +4236,35 @@ MWIFSTATUS phMwIf_ReceiveData(void *mwIfHandle, void* pvOutBuff, uint32_t* dwLen
 }
 
 /**
- * Send RF Discovery Select Next Device to NFCC
- * Zero index is taken for selecting first discovered device id
- */
-MWIFSTATUS phMwIf_RfDiscoverySelectNextDevice(void* mwIfHandle)
-{
-    int rfInterface;
-    uint8_t protocol = gx_discovery_result[0].discovery_ntf.protocol;
-    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    ALOGD("MwIf>%s:Enter",__FUNCTION__);
-    phMwIfi_MapRfInterface(&protocol, &rfInterface);
-    gx_status = NFA_Select(gx_discovery_result[0].discovery_ntf.rf_disc_id,
-                           gx_discovery_result[0].discovery_ntf.protocol,
-                           rfInterface);
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SELECT_RESULT_EVT,5000,
-            "MwIf> ERROR NFA Select",&(mwIfHdl->sLastQueueData));
-    ALOGD("MwIf>%s:Exit",__FUNCTION__);
-    return MWIFSTATUS_SUCCESS;
-}
-
-/**
  * Send Deactivate command to NFCC
  */
 MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
                                 phMWIf_eDeactivateType_t eDeactType)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
+    uint8_t RW_TAG_SLP_REQ[] = {0x50, 0x00};
 
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-    ALOGD("MwIf>eDeactType = %d, mwIfHdl->eDeviceState=%d",eDeactType,mwIfHdl->eDeviceState);
-    if((mwIfHdl->eDeviceState == DEVICE_IN_DISCOVERY_STARTED_STATE) &&
-        (eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY))
+    ALOGD("MwIf>eDeactType = %d",eDeactType);
+    if(eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF)
     {
-        ALOGD("MwIf> MW already in DISCOVERY state");
-    }
-    else
-    {
-        if(eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF)
-        {
-            ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF");
+        ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP || eDeactType == PHMWIF_DEACTIVATE_TYPE_SLEEP_AF");
+        if((gx_device.activate_ntf.protocol == NFC_PROTOCOL_T2T) &&
+        (gs_nciVersion >= NCI_VERSION_2_0)) {
+            gx_status = NFA_SendRawFrame((uint8_t *)RW_TAG_SLP_REQ,sizeof(RW_TAG_SLP_REQ),0);
+            ALOGD("MwIf>%s:T2T Sleep Request",__FUNCTION__);
+        }
+        else {
             gx_status = NFA_Deactivate(TRUE);
         }
-        else if(eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY || eDeactType == PHMWIF_DEACTIVATE_TYPE_IDLE)
-        {
-            ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY || eDeactType == PHMWIF_DEACTIVATE_TYPE_IDLE");
-            gx_status = NFA_Deactivate(FALSE);
-        }
-        PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status, "MwIf> Error Could not Deactivate");
-        PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DEACTIVATED_EVT,5000, "MwIf> Error in NfcDeactivate (SEM) !! \n",&(mwIfHdl->sLastQueueData));
     }
+    else if(eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY || eDeactType == PHMWIF_DEACTIVATE_TYPE_IDLE)
+    {
+        ALOGD("MwIf>eDeactType == PHMWIF_DEACTIVATE_TYPE_DISCOVERY || eDeactType == PHMWIF_DEACTIVATE_TYPE_IDLE");
+        gx_status = NFA_Deactivate(FALSE);
+    }
+    PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status, "MwIf> Error Could not Deactivate");
+    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DEACTIVATED_EVT,5000, "MwIf> Error in NfcDeactivate (SEM) !! \n",&(mwIfHdl->sLastQueueData));
 
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
@@ -4861,19 +4273,11 @@ MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
 MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
                                      uint8_t cmd_params_len,
                                      uint8_t *p_cmd_params,
-#if (ANDROID_O == TRUE)
-                                     tNFA_VSC_CBACK *p_cback)
-#else
                                      tNFA_NXP_NCI_RSP_CBACK *p_cback)
-#endif
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-#if (ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
     gx_status = NFA_SendRawVsCommand (cmd_params_len, p_cmd_params, p_cback);
-#else
-    gx_status = NFA_SendNxpNciCommand (cmd_params_len, p_cmd_params, p_cback);
-#endif
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status, "MwIf> Error Could not send NxpNciCommand");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_NXPCFG_EVT_OFFSET+NCI_RSP_EVT),5000, "MwIf> Error in SendNxpNciCommand (SEM) !! \n",&(mwIfHdl->sLastQueueData));
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
@@ -4893,32 +4297,32 @@ void phMwIfi_NfaNxpNciPropCommRspCallback(uint8_t event, uint16_t param_len, uin
     }
     else
     {
-        if(p_param[3] == 0x00)
-        {
-            ALOGD("NFA_STATUS_OK\n");
-        }
-        else
-        {
-            ALOGD("NFA_STATUS_FAILED\n");
-        }
+      if(p_param[3] == 0x00)
+      {
+        ALOGD("NFA_STATUS_OK\n");
+      }
+      else
+      {
+        ALOGD("NFA_STATUS_FAILED\n");
+      }
 
-        psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
-        memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
-        psQueueData->dwEvtType = NFA_NXPCFG_EVT_OFFSET + event;
-        if(p_param)
-        {
-            if(param_len <= MAX_NXPCFG_RSP_DATA) {
-                psQueueData->uEvtData.sNxpCfgEvtData.dwSize = param_len;
-                memcpy(psQueueData->uEvtData.sNxpCfgEvtData.abCfgRspData,p_param,param_len);
-            } else {
-                ALOGE("MwIf>RSP Data too high!! Length=0x%x",param_len);
-            }
+      psQueueData = (phMwIf_sQueueData_t*)malloc(sizeof(phMwIf_sQueueData_t));
+      memset(psQueueData,0,sizeof(phMwIf_sQueueData_t));
+      psQueueData->dwEvtType = NFA_NXPCFG_EVT_OFFSET + event;
+      if(p_param)
+      {
+        if(param_len <= MAX_NXPCFG_RSP_DATA) {
+            psQueueData->uEvtData.sNxpCfgEvtData.dwSize = param_len;
+            memcpy(psQueueData->uEvtData.sNxpCfgEvtData.abCfgRspData,p_param,param_len);
+        } else {
+            ALOGE("MwIf>RSP Data too high!! Length=0x%x",param_len);
         }
-        if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
-        {
-            ALOGE("MwIf>%s Error Could not Push to Queue\n",__FUNCTION__);
-            gx_status = NFA_STATUS_FAILED;
-        }
+      }
+      if (phOsal_QueuePush(mwIfHdl->pvQueueHdl,psQueueData,0) != NFA_STATUS_OK)
+      {
+        ALOGE("MwIf>%s Error Could not Push to Queue\n",__FUNCTION__);
+        gx_status = NFA_STATUS_FAILED;
+      }
     }
 
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
@@ -4930,19 +4334,10 @@ tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
                                              tNFA_TECHNOLOGY_MASK technologies_switch_off,
                                              tNFA_TECHNOLOGY_MASK technologies_battery_off)
 {
-#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE && ANDROID_O == TRUE)
+
     return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
-                                         technologies_switch_off,technologies_battery_off
-                                         );
-#else
-    return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
-                                         technologies_switch_off,technologies_battery_off,
-                                         0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
-                                        ,0x0
-#endif
-                                        );
-#endif
+                                      technologies_switch_off,technologies_battery_off,
+                                     0x0, 0x0, 0x0);
 }
 
 /*Wrapper for MW EE Proto Routing API*/
@@ -4951,19 +4346,9 @@ tNFA_STATUS phMwIfi_EeSetDefaultProtoRouting (tNFA_HANDLE         ee_handle,
                                               tNFA_PROTOCOL_MASK  protocols_switch_off,
                                               tNFA_PROTOCOL_MASK  protocols_battery_off)
 {
-#if(AOSP_MASTER_COMPILATION_SUPPORT == TRUE && ANDROID_O == TRUE)
-    return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
-                                         protocols_switch_off,protocols_battery_off
-                                         );
-#else
-    return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
+return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
                                          protocols_switch_off,protocols_battery_off,
-                                         0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
-                                         ,0x0
-#endif
-                                         );
-#endif
+                                         0x0,0x0,0x0);
 }
 #if ENABLE_AGC_DEBUG
 /**
@@ -4979,11 +4364,7 @@ MWIFSTATUS phMwIfi_SendAGCDebugCommand()
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
     uint8_t abAgcDbgCmdBuf[] = {0x2F, 0x33, 0x04, 0x40, 0x00, 0x40, 0xD8};
     uint8_t abAgcValues[256];
-#if (ANDROID_O == TRUE)
-    gx_status = NFA_SendRawVsCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);
-#else
     gx_status = NFA_SendNxpNciCommand ((sizeof(abAgcDbgCmdBuf), abAgcDbgCmdBuf, phMwIfi_NfaNxpNciAgcDbgRspCallback);
-#endif
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status, "MwIf> Error Could not send NxpNciCommand");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_NXPCFG_EVT_OFFSET+NCI_AGC_DBG_RSP_EVT),1000, "MwIf> Error in SendNxpNciCommand (SEM) !! \n",&(mwIfHdl->sLastQueueData));
     /*Print the AGC Values*/

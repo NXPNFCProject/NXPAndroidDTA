@@ -82,14 +82,14 @@ DTASTATUS phDtaLibi_HceFOperations()
 
     while(1)
     {
-        /*Wait for Data Event(Select P_AID) to start CE Operations*/
-        do {
+    /*Wait for Data Event(Select P_AID) to start CE Operations*/
+    do {
             dwOsalStatus = phOsal_QueuePull(dtaLibHdl->queueHdl, (void**)&psQueueData, 0);
             if (dwOsalStatus != 0) {
-                phOsal_LogErrorString((const uint8_t*)"DTALib> : Exiting-QueuPull ", (const uint8_t*)__FUNCTION__);
-                phOsal_LogErrorU32h((const uint8_t*)"Status = ",dwOsalStatus);
+              phOsal_LogErrorString((const uint8_t*)"DTALib> : Exiting-QueuPull ", (const uint8_t*)__FUNCTION__);
+              phOsal_LogErrorU32h((const uint8_t*)"Status = ",dwOsalStatus);
 
-                return DTASTATUS_FAILED;
+              return DTASTATUS_FAILED;
             }
 
             phOsal_LogDebugString((const uint8_t*)"DTALib> : Recvd Object", (const uint8_t*)__FUNCTION__);
@@ -98,48 +98,44 @@ DTASTATUS phDtaLibi_HceFOperations()
             {
                 phOsal_LogDebug((const uint8_t*)"DTALib>psQueueData->uEvtType.eDpEvtType == PHMWIF_DEACTIVATED_EVT");
                 free(psQueueData);
-                return DTASTATUS_FAILED;
+              return DTASTATUS_FAILED;
             }
 
             sQueueData = *psQueueData;
             /*Free Data if its some other event*/
             if(sQueueData.uEvtType.eDpEvtType != PHMWIF_CE_DATA_EVT)
                 free(psQueueData);
-        } while (sQueueData.uEvtType.eDpEvtType != PHMWIF_CE_DATA_EVT);
+      } while (sQueueData.uEvtType.eDpEvtType != PHMWIF_CE_DATA_EVT);
 
-        if (dwOsalStatus != OSALSTATUS_SUCCESS)
-        {
-            phOsal_LogError((const uint8_t*)"DTALib> Error Failed to receive the First packet !! \n");
-            return dwOsalStatus;
-        }
+       //phOsal_LogDebugU32d((const uint8_t*)"DTALib>sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf = ",(size_t)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
+       phOsal_LogBuffer((const uint8_t*)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
+       if(!sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf)
+       {
+           phOsal_LogErrorString((const uint8_t*)"DTALib>:Invalid Data Recvd",(const uint8_t *)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
+           return DTASTATUS_FAILED;
+       }
 
-        phOsal_LogBuffer((const uint8_t*)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize, (const uint8_t *)"DTALib> Received data pvDataBuf = ");
-        if(!sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf)
-        {
-            phOsal_LogErrorString((const uint8_t*)"DTALib>:Invalid Data Recvd",(const uint8_t *)sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf);
-            return DTASTATUS_FAILED;
-        }
+       memcpy(readBuffer, sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize);
+       dwSizeOfReadBuff = sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize;
+       phOsal_LogDebugU32d((const uint8_t *)"DEBUG> After copy", sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize);
+       //blkNum = readBuffer[14];
+       if(readBuffer[1] == 0x08){
+           phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> Update command received");
+           memcpy(readUpdCmdBuffer, readBuffer, dwSizeOfReadBuff);
+           dwSizeOfReadUpdCmdBuff = dwSizeOfReadBuff;
+           blkNum = readUpdCmdBuffer[14];
+           writeBuffer[count++] = 0x00;
+           writeBuffer[count++] = 0x09;
+           memcpy(writeBuffer+2, readBuffer+2, T3T_NFCID2_SIZE);
+           count += T3T_NFCID2_SIZE;
+           writeBuffer[count++] = updCmdRsp[0];
+           writeBuffer[count++] = updCmdRsp[1];
+           dwSizeOfwriteBuffer = count;
+           writeBuffer[0] = (uint8_t)count; //count = 12
 
-        memcpy(readBuffer, sQueueData.uEvtInfo.uDpEvtInfo.sData.pvDataBuf, sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize);
-        dwSizeOfReadBuff = sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize;
-        phOsal_LogDebugU32d((const uint8_t *)"DEBUG> After copy", sQueueData.uEvtInfo.uDpEvtInfo.sData.dwSize);
-        //blkNum = readBuffer[14];
-        if(readBuffer[1] == 0x08){
-            phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> Update command received");
-            memcpy(readUpdCmdBuffer, readBuffer, dwSizeOfReadBuff);
-            dwSizeOfReadUpdCmdBuff = dwSizeOfReadBuff;
-            blkNum = readUpdCmdBuffer[14];
-            writeBuffer[count++] = 0x00;
-            writeBuffer[count++] = 0x09;
-            memcpy(writeBuffer+2, readBuffer+2, T3T_NFCID2_SIZE);
-            count += T3T_NFCID2_SIZE;
-            writeBuffer[count++] = updCmdRsp[0];
-            writeBuffer[count++] = updCmdRsp[1];
-            dwSizeOfwriteBuffer = count;
-            writeBuffer[0] = (uint8_t)count; //count = 12
-        }else if(readBuffer[1] == 0x06){
-            phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> preparing buffer to send check response");
-            if((blkNum & chkCmdMask) && (memcmp(readUpdCmdBuffer+14, readBuffer+14, 2) == 0x00)){
+       }else if(readBuffer[1] == 0x06){
+           phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> preparing buffer to send check response");
+           if((blkNum & chkCmdMask) && (memcmp(readUpdCmdBuffer+14, readBuffer+14, 2) == 0x00)){
                 phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> block list is 2 bytes");
                 writeBuffer[count++] = 0x00;
                 writeBuffer[count++] = 0x07;
@@ -153,7 +149,7 @@ DTASTATUS phDtaLibi_HceFOperations()
                 dwSizeOfwriteBuffer = count; //count = 29
                 writeBuffer[0] = (uint8_t)count; //count = 29
                 phOsal_LogBuffer((const uint8_t *)writeBuffer, count, (const uint8_t *)"DTALib> Sending data writeBuffer = ");
-            }else if(!(blkNum & chkCmdMask) && (memcmp(readUpdCmdBuffer+14, readBuffer+14, 3) == 0x00)){
+           }else if(!(blkNum & chkCmdMask) && (memcmp(readUpdCmdBuffer+14, readBuffer+14, 3) == 0x00)){
                 phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> block list is 3 bytes");
                 writeBuffer[count++] = 0x00;
                 writeBuffer[count++] = 0x07;
@@ -181,19 +177,20 @@ DTASTATUS phDtaLibi_HceFOperations()
                 dwSizeOfwriteBuffer = count;//count = 29
                 writeBuffer[0] = (uint8_t)count;//count = 29
                 phOsal_LogBuffer((const uint8_t *)writeBuffer, count, (const uint8_t *)"DTALib> Sending data writeBuffer = ");
-            }
-        }
-        gx_status = phMwIf_SendRawFrame(dtaLibHdl->mwIfHdl,writeBuffer,dwSizeOfwriteBuffer);
-        if(gx_status != MWIFSTATUS_SUCCESS)
-        {
-            phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
-            break;
-        }
-        memset(writeBuffer, '\0', sizeof(writeBuffer));
-        count = 0x00;
-        phOsal_LogDebug ((const uint8_t*)"DTALib> Sending R-APDU Init... \n");
+           }
+       }
+       gx_status = phMwIf_SendRawFrame(dtaLibHdl->mwIfHdl,writeBuffer,dwSizeOfwriteBuffer);
+       if(gx_status != MWIFSTATUS_SUCCESS)
+       {
+         phOsal_LogError((const uint8_t*)"DTALib> Error Failed to tranceive data in loop back !! \n");
+         break;
+       }
+       memset(writeBuffer, '\0', sizeof(writeBuffer));
+       count = 0x00;
+       phOsal_LogDebug ((const uint8_t*)"DTALib> Sending R-APDU Init... \n");
+
     }
-    return gx_status;
+    return MWIFSTATUS_SUCCESS;
 }
 
 #ifdef __cplusplus

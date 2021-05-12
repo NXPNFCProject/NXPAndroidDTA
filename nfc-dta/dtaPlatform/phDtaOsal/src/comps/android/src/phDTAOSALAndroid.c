@@ -248,6 +248,8 @@ OSALSTATUS phOsal_SemaphoreWait(void *hSemaphore,
         }
         /* Check what happened */
         if (status == -1)
+
+
         {
              if (errno == ETIMEDOUT)
              {

@@ -14,12 +14,6 @@
   limitations under the License.
 */
 
-/*
- * CR12_ON_AR12_CHANGE
- * AOSP_MASTER_COMPILATION_SUPPORT
- *   Set it to TRUE if you are building with Vanilla AOSP
- */
-
 cc_library_shared {
     name: "libmwif",
 
@@ -49,11 +43,6 @@ cc_library_shared {
         "-Werror",
         "-DNXP_EXTNS=TRUE",
         "-DAOSP_MASTER_COMPILATION_SUPPORT=TRUE",
-        "-DAPP_HANDLE_DATA_CHAINING",
-        "-DANDROID_O=FALSE",
-        "-DANDROID_P=FALSE",
-        "-DANDROID_S=TRUE",
-        "-DENABLE_CR12_SUPPORT=TRUE"
     ],
     srcs: [
         "src/*.cpp"

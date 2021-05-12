@@ -328,24 +328,17 @@ DTASTATUS phDtaLibi_LlcpConnLessOperations(phDtaLib_sTestProfile_t* psTestProfil
             psDtaLibHdl->bRemoteSapClEchoOut = bRemoteSapClEchoOut;
         }
         else
-        {/*Its a loopback data. Send it back, if the llc is active*/
+        {/*Its a loopback data.Send it back*/
             phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:Waiting for TDELAY_CL");
             phOsal_Delay(TDELAY_CL_IN_MS);
-            if(psDtaLibHdl->llcpConnStatus != PHMWIF_LLCP_DEACTIVATED_EVT)
+            phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Send Loopback Data back to SAP:",bRemoteSapClEchoOut);
+            dwMwIfStatus = phMwIf_LlcpConnLessSendData(psDtaLibHdl->mwIfHdl,
+                                                       psDtaLibHdl->bRemoteSapClEchoOut,
+                                                       &sLlcpConnLessData);
+            if (dwMwIfStatus != MWIFSTATUS_SUCCESS)
             {
-                phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Send Loopback Data back to SAP:",bRemoteSapClEchoOut);
-                dwMwIfStatus = phMwIf_LlcpConnLessSendData(psDtaLibHdl->mwIfHdl,
-                                                           psDtaLibHdl->bRemoteSapClEchoOut,
-                                                           &sLlcpConnLessData);
-                if (dwMwIfStatus != MWIFSTATUS_SUCCESS)
-                {
-                    phOsal_LogErrorString((const uint8_t*)"DTALib>LLCP::Could not Send Connless Data", (const uint8_t*)__FUNCTION__);
-                    return dwMwIfStatus;
-                }
-            }
-            else
-            {
-                phOsal_LogDebug((const uint8_t*)"DTALib>LLCP: Connection Less Link Deacivated");
+                phOsal_LogErrorString((const uint8_t*)"DTALib>LLCP::Could not Send Connless Data", (const uint8_t*)__FUNCTION__);
+                return dwMwIfStatus;
             }
             if(sLlcpConnLessData.pbBuff){
                 free(sLlcpConnLessData.pbBuff);

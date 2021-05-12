@@ -47,9 +47,6 @@ public class PhDtaLibStructure
     public boolean listenUicc;
     public boolean listenHce;
     public boolean listenEse;
-    /*Enable P2P ACM INI / TAR modes*/
-    public boolean p2pAcmInitiator;
-    public boolean p2pAcmTarget;
 
     public void initializeRfTechObjs()
     {
@@ -61,8 +58,6 @@ public class PhDtaLibStructure
             listenUiccRfTech= new PhRfTechnology();
             listenHceRfTech = new PhRfTechnology();
             listenEseRfTech = new PhRfTechnology();
-            p2pAcmIniRfTech = new PhRfTechnology();
-            p2pAcmTarRfTech = new PhRfTechnology();
         }
     }
     public int getDtaLibVerMajor() {
@@ -125,12 +120,11 @@ public class PhDtaLibStructure
             break;
         }
     }
-    /*RF technology types to enable for each poll or Initiator & listen or Target configurations*/
+    /*RF technology types to enable for each poll/listen configurations*/
     public class PhRfTechnology{
         public boolean technologyA;
         public boolean technologyB;
         public boolean technologyF;
-        public boolean technologyV;
     }
 
     public PhRfTechnology pollP2pRfTech;
@@ -139,6 +133,4 @@ public class PhDtaLibStructure
     public PhRfTechnology listenUiccRfTech;
     public PhRfTechnology listenHceRfTech;
     public PhRfTechnology listenEseRfTech;
-    public PhRfTechnology p2pAcmIniRfTech;
-    public PhRfTechnology p2pAcmTarRfTech;
 }

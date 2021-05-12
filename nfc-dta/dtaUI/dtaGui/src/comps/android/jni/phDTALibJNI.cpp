@@ -206,12 +206,6 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     jboolean listenEse      = env->GetBooleanField(phDtaLibsDiscParamst, jFidListenEse);
     jfieldID jFidListenHce  = env->GetFieldID(phdtaclass, "listenHce", "Z");
     jboolean listenHce      = env->GetBooleanField(phDtaLibsDiscParamst, jFidListenHce);
-
-    jfieldID jFidP2pAcmIni  = env->GetFieldID(phdtaclass,"p2pAcmInitiator", "Z");
-    jboolean p2pAcmIni      = env->GetBooleanField(phDtaLibsDiscParamst, jFidP2pAcmIni);
-    jfieldID jFidP2pAcmTar  = env->GetFieldID(phdtaclass,"p2pAcmTarget", "Z");
-    jboolean p2pAcmTar      = env->GetBooleanField(phDtaLibsDiscParamst, jFidP2pAcmTar);
-
     jfieldID jFidEnableLlcp = env->GetFieldID(phdtaclass, "enableLlcp", "Z");
     jboolean enableLlcp     = env->GetBooleanField(phDtaLibsDiscParamst, jFidEnableLlcp);
     jfieldID jFidEnableSnep = env->GetFieldID(phdtaclass, "enableSnep", "Z");
@@ -236,8 +230,6 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     jboolean pollRdWtRfTechTypeB     = env->GetBooleanField(jObjPollRdWtRfTech, jFidPollRdWtRfTechTypeB);
     jfieldID jFidPollRdWtRfTechTypeF = env->GetFieldID(jClsPollRdWtRfTech, "technologyF", "Z");
     jboolean pollRdWtRfTechTypeF     = env->GetBooleanField(jObjPollRdWtRfTech, jFidPollRdWtRfTechTypeF);
-    jfieldID jFidPollRdWtRfTechTypeV = env->GetFieldID(jClsPollRdWtRfTech, "technologyV", "Z");
-    jboolean pollRdWtRfTechTypeV     = env->GetBooleanField(jObjPollRdWtRfTech, jFidPollRdWtRfTechTypeV);
 
     jfieldID jFidListenP2pRfTech        = env->GetFieldID(phdtaclass,"listenP2pRfTech","Lcom/phdtaui/structure/PhDtaLibStructure$PhRfTechnology;");
     jobject  jObjListenP2pRfTech        = env->GetObjectField(phDtaLibsDiscParamst,jFidListenP2pRfTech);
@@ -279,22 +271,6 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     jfieldID jFidListenEseRfTechTypeF   = env->GetFieldID(jClsListenEseRfTech, "technologyF", "Z");
     jboolean listenEseRfTechTypeF       = env->GetBooleanField(jObjListenEseRfTech, jFidListenEseRfTechTypeF);
 
-    jfieldID jFidP2pAcmIniRfTech      = env->GetFieldID(phdtaclass,"p2pAcmIniRfTech","Lcom/phdtaui/structure/PhDtaLibStructure$PhRfTechnology;");
-    jobject  jObjP2pAcmIniRfTech      = env->GetObjectField(phDtaLibsDiscParamst,jFidP2pAcmIniRfTech);
-    jclass   jClsP2pAcmIniRfTech      = env->GetObjectClass(jObjP2pAcmIniRfTech);
-    jfieldID jFidP2pAcmIniRfTechTypeA = env->GetFieldID(jClsP2pAcmIniRfTech, "technologyA", "Z");
-    jboolean p2pAcmIniRfTechTypeA     = env->GetBooleanField(jObjP2pAcmIniRfTech, jFidP2pAcmIniRfTechTypeA);
-    jfieldID jFidP2pAcmIniRfTechTypeF = env->GetFieldID(jClsP2pAcmIniRfTech, "technologyF", "Z");
-    jboolean p2pAcmIniRfTechTypeF     = env->GetBooleanField(jObjP2pAcmIniRfTech, jFidP2pAcmIniRfTechTypeF);
-
-    jfieldID jFidP2pAcmTarRfTech      = env->GetFieldID(phdtaclass,"p2pAcmTarRfTech","Lcom/phdtaui/structure/PhDtaLibStructure$PhRfTechnology;");
-    jobject  jObjP2pAcmTarRfTech      = env->GetObjectField(phDtaLibsDiscParamst,jFidP2pAcmTarRfTech);
-    jclass   jClsP2pAcmTarRfTech      = env->GetObjectClass(jObjP2pAcmTarRfTech);
-    jfieldID jFidP2pAcmTarRfTechTypeA = env->GetFieldID(jClsP2pAcmTarRfTech, "technologyA", "Z");
-    jboolean p2pAcmTarRfTechTypeA     = env->GetBooleanField(jObjP2pAcmTarRfTech, jFidP2pAcmTarRfTechTypeA);
-    jfieldID jFidP2pAcmTarRfTechTypeF = env->GetFieldID(jClsP2pAcmTarRfTech, "technologyF", "Z");
-    jboolean p2pAcmTarRfTechTypeF     = env->GetBooleanField(jObjP2pAcmTarRfTech, jFidP2pAcmTarRfTechTypeF);
-
     jfieldID LLCPP2p = env->GetFieldID(phdtaclass, "enableLlcp", "Z");
     jint enableP2pLlcp = env->GetBooleanField(phDtaLibsDiscParamst, LLCPP2p);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>EnableP2PLLcp = ",enableP2pLlcp);
@@ -316,7 +292,6 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>PollRdWtTechA = ",pollRdWtRfTechTypeA);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>PollRdWtTechB = ",pollRdWtRfTechTypeB);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>PollRdWtTechF = ",pollRdWtRfTechTypeF);
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>PollRdWtTechV = ",pollRdWtRfTechTypeV);
 
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>ListenP2P = ",listenP2p);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>ListenP2PTechA = ",listenP2pRfTechTypeA);
@@ -338,19 +313,11 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>ListenESETechB = ",listenEseRfTechTypeB);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>ListenESETechF = ",listenEseRfTechTypeF);
 
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmInitiator = ",p2pAcmIni);
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmIniTechA = ",p2pAcmIniRfTechTypeA);
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmIniTechF = ",p2pAcmIniRfTechTypeF);
-
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmTarget = ",p2pAcmTar);
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmTarTechA = ",p2pAcmTarRfTechTypeA);
-    phOsal_LogDebugU32h((const uint8_t*)"DTAJni>P2PAcmTarTechF = ",p2pAcmTarRfTechTypeF);
-
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>EnableLlcp = ",enableLlcp);
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>EnableSnep = ",enableSnep);
 
     dtaJNIHdl->jObject = (jobject)env->NewGlobalRef(phDtaLibsDiscParamst);
-#if 0 // CR12_ON_AR12_CHANGE
+#if 0
     jclass cls = (env)->GetObjectClass(dtaJNIHdl->jObject);
     dtaJNIHdl->jmethodID = env->GetMethodID(cls,"phDtaUIi_EvtCb","(II)V");
     if (dtaJNIHdl->jmethodID == 0)
@@ -358,7 +325,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
         phOsal_LogDebug((const uint8_t*)"DTAJni> DTA status failed error in GetMethodID\n");
         return DTASTATUS_FAILED;
     }
-#endif // CR12_ON_AR12_CHANGE
+#endif
 
     phOsal_LogDebug((const uint8_t*)"DTAJni> Calling Enable Discovery\n");
     memset(&discParams,0,sizeof(phDtaLib_sDiscParams_t));
@@ -369,8 +336,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     discParams.dwPollRdWrt =  pollRdWt *
                               ((pollRdWtRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (pollRdWtRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
-                              (pollRdWtRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F) |
-                              (pollRdWtRfTechTypeV * DTALIB_RFTECHNOLOGY_MASK_V));
+                              (pollRdWtRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
     discParams.dwListenP2P =  listenP2p *
                               ((listenP2pRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (listenP2pRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
@@ -387,13 +353,6 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
                               ((listenEseRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (listenEseRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
                               (listenEseRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
-
-    discParams.dwP2pAcmIni =  p2pAcmIni *
-                              ((p2pAcmIniRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A_ACTIVE) |
-                              (p2pAcmIniRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F_ACTIVE));
-    discParams.dwP2pAcmTar =  p2pAcmTar *
-                              ((p2pAcmTarRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A_ACTIVE) |
-                              (p2pAcmTarRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F_ACTIVE));
 
     p2pType = (enableP2pLlcp * enableP2pLlcpCntPrms * PHDTALIB_P2P_LLCP_WITH_CONN_PARAMS) +
               (enableP2pLlcp * (!enableP2pLlcpCntPrms) * PHDTALIB_P2P_LLCP_WITHOUT_CONN_PARAMS) +
@@ -481,9 +440,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibGetIUTInfo
 void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_sEvtData_t  *sEvtData)
 {
     phDtaJNI_sHandle_t *dtaJNIHdl = (phDtaJNI_sHandle_t *)dtaApplHdl;
-#if 0 /* CR12_ON_AR12_CHANGE */
-    int getEnvStat;
-#endif /* CR12_ON_AR12_CHANGE */
+    //int getEnvStat;
     LOG_FUNC_ENTRY;
     if((dtaJNIHdl == NULL) || (dtaJNIHdl->jVm == NULL))
     {
@@ -494,7 +451,7 @@ void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_s
     switch(eEvtType)
     {
         case PHDTALIB_TEST_CASE_EXEC_STARTED:
-#if 0 /* CR12_ON_AR12_CHANGE */
+        #if 0
             getEnvStat = (dtaJNIHdl->jVm)->GetEnv((void **)&(dtaJNIHdl->jniEnv), JNI_VERSION_1_6);
             if (getEnvStat == JNI_EDETACHED) {
                 phOsal_LogDebug((const uint8_t*)"DTAJni>:GetEnv: not attached\n");
@@ -508,23 +465,17 @@ void phDtaJNIi_EvtCb(void* dtaApplHdl, phdtaAppLib_eEvtType eEvtType, phdtaLib_s
             else if (getEnvStat == JNI_EVERSION) {
                 phOsal_LogDebug((const uint8_t*)"DTAJni>:GetEnv: version not supported\n");
             }
-#endif /* CR12_ON_AR12_CHANGE */
+        #endif
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_CASE_EXEC_STARTED",(const uint8_t*)__FUNCTION__);
-#if 0 /* CR12_ON_AR12_CHANGE */
-            (dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_STARTED, 0);
-#endif /* CR12_ON_AR12_CHANGE */
+            //(dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_STARTED, 0);
         break;
         case PHDTALIB_TEST_CASE_EXEC_COMPLETED:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_CASE_EXEC_COMPLETED",(const uint8_t*)__FUNCTION__);
-#if 0 /* CR12_ON_AR12_CHANGE */
-            (dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_COMPLETED, 0);
-#endif /* CR12_ON_AR12_CHANGE */
+            //(dtaJNIHdl->jniEnv)->CallVoidMethod(dtaJNIHdl->jObject, dtaJNIHdl->jmethodID, PHDTALIB_TEST_CASE_EXEC_COMPLETED, 0);
         break;
         case PHDTALIB_TEST_EXEC_DEINIT:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:PHDTALIB_TEST_EXEC_DEINIT thread detaching",(const uint8_t*)__FUNCTION__);
-#if 0 /* CR12_ON_AR12_CHANGE */
-            (dtaJNIHdl->jVm)->DetachCurrentThread();
-#endif /* CR12_ON_AR12_CHANGE */
+            //(dtaJNIHdl->jVm)->DetachCurrentThread();
         break;
         default:
             phOsal_LogDebugString((const uint8_t*)"DTAJni>:Invalid event type",(const uint8_t*)__FUNCTION__);
