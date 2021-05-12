@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright (C) 2015-2020 NXP Semiconductors
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -54,13 +54,13 @@ DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t TestProfile,
 {
     MWIFSTATUS dwMwIfStatus = MWIFSTATUS_FAILED;
     DTASTATUS  dwDtaStatus = DTASTATUS_FAILED;
-    uint8_t resultBuffer[400],loopBakBuffer[400];
+    uint8_t resultBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE],loopBakBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
     phMwIf_uTagOpsParams_t sTagOpsParams;
     phMwIf_sNdefDetectParams_t* psNdefDetectParams;
     phMwIf_sBuffParams_t*       psBuffParams;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
-    uint8_t outBuff[400];
+    uint8_t outBuff[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
 
     LOG_FUNCTION_ENTRY;
 
@@ -181,6 +181,138 @@ DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t TestProfile,
       LOG_FUNCTION_EXIT;
       /*For Pattern 0&7 return dwMwIfStatus & others return dwDtaStatus*/
       return (dwMwIfStatus | dwDtaStatus);
+}
+
+DTASTATUS phDtaLibi_T4TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestProfile)
+{
+  MWIFSTATUS dwMwIfStatus = MWIFSTATUS_FAILED;
+  DTASTATUS  dwDtaStatus = DTASTATUS_FAILED;
+  phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
+  phMwIf_uTagOpsParams_t sTagOpsParams;
+  phMwIf_sNdefDetectParams_t* psNdefDetectParams;
+  uint8_t resultBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE],loopBakBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
+  uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
+
+
+  LOG_FUNCTION_ENTRY;
+
+  /**< Select operation based on pattern number */
+  phOsal_LogDebugU32h((const uint8_t*)"DTALib>T4T:pattern number ", TestProfile.Pattern_Number);
+  sTagOpsParams.sBuffParams.pbBuff = gs_ndefReadWriteBuff;
+  switch(TestProfile.Pattern_Number)
+  {
+    case 0x0000:
+    case 0x0007:
+    {
+    /*Start with sending start of transaction and then do loopback send receive
+     * until end of transaction*/
+      phOsal_LogDebug((const uint8_t*)"DTALib> T4T: Loop Back sending Start Frame ..\n");
+      dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
+                                      (uint8_t *) gs_pbStartOfTransaction,
+                                      sizeof(gs_pbStartOfTransaction),
+                                       resultBuffer,
+                                       &dwSizeOfResultBuff);
+      if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
+      {
+        phOsal_LogErrorU32h((const uint8_t*)"DTALib> T4T:Error Start of Frame not Sent/reply not received:Status=0x",dwMwIfStatus);
+        break;
+      }
+
+      do
+      {
+        /*Check if End Of Transaction is received*/
+        if(memcmp((const void *)resultBuffer,
+                  (const void *)gs_pbEndOfTransaction,
+                   sizeof(gs_pbEndOfTransaction))==0)
+        {/*Send Deactivate command if end of transation is received*/
+            phOsal_LogDebug((const uint8_t*)"DTALib>T4T:EOT Received for T4T Loop Back \n");
+            break;
+        }
+
+        /*Send the received buffer back-Loopback*/
+        memcpy(loopBakBuffer,resultBuffer,dwSizeOfResultBuff-2);
+        dwSizeOfLoopBakBuff = dwSizeOfResultBuff-2;
+        dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
+                                            loopBakBuffer,
+                                            dwSizeOfLoopBakBuff,
+                                            resultBuffer,
+                                            &dwSizeOfResultBuff);
+        if(dwMwIfStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib> T4T:Error Failed to tranceive data in loop back !! \n");
+          break;
+        }
+      }while(dwMwIfStatus == DTASTATUS_SUCCESS);
+    }
+    break;
+
+    /* Pattern Numbers to test READ functionality */
+    case 0x0001:
+    case 0x0011:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T4T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T4T:Device is not NDEF Compliant\n");
+        break;
+      }
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T4T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib> T4T:Read NDEF \n");
+        dwDtaStatus = phDtaLibi_ReadNDEF(&sTagOpsParams);
+        if (dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib> T4T:Error Could not read data !!\n");
+          break;
+        }
+        memset(gs_ndefReadWriteBuff, 0, sizeof(gs_ndefReadWriteBuff));
+        memcpy(gs_ndefReadWriteBuff,sTagOpsParams.sBuffParams.pbBuff, sTagOpsParams.sBuffParams.dwBuffLength);
+        gs_sizeNdefRWBuff = sTagOpsParams.sBuffParams.dwBuffLength;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T4T:NDEF READ Length: ", gs_sizeNdefRWBuff);
+      }
+    }
+    break;
+
+    /* Pattern Numbers to test WRITE functionality */
+    case 0x0002:
+    case 0x0012:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T4T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T4T:Device is not NDEF Compliant\n");
+        break;
+      }
+
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T4T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib>T4T:Write NDEF Message \n");
+        sTagOpsParams.sBuffParams.dwBuffLength = gs_sizeNdefRWBuff;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T4T:NDEF WRITE Length: ", sTagOpsParams.sBuffParams.dwBuffLength);
+        dwDtaStatus = phDtaLibi_WriteNDEF(&sTagOpsParams);
+        if(dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib>T4T:Device is not NDEF Complaint\n");
+          break;
+        }
+      }
+    }
+    break;
+
+    default:
+    phOsal_LogError((const uint8_t*)"DTALib>T4T:Error Invalid Pattern Number for T4T !! \n");
+    break;
+  }
+  usleep(4000000);
+  phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
+  LOG_FUNCTION_EXIT;
+  return (dwMwIfStatus | dwDtaStatus);
 }
 
 #ifdef __cplusplus

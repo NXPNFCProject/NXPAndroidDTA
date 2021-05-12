@@ -38,6 +38,16 @@
 extern "C" {
 #endif
 
+//#define MAX_T2T_TAG_BUFFER_SIZE   8192    /**< T2T Tag maximum buffer size */
+//static uint8_t gs_T2TNdefMsgBuff[MAX_T2T_TAG_BUFFER_SIZE]  = {0};
+  /**< T2T NDEF Message buffer usedto store the NDEF message retrieved during Read Procedure */
+//static uint32_t gs_T2TNdefBuffLength = 0;          /**< Length for Misc array */
+
+extern uint32_t g_dwBlkNumToStart;           /**< Block number to start reading */
+extern uint32_t g_dwBlkNumToEnd;             /**< Block number to end reading */
+extern uint32_t g_dwNumOfBlks;               /**< Number of blocks to be read */
+
+
 /*Constant T2T Data for predefined memory layouts*/
 static const uint8_t gs_T2TPattern1[] = {0x03, 0xFF, 0x07, 0xEC};
 static const uint8_t gs_T2TPattern2[] = {0xC5, 0x01, 0x00, 0x00};
@@ -114,6 +124,21 @@ extern BOOLEAN gui_flag_t2t_sleep;
         if(dwMwIfStatus != MWIFSTATUS_SUCCESS)\
             break;}
 
+#define T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd) {\
+        if(g_dwBlkNumToStart > g_dwBlkNumToEnd) {\
+          phOsal_LogError((const uint8_t*)"DTALib>T2T_READ:Error Check block number to start and block number to end !! \n");  }\
+        else  {\
+          gs_T2TNdefBuffLength = 0;\
+          for( ; g_dwBlkNumToStart <= g_dwBlkNumToEnd ; ) {\
+            T2T_READ_BLOCK(dwMwIfStatus,psTagParams,mwIfHdl,g_dwBlkNumToStart)\
+            g_dwBlkNumToStart++;\
+            for( uint32_t dataCounter = 0; dataCounter <= psTagParams->sBuffParams.dwBuffLength; ) {\
+              gs_T2TNdefMsgBuff[gs_T2TNdefBuffLength++] = psTagParams->sBuffParams.pbBuff[dataCounter++]; }\
+            phDtaLibi_PrintBuffer((uint8_t *)gs_T2TNdefMsgBuff, gs_T2TNdefBuffLength, (const uint8_t *)"gs_T2TNdefMsgBuff  : ");\
+          } \
+        } \
+      }
+
 #define NUM_T2T_SECTOR2_DLB 0x08
 
 /**
@@ -148,8 +173,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
           T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x08,gs_T2TPattern5)
           T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x09,gs_T2TPattern6)
           T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_T2TPattern7)
-
-         }
+        }
         break;
         case 0x0001:
         {
@@ -306,6 +330,235 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
     phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_IDLE);
     LOG_FUNCTION_EXIT;
     return dwMwIfStatus;
+}
+
+/**
+*   T2T Tag read/write operations based on pattern number set by the user.
+*   Dynamic Execution refers to dynamically retrieving the data by tag read. Data retrieved is saved
+*   and used for tag write operations later as explained in the table 17 of T2T tag test cases
+*   specifications.
+*/
+DTASTATUS phDtaLibi_T2TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestProfile)
+{
+  MWIFSTATUS dwMwIfStatus = MWIFSTATUS_FAILED;
+  DTASTATUS  dwDtaStatus = DTASTATUS_FAILED;
+  phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
+  phMwIf_uTagParams_t   sTagParams;
+  phMwIf_sT2TParams_t*   psTagParams = (phMwIf_sT2TParams_t *)&sTagParams;
+  phMwIf_uTagOpsParams_t sTagOpsParams;
+  phMwIf_sNdefDetectParams_t* psNdefDetectParams;
+
+  LOG_FUNCTION_ENTRY;
+  memset(psTagParams, 0, sizeof(phMwIf_uTagParams_t));
+  sTagParams.sT2TPrms.sBuffParams.dwBuffLength = sizeof(gs_T2TBuff);
+
+  phOsal_LogDebugString((const uint8_t*)"DTALib> :", (const uint8_t*)__FUNCTION__);
+  phOsal_LogDebugU32h((const uint8_t*)"PatternNum = ", TestProfile.Pattern_Number);
+  sTagOpsParams.sBuffParams.pbBuff = gs_ndefReadWriteBuff;
+  switch(TestProfile.Pattern_Number)
+  {
+
+#if 1   /* Added to retian the previous implementation for now.
+           To implement Tag operations using CheckNDEF, ReadNDEF & WriteNDEF */
+
+    /* Pattern Numbers to test READ functionality */
+    case 0x0001:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T2T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T2T:Device is not NDEF Compliant\n");
+        break;
+      }
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T2T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib> T2T:Read NDEF \n");
+        dwDtaStatus = phDtaLibi_ReadNDEF(&sTagOpsParams);
+        if (dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib> T2T:Error Could not read data !!\n");
+          break;
+        }
+        memset(gs_ndefReadWriteBuff, 0, sizeof(gs_ndefReadWriteBuff));
+        memcpy(gs_ndefReadWriteBuff,sTagOpsParams.sBuffParams.pbBuff, sTagOpsParams.sBuffParams.dwBuffLength);
+        gs_sizeNdefRWBuff = sTagOpsParams.sBuffParams.dwBuffLength;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T2T:NDEF READ Length: ", gs_sizeNdefRWBuff);
+      }
+    }
+    break;
+
+    /* Pattern Numbers to test WRITE functionality */
+    case 0x0002:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T2T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T2T:Device is not NDEF Compliant\n");
+        break;
+      }
+
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T2T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib>T2T:Write NDEF Message \n");
+        sTagOpsParams.sBuffParams.dwBuffLength = gs_sizeNdefRWBuff;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T2T:NDEF WRITE Length: ", sTagOpsParams.sBuffParams.dwBuffLength);
+        dwDtaStatus = phDtaLibi_WriteNDEF(&sTagOpsParams);
+        if(dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib>T2T:Device is not NDEF Complaint\n");
+          break;
+        }
+      }
+    }
+    break;
+
+    /* Pattern Number to test Read/Write to Read Only Test functionality */
+    case 0x0003:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T2T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T2T:Device is not NDEF Compliant\n");
+        break;
+      }
+      dwDtaStatus = phDtaLibi_SetTagReadOnly(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib> T2T:Error Could not set tag readonly !!\n");
+        break;
+      }
+    }
+    break;
+
+#else
+
+    g_dwBlkNumToStart = 0;
+    g_dwBlkNumToEnd = 0;
+    g_dwNumOfBlks = 0;
+    case 0x0001:
+    {
+      memset(gs_T2TNdefMsgBuff, 0, sizeof(gs_T2TNdefMsgBuff));
+      phOsal_LogDebug((const uint8_t*)"DTALib> : Type 2 Tag Operation Mapping Version Test Functionality");
+      T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x03)
+      memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+      gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+      if ((gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x11) && (gs_miscBuffer[2] == 0x06))
+      {
+        phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x11) && (gs_miscBuffer[2] == 0x06)");
+        T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
+        memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+        gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+        //TC_T2T_MEM_BV_1: Mem Layout Table 3 as per T2T test case spec
+        if ((gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0E))
+        {
+          phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0E)");
+          g_dwBlkNumToStart = 5;
+          g_dwBlkNumToEnd = 7;
+          T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd)
+        }
+        //TC_T2T_FTH_BV_2_x: Mem Layout Table 8 as per T2T test case spec
+        else if((gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0F) && (gs_miscBuffer[1] != '\0'))
+        {
+          phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0F)");
+          g_dwBlkNumToStart = 5;
+          g_dwBlkNumToEnd = 15;
+          T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd)
+        }
+        //TC_T2T_FTH_BV_1: Mem Layout Table 8 as per T2T test case spec
+        else if((gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0F))
+        {
+          phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0x03) && (gs_miscBuffer[1] == 0x0F)");
+          //No more read required.
+        }
+      }
+      //TC_T2T_MEM_BV_2: Mem Layout Table 4 as per T2T test case spec
+      else if ((gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x20) && (gs_miscBuffer[2] == 0x06))
+      {
+        phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x20) && (gs_miscBuffer[2] == 0x06)");
+        //No more NDEF Message read for this test case.
+      }
+      //TC_T2T_FTH_BV_4: Mem Layout Table 5 as per T2T test case spec
+      else if ((gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x80))
+      {
+        phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x80)");
+        T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
+        memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+        gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+        //TC_T2T_FTH_BV_4: Mem Layout Table 5 as per T2T test case spec
+        if ((gs_miscBuffer[0] == 0x02) && (gs_miscBuffer[1] == 0xFF) && (gs_miscBuffer[2] == 0x03) && (gs_miscBuffer[3] == 0xEC))
+        {
+          phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0x02) && (gs_miscBuffer[1] == 0xFF) && (gs_miscBuffer[2] == 0x03) && (gs_miscBuffer[3] == 0xEC)");
+          g_dwBlkNumToStart = 5;
+          g_dwBlkNumToEnd = 255;
+          T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd)
+          T2T_SECTOR_SELECT(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,1)
+          memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+          gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+          g_dwBlkNumToStart = 3;
+          g_dwBlkNumToEnd = 255;
+          T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd)
+          T2T_SECTOR_SELECT(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,1)
+          memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+          gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+          g_dwBlkNumToStart = 3;
+          g_dwBlkNumToEnd = 255;
+          T2T_READ_BLOCK_BY_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,g_dwBlkNumToStart,g_dwBlkNumToEnd)
+          //Repeat steps based on NACK or ACK
+          //Need to clarify on ACK & NACK avaiablity @DTA from MW
+        }
+      }
+      //TC_T2T_NDA_BV_3: Mem Layout Table 6 as per T2T test case spec
+      else if ((gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x06) && (gs_miscBuffer[3] == 0x11))
+      {
+        phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x06) && (gs_miscBuffer[3] == 0x11)");
+        //No more NDEF Message read for this test case.
+      }
+      //TC_T2T_NDA_BV_5: Mem Layout Table 7 as per T2T test case spec
+      else if ((gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x06) && (gs_miscBuffer[3] == 0x00))
+      {
+        phOsal_LogDebug((const uint8_t*)"(gs_miscBuffer[0] == 0xE1) && (gs_miscBuffer[1] == 0x10) && (gs_miscBuffer[2] == 0x06) && (gs_miscBuffer[3] == 0x00)");
+        T2T_READ_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04)
+        memcpy(gs_miscBuffer,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+        memcpy(gs_T2TNdefMsgBuff,psTagParams->sBuffParams.pbBuff, psTagParams->sBuffParams.dwBuffLength);
+        gui_miscBufferLength = psTagParams->sBuffParams.dwBuffLength;
+        gs_miscBuffer[2] = 0x00;
+        gs_miscBuffer[3] = 0x00;
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_miscBuffer)
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x05,gs_miscBuffer)
+        gs_miscBuffer[0] = 0x00;
+        gs_miscBuffer[1] = 0x00;
+        gs_miscBuffer[2] = 0x00;
+        gs_miscBuffer[3] = 0x00;
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x06,gs_miscBuffer)
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x07,gs_miscBuffer)
+        gs_miscBuffer[1] = 0xFE;
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x08,gs_miscBuffer)
+        gs_miscBuffer[0] = 0x03;
+        gs_miscBuffer[1] = 0x0F;
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x04,gs_miscBuffer)
+        gs_miscBuffer[1] = 0xFE;
+        T2T_WRITE_BLOCK(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,0x08,gs_miscBuffer)
+        //Need to clarify on ACK & NACK avaiablity @DTA from MW
+      }
+    }
+    break;
+#endif
+
+    default:
+      phOsal_LogError((const uint8_t*)"DTALib>T2T:Error Pattern Number not valid for T2T !! \n");
+    break;
+  }
+  usleep(4000000);
+  phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
+  LOG_FUNCTION_EXIT;
+  return dwMwIfStatus;
 }
 
 #ifdef __cplusplus

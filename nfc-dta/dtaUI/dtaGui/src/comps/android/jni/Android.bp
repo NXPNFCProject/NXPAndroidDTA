@@ -16,6 +16,13 @@
 
 cc_library_shared {
     name: "libdta_jni",
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Wno-unused-parameter",
+        "-Werror",
+        "-fexceptions",
+    ],
 
     arch: {
         arm: {
@@ -33,10 +40,11 @@ cc_library_shared {
         "system/nfc/SN100x/src/gki/common/",
         "system/nfc/SN100x/src/gki/ulinux/",
     ],
-
     srcs: ["*.cpp"],
 
     shared_libs: [
+        "libandroidicu",
+        "libnativehelper",
         "libdta",
         "libcutils",
         "libosal",

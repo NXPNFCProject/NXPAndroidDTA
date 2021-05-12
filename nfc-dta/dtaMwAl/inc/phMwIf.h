@@ -37,8 +37,8 @@ extern "C"
 
 /** section MACRO DEFINES */
 #define MWIFSTATUS_SUCCESS          0x00
-#define MWIFSTATUS_INVALID_PARAM    0x03
-#define MWIFSTATUS_FAILED           0x09
+#define MWIFSTATUS_INVALID_PARAM    0x09
+#define MWIFSTATUS_FAILED           0x03
 /** end section MACRO DEFINES */
 typedef uint32_t MWIFSTATUS;
 
@@ -63,6 +63,9 @@ typedef uint32_t MWIFSTATUS;
 #define PHMWIF_RFTECHNOLOGY_MASK_B    0x02    /**< NFC Technology B */
 #define PHMWIF_RFTECHNOLOGY_MASK_F    0x04    /**< NFC Technology F */
 typedef uint32_t phMwIf_RfTechMask_t;
+
+/** Max size of the loopback data buffer used for P2P and T4T*/
+#define PHMWIF_MAX_LOOPBACK_DATABUF_SIZE   4112
 
 #ifndef INT_TO_PTR
 # define INT_TO_PTR(P) ((void*)(intptr_t)(P))
@@ -92,6 +95,7 @@ typedef enum phMwIf_eProtocolType
     PHMWIF_PROTOCOL_T3T     = 0X03,
     PHMWIF_PROTOCOL_ISO_DEP = 0X04,
     PHMWIF_PROTOCOL_NFC_DEP = 0x05,
+    PHMWIF_PROTOCOL_T5T     = 0X06,
     PHMWIF_PROTOCOL_INVALID = 0xFF
 }phMwIf_eProtocolType_t;
 
@@ -139,6 +143,21 @@ typedef enum phMwIf_eT4TCmd
 {
     PHMWIF_T4T_RAW_CMD = 0X00 /**<RAW command to send to FW. Cmd buffer sent includes reqd headers*/
 }phMwIf_eT4TCmd_t;
+
+/** \ingroup grp_mwif_lib
+    List of commands for Type 5 Tag */
+typedef enum phMwIf_eT5TCmd
+{
+    PHMWIF_T5T_READ_CMD          = 0X00, /**<command reads blocks that belong to the currently selected sector*/
+    PHMWIF_T5T_WRITE_CMD         = 0X01, /**<programming 4 bytes at once*/
+    PHMWIF_T5T_READ_MULTIPLE_CMD = 0X02, /**<command to read multiple blocks with block to start and number of blocks to read*/
+    PHMWIF_T5T_INVENTORY_REQ_CMD = 0x03, /**<T5T Inventory Request Command*/
+    PHMWIF_T5T_SELECT_UID_CMD    = 0x04, /**<T5T Select Command*/
+    PHMWIF_T5T_STAY_QUIET_CMD    = 0x05, /**<T5T Stay Quiet Command*/
+    PHMWIF_T5T_LOCK_SINGLE_BLOCK_CMD = 0x06,  /**<T5T Lock Block Command*/
+    PHMWIF_T5T_REQ_FLAG_CMD      = 0x0A, /**<Command to send REQ_FLAG*/
+}phMwIf_eT5TCmd_t;
+
 
 /** \ingroup grp_mwif_lib
     Type of NCI RF interface being used*/
@@ -234,6 +253,20 @@ typedef struct phMwIf_sT4TParams
 }phMwIf_sT4TParams_t;
 
 /** \ingroup grp_mwif_lib
+    parameters for T5T operations */
+typedef struct phMwIf_sT5TParams
+{
+    phMwIf_eT5TCmd_t           eT5TCmd;
+    uint32_t                   dwSectorNum; /**<To select sector before read*/
+    uint32_t                   dwBlockNum;  /**<To read particular block*/
+    uint32_t                   dwFirstBlockNum; /**< First block number to start reading during read multiple blocks*/
+    uint32_t                   dwNumOfBlocks; /**< Number of blocks to read during read multiple blocks*/
+    phMwIf_sBuffParams_t       sBuffParams;
+    uint8_t                    reqFlag;     /**< reqFalg : Type 5 Tag Technical Specification Version 1.0 (Table 15: REQ_FLAG)*/
+    uint8_t*                   t5tUid;      /**< T5Tag UID*/
+}phMwIf_sT5TParams_t;
+
+/** \ingroup grp_mwif_lib
     parameters for all type of Tag operations */
 typedef union phMwIf_uTagParams
 {
@@ -241,6 +274,7 @@ typedef union phMwIf_uTagParams
     phMwIf_sT2TParams_t   sT2TPrms; /**< Parameters for Type 2 Tag*/
     phMwIf_sT3TParams_t   sT3TPrms; /**< Parameters for Type 3 Tag*/
     phMwIf_sT4TParams_t   sT4TPrms; /**< Parameters for Type 4 Tag*/
+    phMwIf_sT5TParams_t   sT5TPrms; /**< Parameters for Type 5 Tag*/
 }phMwIf_uTagParams_t;
 
 /** \ingroup grp_mwif_lib
@@ -258,6 +292,8 @@ typedef enum phMWIf_eEvtType
     PHMWIF_CE_DATA_EVT,
     PHMWIF_DEACTIVATED_EVT,
     PHMWIF_RESTART_DISCOVERY_EVT,
+    PHMWIF_T5T_TAG_ACTIVATED_EVT,
+    PHMWIF_CE_DEACTIVATED_EVT = 0x25,
     PHMWIF_THREAD_DELETE_DUMMY_EVT = 0xFF
 }phMWIf_eEvtType_t;
 
@@ -534,6 +570,8 @@ typedef struct phMwIf_sDiscParams
     phMwIf_RfTechMask_t dwListenHCE;  /**< Technologies to enable for Host Card Emulation in Listen Mode*/
     phMwIf_RfTechMask_t dwListenESE;  /**< Technologies to enable for Card Emulation from Ese in Listen Mode*/
     phMwIf_RfTechMask_t dwListenUICC; /**< Technologies to enable for Card Emulation from UICC in Listen Mode*/
+    phMwIf_RfTechMask_t dwP2pAcmIni;  /**< Technologies to enable for P2P-ACM in Initiator Mode*/
+    phMwIf_RfTechMask_t dwP2pAcmTar;  /**< Technologies to enable for P2P-ACM in Target Mode*/
 }phMwIf_sDiscParams_t;
 
 /** \ingroup grp_mwif_lib
@@ -569,7 +607,8 @@ typedef struct phMwIf_sVersionInfo
 typedef struct phMwIf_sDiscCfgPrms
 {
     phMwIf_sDiscParams_t discParams;
-    char Certification_Release[10];
+    char Certification_Release[8];
+    uint8_t selectP2pProtocol;  /**< To Selct NFC-DEP / P2P Protocol when CDL>1 over T3T Protocol*/
 }phMwIf_sDiscCfgPrms_t;
 
 /** \ingroup grp_mwif_lib
@@ -620,12 +659,15 @@ typedef struct phMwIf_sConfigParams
 {
     char aCertRelease[10];                    /**< Certification Configuration details*/
     uint8_t bPollBitRateTypeF;                /**< Configure TypeF Polling Bitrate to 424 as per DTA*/
+    uint8_t bEnablePollBitRateTypeA_P2PACM;   /**< Configure P2PACM TypeA Polling Bitrate to 106 as per DTA*/
+    uint8_t bEnablePollBitRateTypeF_P2PACM;   /**< Configure P2PACM TypeF Polling Bitrate to 212/424 as per DTA*/
     uint8_t bNfcdepPollBitRateHigh;           /**< Poll NFC-DEP : Select Highest Available Bit Rates(PSL_REQ)*/
-    uint8_t bEnableAnalog;                    /**< For Analog Mode. TRUE= enable, FALSE=disable*/
-    uint8_t bEnableLlcp;                      /**< Enable P2P on LLCP. TRUE= enable, FALSE=disable*/
+    uint8_t bEnableAnalog;                    /**< For Analog Mode. TRUE=enable, FALSE=disable*/
+    uint8_t bEnableLlcp;                      /**< Enable P2P on LLCP. TRUE=enable, FALSE=disable*/
     phMwIf_sDiscCfgPrms_t sMwIfDiscCfgParams; /**< RF Discovery Technology and Mode */
     uint32_t dwTimeSlotNumber;                /**< Configure the slot number*/
     uint32_t dwConnDeviceLimit;               /**< Configure the number of devices*/
+    uint8_t  selP2pProto;                     /**< To Selct NFC-DEP / P2P Protocol when CDL>1 over T3T Protocol*/
 }phMwIf_sConfigParams_t;
 
 /**
@@ -696,6 +738,22 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_RegisterCallback(void* mwIfHandle,
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_ConfigParams( void* mwIfHandle,
                                                 phMwIf_sConfigParams_t *sConfigParams);
+
+/**
+ * \ingroup grp_mwif_lib
+ * \brief Get NFC-DEP Listen Mode Wait Time Config Value
+ *
+ * This function returns the NFC-DEP Listen Mode Wait Time
+ * that has been configured by DTA
+ *
+ * \param[in] mwIfHandle       Middleware Interface Handle
+ * \param[out] pu8LnWtVal      Confiured LN_WT Value
+ *
+ * \retval #MWIFSTATUS_SUCCESS  MWIF LIB Initialised successfully
+ *
+ */
+MWIF_LIB_EXTEND MWIFSTATUS phMwIf_GetNfcDepLnWtConfigVal( void* mwIfHandle,
+                                                uint8_t *pu8LnWtVal);
 
 /**
  * \ingroup grp_mwif_lib
@@ -878,11 +936,25 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_GetConfig(void* mwIfHandle,
  * \param[in] mwIfHandle                 Middleware Interface Handle
  *
  * \retval #MWIFSTATUS_SUCCESS  MWIF LIB Deactivation of NFCC is successful
- * \retval #MWIFSTATUS_FAILED   MWIF LIB FAiled to Deactivate NFCC
+ * \retval #MWIFSTATUS_FAILED   MWIF LIB Failed to Deactivate NFCC
  *
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHandle,
                                                 phMWIf_eDeactivateType_t eDeactType);
+
+/**
+ * \ingroup grp_mwif_lib
+ * \brief Sends RF Discovery Select Next Device command to NFCC
+ *
+ * This function Sends RF Discovery Select Next Device command to NFCC.
+ *
+ * \param[in] mwIfHandle                 Middleware Interface Handle
+ *
+ * \retval #MWIFSTATUS_SUCCESS  MWIF LIB RF Discovery Select of NFCC is successful
+ * \retval #MWIFSTATUS_FAILED   MWIF LIB Failed to RF Discovery Select NFCC
+ *
+ */
+MWIF_LIB_EXTEND MWIFSTATUS phMwIf_RfDiscoverySelectNextDevice(void* mwIfHandle);
 
 /**
  * \ingroup grp_mwif_lib
@@ -901,6 +973,22 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_NfcDeactivate(void*                    mwIfHan
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_ReceiveData(void *mwIfHandle,
                                     void* pvOutBuff,
                                     uint32_t* dwLenOutBuff);
+
+/**
+ * \ingroup grp_mwif_lib
+ * \brief Consumes NFA_DEACTIVATED_EVT event if any queued in MWIF
+ *
+ * This function consumes NFA_DEACTIVATED_EVT event if any queued in MWIF
+ *
+ * \param[in] mwIfHandle          Middleware Interface Handle provided during init
+ * \param[in] dwLenOutBuff        Timeout to wait in milli second
+ *
+ * \retval #MWIFSTATUS_SUCCESS    Don't care
+ * \retval #MWIFSTATUS_FAILED     Don't care
+ *
+ */
+MWIFSTATUS phMwIf_ConsumeDeactivatedEvent(void *mwIfHandle, uint32_t uwTimeoutMs);
+
 
 /**
  * \ingroup grp_mwif_lib

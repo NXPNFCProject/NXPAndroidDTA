@@ -27,7 +27,6 @@
 #include <utils/Log.h>
 #include "data_types.h"
 #endif
-
 #include "phDTAOSAL.h"
 #include "phMwIf.h"
 #include "phDTALib.h"
@@ -40,6 +39,24 @@
 extern "C" {
 #endif
 
+/*
+ * TS-Digital V2.2
+ * RWT :    17.11.2 Response Waiting Time
+ *          RWT = (256 × 16/fC) × 2^WT
+ * WT  :    WT has the range from 0 to 14
+ * ?RWT:    B.11 NFC-DEP Protocol
+ *          16/fC
+ * RWT_INT : DP Part 1
+ *           2.3.3.1	For the P2P and P2PACM with NFC-A and NFC-F Tests in Listen Mode
+ *           ((256 x 16/fc ) x 2^WT x RTOX)
+ *
+ * LN_WT_TIME: DTA Spec
+ *             6.2.2 NFC-DEP Loop-back Functionality in Listen Mode
+ *             RWT+?RWT+128/fc
+ */
+#define PHDTA_P2P_LISTEN_WAIT_CMD_WAIT_TIME(__LNWT__) \
+        (uint32_t)((0.302 * (1 << __LNWT__)) + 0.011 + 3)
+
 extern phDtaLib_sHandle_t g_DtaLibHdl;
 
 /**
@@ -51,8 +68,9 @@ DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd, BOOLEAN* bSt
     cueot2[] = { 0xFF, 0xFF, 0xFF, 0x01, 0x02 }; /**< EOT Frame 2*/
     MWIFSTATUS dwMwIfStatus = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
-    uint8_t resultBuffer[2048],loopBakBuffer[2048];
+    uint8_t resultBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE],loopBakBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE];
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
+
     /* Send Start Frame */
     phOsal_LogDebug((const uint8_t*)"DTALib> NFC-DEP Loop Back sending Start Frame ..\n");
     dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
@@ -78,8 +96,8 @@ DTASTATUS phDtaLibi_NfcdepTargetOperations(BOOLEAN* bStartDiscReqd, BOOLEAN* bSt
                     sizeof(cueot2)) == 0)) {
                 phOsal_LogError((const uint8_t*)"DTALib> EOT2 Received for NFC-DEP Loop Back \n");
                 phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
-                *bStartDiscReqd = TRUE;
-                *bStopDiscReqd  = TRUE;
+                *bStartDiscReqd = FALSE;
+                *bStopDiscReqd  = FALSE;
                 break;
             }
 
@@ -127,8 +145,10 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
     MWIFSTATUS    dwMwIfStatus = 0;
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     //phDtaLib_sQueueData_t  sQueueData;
-    uint8_t resultBuffer[2048] = {0},loopBakBuffer[2048] = {0x00};
+    uint8_t resultBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE] = {0},loopBakBuffer[PHMWIF_MAX_LOOPBACK_DATABUF_SIZE] = {0x00};
     uint32_t dwSizeOfResultBuff=0, dwSizeOfLoopBakBuff=0;
+    uint8_t u8LnWtVal = 8;
+    uint32_t u32LnWtCalcDelay = 80;
 
     LOG_FUNCTION_ENTRY;
 
@@ -139,6 +159,10 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
            j=0x00;
     }
 #endif
+
+    phMwIf_GetNfcDepLnWtConfigVal(dtaLibHdl->mwIfHdl, &u8LnWtVal);
+    phOsal_LogDebugU32h((const uint8_t*)"DTALib> NFC-DEP Listen WT :\n", u8LnWtVal);
+    u32LnWtCalcDelay = PHDTA_P2P_LISTEN_WAIT_CMD_WAIT_TIME(u8LnWtVal);
 
     /*Wait for Data Event to start loopback*/
     dwMwIfStatus = phMwIf_ReceiveData(dtaLibHdl->mwIfHdl, resultBuffer, &dwSizeOfResultBuff);
@@ -159,8 +183,8 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
         else if (memcmp((const void *) resultBuffer,
                 (const void *) cswait_cmd, sizeof(cswait_cmd)) == 0)
         {
-            phOsal_LogError((const uint8_t*)"DTALib> Wait command - Delay generate \n");
-            phOsal_Delay(200);
+            phOsal_LogDebugU32h((const uint8_t*)"DTALib> Wait command - Delay generate \n", u32LnWtCalcDelay);
+            phOsal_Delay(u32LnWtCalcDelay);
         }
 #if (NFC_NXP_P2P_PERFORMANCE_TESTING == TRUE)
         else if (memcmp((const void *) resultBuffer,
