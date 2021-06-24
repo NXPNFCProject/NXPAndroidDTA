@@ -35,6 +35,8 @@
 #include "logging.h"
 #elif(ANDROID_S == TRUE)
 #include "logging.h"
+#elif(ANDROID_R == TRUE)
+#include "logging.h"
 #else
 #include "OverrideLog.h"
 #endif
@@ -121,7 +123,11 @@ tNFA_NDEF_DETECT    gx_ndef_detected;
 tNFA_NDEF_EVT_DATA  gx_ndef_data;/**< Variable containing NDEF data when Ndef RD/WR is performed */
 tNFA_HANDLE         gx_ndef_type_handle;
 tNFA_DISC_RESULT    gx_discovery_result[PHMWIF_MAX_DISC_DEVICES];
+#if(ENABLE_CR12_SUPPORT == TRUE)
 static uint8_t gs_Hce_Aid[] = {0x31,0x4E,0x46,0x43,0x2E,0x53,0x59,0x53,0x2E,0x44,0x44,0x46,0x30,0x31};
+#else
+static uint8_t gs_Hce_Aid[] = {0xA0,0x00,0x00,0x00,0x18,0x30,0x80,0x05,0x00,0x65,0x63,0x68,0x6F,0x00};
+#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
 uint8_t gs_Hce_Aid_len = 0x0E;
 tNFA_HANDLE NfaHostHandle           = 0x400; /*Handle For HCE/LLCP*/
 tNFA_HANDLE NfaHciHandle;
@@ -486,8 +492,9 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     abConfigIDData[1] = 0x03;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_TOTAL_DURATION, 0x02, abConfigIDData);
     mwIfHdl->sPrevMwIfDiscCfgParams = sConfigParams->sMwIfDiscCfgParams;
-    if(strlen(sConfigParams->aCertRelease) >= 10) {
-        ALOGD("MwIf>%s:Certifaction release string sizew is >= 10",__FUNCTION__);
+    if(strlen(sConfigParams->aCertRelease) >= sizeof(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release)) {
+        ALOGD("MwIf>%s:Certifaction release string sizew is >= %u",__FUNCTION__,
+               (unsigned int)sizeof(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release));
         return MWIFSTATUS_FAILED;
     }
     strcpy(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, sConfigParams->aCertRelease);
@@ -1152,7 +1159,7 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_REGISTER_EVT),5000,
             "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
 
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, mwIfHdl->t3tPMM ,phMwIfi_NfaConnCallback);
 #else
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
@@ -1160,7 +1167,8 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf>ERROR EE Register !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT,5000,
             "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
-    mwIfHdl->nfcHceFHandle = mwIfHdl->sLastQueueData.uEvtData.sConnCbData.ce_deregistered.handle;
+    mwIfHdl->nfcHceFHandle = NfaAidHandle;
+    ALOGD("MwIf>%s: HceF Handle = 0x%X\n",__FUNCTION__, mwIfHdl->nfcHceFHandle);
 
     ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
@@ -1265,8 +1273,8 @@ MWIFSTATUS phMwIfi_HceFConfigure(void* mwIfHandle)
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     gx_status = NFA_STATUS_FAILED;
-    ALOGD("MwIf> Going for Proto Route Set\n");
-    gx_status = phMwIfi_EeSetDefaultProtoRouting(mwIfHdl->nfcHceFHandle, NFA_PROTOCOL_MASK_T3T,0x0,0x0);
+    ALOGD("MwIf> Going for Proto Route Set 0x%X\n", NfaHostHandle);
+    gx_status = phMwIfi_EeSetDefaultProtoRouting(NfaHostHandle, NFA_PROTOCOL_MASK_T3T,0x0,0x0);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultProtoRouting ",&(mwIfHdl->sLastQueueData));
@@ -1355,14 +1363,14 @@ MWIFSTATUS phMwIfi_HceDeInit(void* mwIfHandle)
 MWIFSTATUS phMwIfi_HceFDeInit(void* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
+    ALOGD("MwIf>%s:Enter Handle = 0x%X\n",__FUNCTION__, mwIfHdl->nfcHceFHandle);
     gx_status = NFA_STATUS_FAILED;
 
     /*DERegister Callback for NFCEE Events*/
     gx_status = NFA_CeDeregisterFelicaSystemCodeOnDH (mwIfHdl->nfcHceFHandle);
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE DeRegister");
+    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE CeDeregisterFelicaSystemCodeOnDH");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DEREGISTERED_EVT, 5000,
-            "MwIf> ERROR in EeDeregister",&(mwIfHdl->sLastQueueData));
+            "MwIf> ERROR in CeDeregisterFelicaSystemCodeOnDH",&(mwIfHdl->sLastQueueData));
     mwIfHdl->nfcHceFHandle = 0;
 
     /*DERegister Callback for NFCEE Events*/
@@ -1444,10 +1452,12 @@ MWIFSTATUS phMwIf_TagCmd(void*                  mwIfHandle,
     break;
     case PHMWIF_PROTOCOL_T3T:
     break;
+#if(ENABLE_CR12_SUPPORT == TRUE)
     case PHMWIF_PROTOCOL_T5T:
         dwMwIfStatus = phMwIfi_HandleT5TCmd(mwIfHandle,
                                             (phMwIf_sT5TParams_t*)psTagParams);
     break;
+#endif /* #if(ENABLE_CR12_SUPPORT == TRUE) */
     case PHMWIF_PROTOCOL_ISO_DEP:
     break;
     case PHMWIF_PROTOCOL_NFC_DEP:
@@ -1525,6 +1535,7 @@ MWIFSTATUS phMwIfi_HandleT2TCmd(void*                  mwIfHandle,
     return MWIFSTATUS_SUCCESS;
 }
 
+#if(ENABLE_CR12_SUPPORT == TRUE)
 /**
  * Handle commands specific to T5T Tags
  * */
@@ -1543,7 +1554,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Reading data from Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
 
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum);
 #else
             gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
@@ -1566,7 +1577,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Reading data from multiple Blocks =%d",__FUNCTION__,psTagParams->dwNumOfBlocks);
 
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks);
 #else
             gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks,(uint8_t)psTagParams->reqFlag);
@@ -1589,7 +1600,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Writing data to Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
             phMwIfi_PrintBuffer(psTagParams->sBuffParams.pbBuff,4,"T5T Data Write:");
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff);
 #else
             gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff,(uint8_t)psTagParams->reqFlag);
@@ -1605,7 +1616,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
             uint8_t afi = 0x00;//[] = {0x00, 0x00};
             ALOGD("MwIf>%s: T5T Inventory Request Command",__FUNCTION__);
 
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid);
 #else
             gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid,(uint8_t)psTagParams->reqFlag);
@@ -1630,7 +1641,11 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_STAY_QUIET_CMD: /*T5T Stay Quiet Command*/
         {
             ALOGD("MwIf>%s: T5T Stay Quiet Command",__FUNCTION__);
+#if(ENABLE_CR12_SUPPORT == TRUE)
             gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
+#else
+            gx_status = NFA_RwI93StayQuiet();
+#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
             PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Stay Quiet!! \n");
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
             "MwIf>Error in T5T Stay Quiet",&(mwIfHdl->sLastQueueData));
@@ -1640,7 +1655,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_LOCK_SINGLE_BLOCK_CMD: /*T5T Lock Block Command*/
         {
             ALOGD("MwIf>%s: T5T Lock Block %d",__FUNCTION__,psTagParams->dwBlockNum);
-#if(ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum);
 #else
             gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
@@ -1656,11 +1671,11 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
 #if (ENABLE_CR12_SUPPORT == TRUE) /* CR12_ON_AR12_CHANGE */
             if(psTagParams->reqFlag == 0x02/*T5T_REQ_FLAG_NAMS*/)
             {
-                gx_status = NFA_RwI93SetAddressingMode(1);
+                gx_status = NFA_RwI93SetAddressingMode(false);
             }
             else if(psTagParams->reqFlag == 0x22/*T5T_REQ_FLAG_AMS*/)
             {
-                gx_status = NFA_RwI93SetAddressingMode(0);
+                gx_status = NFA_RwI93SetAddressingMode(true);
             }
             else
             {
@@ -1682,6 +1697,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
+#endif /* #if(ENABLE_CR12_SUPPORT == TRUE) */
 
 /**
 * Read NDEF data from tag
@@ -1692,9 +1708,9 @@ MWIFSTATUS phMwIfi_ReadNdef(void* mwIfHandle,
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     psBuffParams->dwBuffLength = 0;
+    psBuffParams->pbBuff = NULL;
     gs_sizeParamBuffer=0;
     memset(gs_paramBuffer, 0, sizeof(gs_paramBuffer));
-    memset(psBuffParams->pbBuff, 0, sizeof(psBuffParams->pbBuff));
     gx_status = NFA_RwReadNDef();
     PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status,"MwIf> ERROR in NFA_RWReadNDef !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_READ_CPLT_EVT,20000,
@@ -2280,7 +2296,13 @@ void phMwIfi_NfaDevMgmtCallback (uint8_t uevent, tNFA_DM_CBACK_DATA *px_data)
     {
         if(uevent == NFA_DM_DISABLE_EVT)
         {
+            ALOGE ("MwIf> NFA_DM_DISABLE_EVT occurred !! \n");
             gx_status = NFA_STATUS_OK;
+        }
+        else if(uevent == NFA_DM_NFCC_TIMEOUT_EVT)
+        {
+            ALOGE ("MwIf> Error TIMEOUT EVENT occurred !! \n");
+            gx_status = NFA_STATUS_TIMEOUT;
         }
         else
         {
@@ -2592,6 +2614,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
             case NFA_CE_DEREGISTERED_EVT:
             {
                 NfaAidHandle = px_data->ce_deregistered.handle;
+                ALOGE("MwIf> HCE AID Handle = 0x%x !!\n",NfaAidHandle);
                 if(NfaAidHandle)
                 {
                     ALOGD("MwIf> Successfully Deregistered AID Handle on DH\n");
@@ -2832,6 +2855,14 @@ void phMwIfi_PrintNfaEeEventCode (tNFA_EE_EVT xevent)
             ALOGD ("NFA_EE_NO_CB_ERR_EVT\n");
         break;
         #endif
+#if (ENABLE_CR12_SUPPORT == TRUE)
+        case NFA_EE_PWR_AND_LINK_CTRL_EVT:
+            ALOGD ("NFA_EE_PWR_AND_LINK_CTRL_EVT\n");
+        break;
+#endif /* (ENABLE_CR12_SUPPORT == TRUE) */
+        case NFA_EE_UPDATED_EVT:
+            ALOGD ("NFA_EE_UPDATED_EVT\n");
+        break;
         default:
             ALOGD ("Unknown event\n");
         break;
@@ -3681,6 +3712,7 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
         ALOGD("MwIf>%s:Device Disconnected",__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
+#if (ENABLE_CR12_SUPPORT == TRUE) /* CR12_ON_AR12_CHANGE */
     /*
      * Wait for either Data or CeData event for 10 minutes
      * If any error MW timeout will occur, so this time should cover
@@ -3688,6 +3720,46 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
      */
     PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,NFA_CE_DATA_EVT,10*60*1000,
             "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+#else
+    /*
+     * CR11 TC_T3T_NDA_BV_2_x are failing with above 10 min wait time
+     * For CR11 and below, use old method of different wait time
+     * based on protocol type
+     */
+    switch(bProtocol)
+    {
+       case NFA_PROTOCOL_ISO_DEP:
+       {
+            if((mwIfHdl->sDiscCfg.discParams.dwListenHCE) &&
+                ((mwIfHdl->sDiscCfg.discParams.dwPollP2P) || (mwIfHdl->sDiscCfg.discParams.dwListenP2P)))
+            {
+                PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,NFA_CE_DATA_EVT,36000,
+                        "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+            }
+            else if(mwIfHdl->sDiscCfg.discParams.dwListenHCE)
+            {
+                PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_DATA_EVT,36000,
+                        "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+            }
+            else
+            {
+                PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,36000,
+                        "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+            }
+       }
+       break;
+       case NFA_PROTOCOL_NFC_DEP:
+       {
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,20000,
+                    "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+       }
+       break;
+       default:
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,5000,
+                    "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
+       break;
+    }
+#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
 
     if(((Pgu_event != NFA_CE_DATA_EVT)  &&   (Pgu_event != NFA_DATA_EVT)) || gx_status != NFA_STATUS_OK)
     {
@@ -4615,6 +4687,7 @@ void phMwIfi_HandleActivatedEvent(tNFA_ACTIVATED*     psActivationPrms,
     ALOGD("MwIf>Device Connected %d",__LINE__);
 
     phMwIfi_CopyActivationPrms(&puEvtInfo->sActivationPrms,&psActivationPrms->activate_ntf);
+    phMwIfi_PrintBuffer(puEvtInfo->sActivationPrms.uRfTechParams.sPollFPrms.abNfcId2,8,"abNfcId2 =");
     switch(psActivationPrms->activate_ntf.protocol)
     {
        case NFA_PROTOCOL_T1T:
@@ -4869,7 +4942,7 @@ MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-#if (ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
+#if (ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
     gx_status = NFA_SendRawVsCommand (cmd_params_len, p_cmd_params, p_cback);
 #else
     gx_status = NFA_SendNxpNciCommand (cmd_params_len, p_cmd_params, p_cback);
@@ -4938,7 +5011,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
     return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
                                          technologies_switch_off,technologies_battery_off,
                                          0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
                                         ,0x0
 #endif
                                         );
@@ -4959,7 +5032,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultProtoRouting (tNFA_HANDLE         ee_handle,
     return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
                                          protocols_switch_off,protocols_battery_off,
                                          0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
                                          ,0x0
 #endif
                                          );

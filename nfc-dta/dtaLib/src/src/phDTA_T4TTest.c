@@ -102,8 +102,9 @@ DTASTATUS phDtaLibi_T4TOperations(phDtaLib_sTestProfile_t TestProfile,
             }
 
             /*Send the received buffer back-Loopback*/
-            if(dwSizeOfResultBuff<2 || dwSizeOfResultBuff>400)
+            if(dwSizeOfResultBuff<2 || dwSizeOfResultBuff>PHMWIF_MAX_LOOPBACK_DATABUF_SIZE)
             {
+              phOsal_LogDebug((const uint8_t*)"DTALib>T4T:Invalid buffer size found \n");
               dwMwIfStatus = DTASTATUS_FAILED;
               break;
             }
@@ -230,6 +231,12 @@ DTASTATUS phDtaLibi_T4TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
         }
 
         /*Send the received buffer back-Loopback*/
+        if(dwSizeOfResultBuff<2 || dwSizeOfResultBuff>PHMWIF_MAX_LOOPBACK_DATABUF_SIZE)
+        {
+          phOsal_LogDebug((const uint8_t*)"DTALib>T4T:Invalid buffer size found \n");
+          dwMwIfStatus = DTASTATUS_FAILED;
+          break;
+        }
         memcpy(loopBakBuffer,resultBuffer,dwSizeOfResultBuff-2);
         dwSizeOfLoopBakBuff = dwSizeOfResultBuff-2;
         dwMwIfStatus = phMwIf_Transceive(dtaLibHdl->mwIfHdl,
@@ -309,7 +316,11 @@ DTASTATUS phDtaLibi_T4TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
     phOsal_LogError((const uint8_t*)"DTALib>T4T:Error Invalid Pattern Number for T4T !! \n");
     break;
   }
+#ifdef WIN32
+  Sleep(4000);
+#else
   usleep(4000000);
+#endif
   phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
   LOG_FUNCTION_EXIT;
   return (dwMwIfStatus | dwDtaStatus);

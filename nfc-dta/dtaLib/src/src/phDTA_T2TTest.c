@@ -326,8 +326,7 @@ DTASTATUS phDtaLibi_T2TOperations(phDtaLib_sTestProfile_t TestProfile)
           phOsal_LogError((const uint8_t*)"DTALib>T2T:Error Pattern Number not valid for T2T !! \n");
           break;
       }
-    phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_SLEEP);
-    phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_IDLE);
+    phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
     LOG_FUNCTION_EXIT;
     return dwMwIfStatus;
 }
@@ -555,7 +554,11 @@ DTASTATUS phDtaLibi_T2TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
       phOsal_LogError((const uint8_t*)"DTALib>T2T:Error Pattern Number not valid for T2T !! \n");
     break;
   }
+#ifdef WIN32
+  Sleep(4000);
+#else
   usleep(4000000);
+#endif
   phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
   LOG_FUNCTION_EXIT;
   return dwMwIfStatus;

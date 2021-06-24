@@ -722,7 +722,11 @@ DTASTATUS phDtaLibi_T3TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTest
       phOsal_LogError((const uint8_t*)"DTALib>T3T: Error Pattern Number not valid for T3T !! \n");
     break;
   }
+#ifdef WIN32
+  Sleep(4000);
+#else
   usleep(4000000);
+#endif
   LOG_FUNCTION_EXIT;
   return dwDtaStatus;
 }

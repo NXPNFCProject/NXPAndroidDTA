@@ -38,8 +38,8 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:layout_margin="2dp"
             android:contentDescription="@string/tv_app_name"
+            android:layout_margin="2dp"
             android:text="@string/dta_test_app"
             android:textColor="@android:color/black"
             android:textSize="25sp"
@@ -54,48 +54,51 @@
 
         <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingBottom="3dp" >
 
                 <RelativeLayout
                     android:id="@+id/certification_conf"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
                     android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
                     android:layout_marginTop="15dp">
                     <RelativeLayout
+                        android:id="@+id/certification_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/ph_border_different_color_one"
+                        android:padding="3dp"
                         android:layout_alignParentTop="true"
-                        android:id="@+id/certification_layout">
+                        android:layout_alignParentLeft="true">
 
                         <RelativeLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:padding="2dp">
 
-                        <TextView
-                            android:id="@+id/certification_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/certification"
-                            android:textColor="@android:color/black"
-                            android:contentDescription="@string/tv_cr"
-                            android:textSize="20sp"
-                            android:layout_alignParentTop="true"
-                            android:layout_centerHorizontal="true"/>
+                            <TextView
+                                android:id="@+id/certification_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/certification"
+                                android:layout_centerHorizontal="true"
+                                android:contentDescription="@string/tv_cr"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:layout_alignParentTop="true"/>
 
-                        <Spinner
-                            android:id="@+id/certification_version"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:entries="@array/certification_array"
-                            android:contentDescription="@string/sp_cr"
-                            android:popupBackground="#111111"
-                            android:spinnerMode="dropdown"
-                            android:layout_below="@+id/certification_text"
-                            android:layout_centerHorizontal="true"/>
+                            <Spinner
+                                android:id="@+id/certification_version"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:entries="@array/certification_array"
+                                android:contentDescription="@string/sp_cr"
+                                android:popupBackground="#111111"
+                                android:layout_below="@+id/certification_text"
+                                android:spinnerMode="dropdown"
+                                android:layout_centerHorizontal="true"/>
 
                         </RelativeLayout>
 
@@ -117,12 +120,12 @@
                                 android:id="@+id/timeslotnumber_text"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_centerHorizontal="true"
+                                android:layout_alignParentTop="true"
                                 android:text="@string/time_slot_number"
                                 android:contentDescription="@string/tv_tsn"
                                 android:textColor="@android:color/black"
-                                android:textSize="20sp"
-                                android:layout_alignParentTop="true"
-                                android:layout_centerHorizontal="true" />
+                                android:textSize="20sp"/>
 
                             <Spinner
                                 android:id="@+id/timeslotnumber_options"
@@ -131,9 +134,8 @@
                                 android:entries="@array/timeslotnumber_array"
                                 android:contentDescription="@string/sp_tsn"
                                 android:popupBackground="#111111"
-                                android:spinnerMode="dropdown"
                                 android:layout_below="@+id/timeslotnumber_text"
-                                android:layout_centerHorizontal="true" />
+                                android:spinnerMode="dropdown" />
 
                         </RelativeLayout>
                    </RelativeLayout>
@@ -154,11 +156,12 @@
                                android:id="@+id/condevicelimit_text"
                                android:layout_width="wrap_content"
                                android:layout_height="wrap_content"
-                                android:text="@string/con_device_limit"
+                               android:layout_centerHorizontal="true"
+                                android:layout_alignParentTop="true"
+                               android:text="@string/con_device_limit"
                                android:contentDescription="@string/tv_cdl"
                                android:textColor="@android:color/black"
-                               android:textSize="20sp"
-                                android:layout_centerHorizontal="true" />
+                               android:textSize="20sp"/>
 
                            <Spinner
                                android:id="@+id/condevicelimit_options"
@@ -179,7 +182,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@+id/certification_conf"
-                android:layout_marginTop="15dp">
+                android:padding="5dp" >
 
                 <RelativeLayout
                     android:id="@+id/execution_layout"
@@ -197,8 +200,8 @@
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
                         android:gravity="center"
-                        android:text="@string/execution_mode"
                         android:contentDescription="@string/tv_exe_mode"
+                        android:text="@string/execution_mode"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -230,20 +233,6 @@
                             android:checked="true"
                             android:text="@string/manual" />
                     </RadioGroup>
-
-                    <RelativeLayout
-                        android:id="@+id/certification_layout2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="101dp"
-                        android:background="@drawable/ph_border_different_color_one"
-                        android:padding="5dp"
-                        android:layout_above="@+id/auto_manual_rb"
-                        android:layout_alignLeft="@+id/auto_manual_rb"
-                        android:layout_alignStart="@+id/auto_manual_rb"
-                        android:layout_marginStart="101dp">
-
-                    </RelativeLayout>
                 </RelativeLayout>
 
                 <View
@@ -272,11 +261,24 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
                         android:gravity="center"
-                        android:text="@string/pattern"
                         android:contentDescription="@string/tv_pn_num"
+                        android:text="@string/pattern"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
                         android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/custom"
+                        android:layout_width="100dp"
+                        android:layout_height="50dp"
+                        android:layout_alignParentRight="true"
+                        android:cursorVisible="true"
+                        android:contentDescription="@string/tf_pn_num"
+                        android:ems="10"
+                        android:layout_marginTop="20dp"
+                        android:hint="@string/custom"
+                        android:singleLine="true" >
+                    </EditText>
 
                     <Spinner
                         android:id="@+id/spinner_text"
@@ -302,21 +304,7 @@
                         android:textSize="18sp" />
                     -->
 
-                    <EditText
-                        android:id="@+id/custom"
-                        android:layout_width="100dp"
-                        android:layout_height="50dp"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignParentRight="true"
-                        android:contentDescription="@string/tf_pn_num"
-                        android:cursorVisible="true"
-                        android:ems="10"
-                        android:hint="@string/custom"
-                        android:singleLine="true" />
-
                 </RelativeLayout>
-
-
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/rf_main_layout"
@@ -324,7 +312,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/parent_execution_pattern_layout"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/ph_border_different_color_two" >
+                android:background="@drawable/ph_border_different_color_two">
 
                 <TextView
                     android:id="@+id/rf_tec_text"
@@ -332,8 +320,8 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="2dp"
-                    android:contentDescription="@string/tv_rf_tech"
                     android:gravity="center"
+                    android:contentDescription="@string/tv_rf_tech"
                     android:text="@string/rf_technology"
                     android:textColor="@android:color/black"
                     android:textSize="15sp"
@@ -359,8 +347,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
-                            android:text="@string/poll"
                             android:contentDescription="@string/tv_rf_poll"
+                            android:text="@string/poll"
                             android:textColor="@android:color/black"
                             android:textSize="15sp" />
 
@@ -414,7 +402,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="35dp"
                                 android:layout_toRightOf="@id/f_poll_technology_name"
-                                android:text="F"
+                                android:text="V"
                                 android:textColor="@android:color/black"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
@@ -424,10 +412,10 @@
                                 android:id="@+id/p2p_poll_layout"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/a_poll_technology_name"
                                 android:layout_marginLeft="10dp"
-                                android:background="@drawable/ph_rectangular_border"
-                                android:paddingRight="15dp" >
+                                android:paddingRight="15dp"
+                                android:layout_below="@id/a_poll_technology_name"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/p2p_poll_check_box"
@@ -435,8 +423,8 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
                                     android:contentDescription="@string/cb_poll_p2p"
-                                    android:checked="true"
                                     android:text="@string/p2p_text"
+                                    android:checked="true"
                                     android:textSize="15sp" />
 
                                 <CheckBox
@@ -452,30 +440,28 @@
                                     android:id="@+id/b_p2p_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
-                                    android:layout_centerVertical="true"
-                                    android:contentDescription="@string/cb_poll_p2p_tech_b"
                                     android:layout_marginLeft="15dp"
+                                    android:contentDescription="@string/cb_poll_p2p_tech_b"
+                                    android:layout_centerVertical="true"
                                     android:layout_toRightOf="@id/a_p2p_poll_check_box" />
 
                                 <CheckBox
                                     android:id="@+id/f_p2p_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_p2p_tech_f"
-                                    android:layout_marginLeft="15dp"
-                                    android:layout_toRightOf="@id/b_p2p_poll_check_box"
-                                    android:paddingRight="10dp" />
+                                    android:layout_toRightOf="@id/b_p2p_poll_check_box" />
 
                                 <CheckBox
                                     android:id="@+id/v_p2p_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_p2p_tech_v"
-                                    android:layout_marginLeft="15dp"
-                                    android:layout_toRightOf="@id/f_p2p_poll_check_box"
-                                    android:paddingRight="10dp" />
+                                    android:layout_toRightOf="@id/f_p2p_poll_check_box" />
                             </RelativeLayout>
 
                             <RelativeLayout
@@ -483,55 +469,55 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/p2p_poll_layout"
-                                android:layout_marginLeft="10dp"
                                 android:layout_marginTop="2dp"
-                                android:background="@drawable/ph_rectangular_border"
-                                android:paddingRight="25dp" >
+                                android:paddingRight="20dp"
+                                android:layout_marginLeft="10dp"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/rd_wt_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
-                                    android:checked="true"
                                     android:contentDescription="@string/cb_poll_rd_wr"
                                     android:text="@string/read_write"
+                                    android:checked="true"
                                     android:textSize="15sp" />
 
                                 <CheckBox
                                     android:id="@+id/a_rdwt_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_rd_wr_tech_a"
-                                    android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/rd_wt_poll_check_box" />
 
                                 <CheckBox
                                     android:id="@+id/b_rdwt_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_rd_wr_tech_b"
-                                    android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/a_rdwt_poll_check_box" />
 
                                 <CheckBox
                                     android:id="@+id/f_rdwt_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_rd_wr_tech_f"
-                                    android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/b_rdwt_poll_check_box" />
 
                                 <CheckBox
                                     android:id="@+id/v_rdwt_poll_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_poll_rd_wr_tech_v"
-                                    android:layout_marginLeft="15dp"
                                     android:layout_toRightOf="@id/f_rdwt_poll_check_box" />
                             </RelativeLayout>
                         </RelativeLayout>
@@ -613,20 +599,20 @@
                                 android:id="@+id/p2p_listen_layout"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/a_listen_technology_name"
-                                android:layout_marginLeft="10dp"
-                                android:background="@drawable/ph_rectangular_border"
                                 android:gravity="center_vertical"
-                                android:paddingRight="15dp" >
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="15dp"
+                                android:layout_below="@id/a_listen_technology_name"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/p2p_listen_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginLeft="10dp"
-                                    android:checked="true"
                                     android:contentDescription="@string/cb_lstn_p2p"
                                     android:text="@string/p2p_text"
+                                    android:checked="true"
                                     android:textSize="15sp" />
 
                                 <CheckBox
@@ -671,10 +657,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/p2p_listen_layout"
-                                android:layout_marginLeft="10dp"
                                 android:layout_marginTop="2dp"
-                                android:background="@drawable/ph_rectangular_border"
-                                android:paddingRight="15dp" >
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="15dp"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/uicc_listen_check_box"
@@ -727,10 +713,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/uicc_layout"
-                                android:layout_marginLeft="10dp"
                                 android:layout_marginTop="2dp"
-                                android:background="@drawable/ph_rectangular_border"
-                                android:paddingRight="15dp" >
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="10dp"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/hce_listen_check_box"
@@ -784,10 +770,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/hce_layout"
-                                android:layout_marginLeft="10dp"
                                 android:layout_marginTop="2dp"
-                                android:background="@drawable/ph_rectangular_border"
-                                android:paddingRight="15dp" >
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="10dp"
+                                android:background="@drawable/ph_rectangular_border">
 
                                 <CheckBox
                                     android:id="@+id/ese_listen_check_box"
@@ -813,7 +799,7 @@
                                     android:layout_height="30dp"
                                     android:layout_centerVertical="true"
                                     android:contentDescription="@string/cb_lstn_ese_tech_b"
-                                    android:layout_marginLeft="5dp"
+                                    android:layout_marginLeft="10dp"
                                     android:layout_toRightOf="@id/a_ese_listen_check_box" />
 
                                 <CheckBox
@@ -833,6 +819,269 @@
                                     android:contentDescription="@string/cb_lstn_ese_tech_v"
                                     android:layout_marginLeft="5dp"
                                     android:layout_toRightOf="@id/f_ese_listen_check_box" />
+                            </RelativeLayout>
+                        </RelativeLayout>
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/acm_initiator_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/listen_layout"
+                        android:layout_marginRight="5dp" >
+
+                        <TextView
+                            android:id="@+id/p2p_acm_initiator_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:contentDescription="@string/tv_rf_p2p_acm_initiator"
+                            android:text="@string/initiator"
+                            android:textColor="@android:color/black"
+                            android:textSize="15sp" />
+
+                        <RelativeLayout
+                            android:id="@+id/initiator_p2p_acm_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/p2p_acm_initiator_text"
+                            android:layout_marginTop="5dp"
+                            android:background="@drawable/ph_border_different_color_one"
+                            android:padding="5dp" >
+
+                            <TextView
+                                android:id="@+id/a_p2p_acm_ini_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="140dp"
+                                android:text="A"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_ini_tech_a" />
+
+                            <TextView
+                                android:id="@+id/b_p2p_acm_ini_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="40dp"
+                                android:layout_toRightOf="@id/a_p2p_acm_ini_technology_name"
+                                android:text="B"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_ini_tech_b" />
+
+                            <TextView
+                                android:id="@+id/f_p2p_acm_ini_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="40dp"
+                                android:layout_toRightOf="@id/b_p2p_acm_ini_technology_name"
+                                android:text="F"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_ini_tech_f" />
+
+                            <TextView
+                                android:id="@+id/v_p2p_acm_ini_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="40dp"
+                                android:layout_toRightOf="@id/f_p2p_acm_ini_technology_name"
+                                android:text="V"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_ini_tech_v" />
+
+                            <RelativeLayout
+                                android:id="@+id/p2p_acm_initiator_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="15dp"
+                                android:layout_below="@id/a_p2p_acm_ini_technology_name"
+                                android:background="@drawable/ph_rectangular_border" >
+
+                                <CheckBox
+                                    android:id="@+id/p2p_acm_initiator_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="10dp"
+                                    android:contentDescription="@string/cb_initiator_acm_p2p"
+                                    android:text="@string/p2p_acm_text"
+                                    android:checked="true"
+                                    android:textSize="15sp" />
+
+                                <CheckBox
+                                    android:id="@+id/a_p2p_acm_initiator_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_initiator_tech_a"
+                                    android:layout_marginLeft="2dp"
+                                    android:layout_toRightOf="@id/p2p_acm_initiator_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/b_p2p_acm_initiator_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
+                                    android:contentDescription="@string/cb_p2p_acm_initiator_tech_b"
+                                    android:layout_centerVertical="true"
+                                    android:layout_toRightOf="@id/a_p2p_acm_initiator_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/f_p2p_acm_initiator_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_initiator_tech_f"
+                                    android:layout_toRightOf="@id/b_p2p_acm_initiator_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/v_p2p_acm_initiator_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_marginLeft="15dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_initiator_tech_v"
+                                    android:layout_toRightOf="@id/f_p2p_acm_initiator_check_box" />
+                            </RelativeLayout>
+                        </RelativeLayout>
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/acm_target_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/acm_initiator_layout"
+                        android:layout_below="@id/listen_layout"
+                        android:padding="5dp" >
+
+                        <TextView
+                            android:id="@+id/p2p_acm_target_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:contentDescription="@string/tv_rf_p2p_acm_target"
+                            android:text="@string/target"
+                            android:textColor="@android:color/black"
+                            android:textSize="15sp" />
+
+                        <RelativeLayout
+                            android:id="@+id/target_p2p_acm_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/p2p_acm_target_text"
+                            android:background="@drawable/ph_border_different_color_one"
+                            android:padding="5dp" >
+
+                            <TextView
+                                android:id="@+id/a_p2p_acm_tar_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="135dp"
+                                android:text="A"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_tar_tech_a" />
+
+                            <TextView
+                                android:id="@+id/b_p2p_acm_tar_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="30dp"
+                                android:layout_toRightOf="@id/a_p2p_acm_tar_technology_name"
+                                android:text="B"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_tar_tech_b" />
+
+                            <TextView
+                                android:id="@+id/f_p2p_acm_tar_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="30dp"
+                                android:layout_toRightOf="@id/b_p2p_acm_tar_technology_name"
+                                android:text="F"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_tar_tech_f" />
+
+                            <TextView
+                                android:id="@+id/v_p2p_acm_tar_technology_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="30dp"
+                                android:layout_toRightOf="@id/f_p2p_acm_tar_technology_name"
+                                android:text="V"
+                                android:textColor="@android:color/black"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:contentDescription="@string/tv_p2p_acm_tar_tech_v" />
+
+                            <RelativeLayout
+                                android:id="@+id/p2p_acm_target_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:layout_marginLeft="10dp"
+                                android:paddingRight="15dp"
+                                android:layout_below="@id/a_p2p_acm_tar_technology_name"
+                                android:background="@drawable/ph_rectangular_border" >
+
+                                <CheckBox
+                                    android:id="@+id/p2p_acm_target_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginLeft="10dp"
+                                    android:contentDescription="@string/cb_target_acm_p2p"
+                                    android:text="@string/p2p_acm_text"
+                                    android:checked="true"
+                                    android:textSize="15sp" />
+
+                                <CheckBox
+                                    android:id="@+id/a_p2p_acm_target_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_target_tech_a"
+                                    android:layout_marginLeft="2dp"
+                                    android:layout_toRightOf="@id/p2p_acm_target_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/b_p2p_acm_target_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_target_tech_b"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_toRightOf="@id/a_p2p_acm_target_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/f_p2p_acm_target_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_target_tech_f"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_toRightOf="@id/b_p2p_acm_target_check_box" />
+
+                                <CheckBox
+                                    android:id="@+id/v_p2p_acm_target_check_box"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="30dp"
+                                    android:layout_centerVertical="true"
+                                    android:contentDescription="@string/cb_p2p_acm_target_tech_f"
+                                    android:layout_marginLeft="5dp"
+                                    android:layout_toRightOf="@id/f_p2p_acm_target_check_box" />
                             </RelativeLayout>
                         </RelativeLayout>
                     </RelativeLayout>
@@ -860,6 +1109,7 @@
                         android:text="@string/other_selection"
                         android:textColor="@android:color/black"
                         android:textSize="15sp"
+                        android:visibility="gone"
                         android:textStyle="bold"
                         android:contentDescription="@string/tv_other_sels"/>
                 </RelativeLayout>
@@ -894,6 +1144,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="5dp"
                     android:layout_marginRight="5dp"
+                    android:layout_marginTop="5dp"
                     android:layout_toRightOf="@+id/card_emulation_layout"
                     android:background="@drawable/ph_border_different_color_three" >
 
@@ -901,12 +1152,13 @@
                         android:id="@+id/other_selection_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
                         android:text="@string/p2p"
-                        android:textColor="@android:color/black"
                         android:textSize="15sp"
+                        android:layout_marginTop="2dp"
+                        android:layout_centerHorizontal="true"
                         android:textStyle="bold"
                         android:visibility="gone"
+                        android:textColor="@android:color/black"
                         android:contentDescription="@string/tv_othr_sel"/>
 
                     <RelativeLayout
@@ -919,11 +1171,11 @@
                             android:id="@+id/llcp_snep_rg"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:background="@drawable/ph_border_different_color_three"
                             android:gravity="center_horizontal"
-                            android:orientation="horizontal"
-                            android:padding="2dp" >
+                            android:layout_marginTop="10dp"
+                            android:padding="2dp"
+                            android:background="@drawable/ph_border_different_color_three"
+                            android:orientation="horizontal">
 
                             <RelativeLayout
                                 android:id="@+id/llcp_layout"
@@ -946,27 +1198,26 @@
                                     android:id="@+id/llcp_content_check_box"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_centerHorizontal="true"
                                     android:layout_toRightOf="@id/llcp_check_box"
                                     android:contentDescription="@string/cb_conn_pdu_parm"
-                                    android:text="@string/c_pdu_params"
+                                    android:textSize="15sp"
                                     android:enabled="false"
-                                    android:textSize="15sp" />
+                                    android:layout_centerHorizontal="true"
+                                    android:text="@string/c_pdu_params" />
                             </RelativeLayout>
 
                             <CheckBox
                                 android:id="@+id/snep_check_box"
                                 android:layout_width="140dp"
                                 android:layout_height="60dp"
-                                android:layout_marginLeft="15dp"
+                                android:padding="2dp"
+                                android:textSize="15sp"
                                 android:contentDescription="@string/cb_snep"
                                 android:background="@drawable/ph_rectangular_border"
-                                android:padding="2dp"
-                                android:text="@string/snep"
-                                android:textSize="15sp" />
-                        </LinearLayout>
+                                android:layout_marginLeft="15dp"
+                                android:text="@string/snep" />
+                       </LinearLayout>
                     </RelativeLayout>
-
                 </RelativeLayout>
             </RelativeLayout>
 
@@ -975,10 +1226,10 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:layout_alignParentLeft="true"
-                android:layout_below="@+id/other_selection_main_layout"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/ph_border_different_color_two"
-                android:padding="2dp" >
+                android:padding="2dp"
+                android:layout_below="@+id/other_selection_main_layout"
+                android:background="@drawable/ph_border_different_color_two" >
 
                 <TextView
                     android:id="@+id/utilities"
@@ -986,9 +1237,9 @@
                     android:layout_height="25dp"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
-                    android:contentDescription="@string/tv_utls"
                     android:gravity="center"
                     android:text="@string/utilities"
+                    android:contentDescription="@string/tv_utls"
                     android:textColor="@android:color/black"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -1008,8 +1259,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
-                        android:contentDescription="@string/tv_utls_log_msgs"
                         android:text="@string/log_messages"
+                        android:contentDescription="@string/tv_utls_log_msgs"
                         android:textColor="@android:color/black"
                         android:textSize="15sp" />
 
@@ -1018,8 +1269,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentLeft="true"
-                        android:contentDescription="@string/cb_utls_log_msgs_file"
                         android:layout_below="@id/log_msg"
+                        android:contentDescription="@string/cb_utls_log_msgs_file"
                         android:layout_marginTop="2dp"
                         android:enabled="false"
                         android:text="@string/file_txt" />
@@ -1028,8 +1279,8 @@
                         android:id="@+id/logcat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:contentDescription="@string/cb_utls_log_cat_cnsl"
                         android:layout_below="@id/logtofile"
+                        android:contentDescription="@string/cb_utls_log_cat_cnsl"
                         android:text="@string/console_txt" />
 
                     <EditText
@@ -1056,17 +1307,17 @@
                     android:layout_below="@+id/utilities"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
+                    android:padding="21dp"
                     android:layout_toRightOf="@id/log_msg_layout"
-                    android:background="@drawable/ph_border_different_color_three"
-                    android:padding="21dp" >
+                    android:background="@drawable/ph_border_different_color_three" >
 
                     <TextView
                         android:id="@+id/device_msg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerHorizontal="true"
-                        android:contentDescription="@string/tv_utls_devc"
                         android:text="@string/device"
+                        android:contentDescription="@string/tv_utls_devc"
                         android:textColor="@android:color/black"
                         android:textSize="15sp" />
 
@@ -1075,8 +1326,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/device_msg"
-                        android:layout_centerHorizontal="true"
-                        android:visibility="gone" >
+                        android:visibility="gone"
+                        android:layout_centerHorizontal="true" >
 
                         <TextView
                             android:id="@+id/deviceselection"
@@ -1112,8 +1363,8 @@
                             android:id="@+id/versionnumber"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:contentDescription="@string/cb_utls_devc_info"
                             android:layout_alignParentLeft="true"
+                            android:contentDescription="@string/cb_utls_devc_info"
                             android:text="@string/version_number" />
 
                         <TextView
@@ -1124,14 +1375,14 @@
                             android:layout_toRightOf="@+id/versionnumber"
                             android:textAppearance="?android:attr/textAppearanceMedium"
                             android:textSize="12sp"
-                            android:contentDescription="@string/tv_firm_ware_vrsn"/>
+                            android:contentDescription="@string/tv_utls_vrsn_num"/>
                     </RelativeLayout>
                 </RelativeLayout>
 
                 <RelativeLayout
-                    android:id="@+id/auto_mode_custom_show_msg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/auto_mode_custom_show_msg"
                     android:layout_below="@+id/log_msg_layout"
                     android:layout_margin="2dp"
                     android:background="@drawable/ph_rectangular_green_border" >
@@ -1140,30 +1391,30 @@
                         android:id="@+id/auto_mode_messages"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="50dp"
+                        android:text="@string/auto_mode_msg"
                         android:layout_marginTop="15dp"
                         android:contentDescription="@string/tv_utls_at_mod_msgs"
-                        android:text="@string/auto_mode_msg"
                         android:textColor="@android:color/black"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
+                        android:layout_marginLeft="50dp"
+                        android:textStyle="bold"
+                       android:textSize="15sp" />
+ 
                     <CheckBox
                         android:id="@+id/custom_msg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/auto_mode_messages"
-                        android:contentDescription="@string/cb_utls_at_mod_msgs_cstm_msg"
                         android:layout_marginLeft="10dp"
+                        android:contentDescription="@string/cb_utls_at_mod_msgs_cstm_msg"
+                        android:layout_below="@id/auto_mode_messages"
                         android:text="@string/custom_msg" />
 
                     <CheckBox
                         android:id="@+id/show_msg"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/auto_mode_messages"
-                        android:contentDescription="@string/cb_utls_at_mod_msgs_show_msg"
                         android:layout_toRightOf="@id/custom_msg"
+                        android:contentDescription="@string/cb_utls_at_mod_msgs_show_msg"
+                        android:layout_below="@id/auto_mode_messages"
                         android:text="@string/show_msg" />
                 </RelativeLayout>
 
@@ -1172,12 +1423,12 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/log_msg_layout"
-                    android:layout_marginLeft="50dp"
-                    android:layout_marginTop="15dp"
-                    android:contentDescription="@string/tv_utls_tcp_stat"
                     android:layout_toRightOf="@id/auto_mode_custom_show_msg"
+                    android:contentDescription="@string/tv_utls_tcp_stat"
                     android:text="@string/tcp_ip_status"
+                    android:layout_marginTop="15dp"
                     android:textColor="@android:color/black"
+                    android:layout_marginLeft="50dp"
                     android:textSize="15sp" />
             </RelativeLayout>
 
@@ -1186,8 +1437,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:layout_below="@+id/relativeLayout1"
-                android:layout_marginTop="2dp" >
+                android:layout_marginTop="2dp"
+                android:layout_below="@+id/relativeLayout1">
 
                 <Button
                     android:id="@+id/stop"
@@ -1195,8 +1446,8 @@
                     android:layout_height="50dp"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
-                    android:contentDescription="@string/bt_stop"
                     android:background="@color/grey"
+                    android:contentDescription="@string/bt_stop"
                     android:padding="5dp"
                     android:paddingLeft="40dp"
                     android:paddingRight="40dp"
@@ -1212,8 +1463,8 @@
                     android:layout_alignParentTop="true"
                     android:layout_marginRight="72dp"
                     android:layout_toLeftOf="@+id/stop"
-                    android:contentDescription="@string/bt_run"
                     android:background="@color/green"
+                    android:contentDescription="@string/bt_run"
                     android:padding="5dp"
                     android:text="@string/run"
                     android:textColor="@android:color/black"
@@ -1257,8 +1508,8 @@
                 android:id="@+id/copyrights"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/run_layout"
                 android:layout_marginLeft="10dp"
+                android:layout_below="@id/run_layout"
                 android:text="@string/copyright_nxp_semiconductors"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:contentDescription="@string/tv_copy_right"/>

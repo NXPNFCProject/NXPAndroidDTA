@@ -144,6 +144,12 @@ DTASTATUS phDtaLib_Init() {
 #endif
     dwThreadId = phOsal_ThreadGetTaskId();
 
+#if(ENABLE_CR12_SUPPORT == TRUE)
+    phOsal_LogDebug((const uint8_t *)"DTALib> CR12  DTA Version Enable !! \n");
+#else
+    phOsal_LogDebug((const uint8_t *)"DTALib> CR11  DTA Version Enable !! \n");
+#endif
+
     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf Init\n");
     dwMwifStatus = phMwIf_Init(&dtaLibHdl->mwIfHdl);
     if(MWIFSTATUS_SUCCESS != dwMwifStatus)
@@ -899,12 +905,14 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             free(psQueueData);
             break;
         }
+#if(ENABLE_CR12_SUPPORT == TRUE)
         case PHMWIF_T5T_TAG_ACTIVATED_EVT:
             phDtaLibi_T5TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
             bDiscStartReqd = FALSE;
             bDiscStopReqd = FALSE;
             free(psQueueData);
             break;
+#endif /* #if(ENABLE_CR12_SUPPORT == TRUE) */
         case PHMWIF_ISODEP_ACTIVATED_EVT:
             if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)
             {
@@ -935,11 +943,13 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             {
                 phOsal_LogDebug((const uint8_t*)"DTALib> We are Initiator now !! \n");
                 dwDtaStatus = phDtaLibi_NfcdepTargetOperations(&bDiscStartReqd,&bDiscStopReqd);
+#if(ENABLE_CR12_SUPPORT == TRUE)
                 if(dwDtaStatus != DTASTATUS_SUCCESS)
                 {
                     bDiscStartReqd = FALSE;
                     bDiscStopReqd  = FALSE;
                 }
+#endif /* (ENABLE_CR12_SUPPORT == TRUE) */
             } /* Handle remote device == Initiator, for Listen mode test cases */
             else if ((eDiscType == PHMWIF_DISCOVERY_TYPE_LISTEN_A)
                     || (eDiscType == PHMWIF_DISCOVERY_TYPE_LISTEN_F))

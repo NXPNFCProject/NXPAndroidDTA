@@ -21,6 +21,13 @@
  *
  */
 /* Preprocessor includes for different platform */
+
+/*
+ * T5T is supported from CR12
+ */
+#if(ENABLE_CR12_SUPPORT == TRUE)
+
+
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -815,7 +822,11 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
           break;
       }
 #endif
+#ifdef WIN32
+    Sleep(4000);
+#else
     usleep(4000000);
+#endif
     /*
      * If there is an error, m/w will move to discovery state
      * In such case, DEACTIVATE_EVT will get queued to MwIf queue
@@ -831,3 +842,7 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* (ENABLE_CR12_SUPPORT == TRUE) */
+
+
