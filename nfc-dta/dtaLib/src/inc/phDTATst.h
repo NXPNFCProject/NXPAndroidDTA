@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#define DTALIB_VERSION_STR "NFCDTA_12.15"
+#define DTALIB_VERSION_STR "NFCDTA_12.14"
 #define DTALIBVERSION_MAJOR (0x12)
-#define DTALIBVERSION_MINOR (0x15)
+#define DTALIBVERSION_MINOR (0x14)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */

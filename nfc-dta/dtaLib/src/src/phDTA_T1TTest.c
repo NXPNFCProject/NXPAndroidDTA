@@ -237,7 +237,6 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
     phMwIf_uTagOpsParams_t sTagOpsParams;
     phMwIf_sBuffParams_t*  psBuffParams;
     phMwIf_sNdefDetectParams_t* psNdefDetectParams;
-    phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     uint8_t* pBuffer;
     uint32_t dwSizeOfBuffer;
     DTASTATUS dwDtaStatus;
@@ -338,7 +337,6 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
         phOsal_LogError((const uint8_t*)"DTALib>T1T: Error  Pattern Number not valid for T1T !! \n");
         break;
     }
-    phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl, PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
     LOG_FUNCTION_EXIT;
     return dwDtaStatus;
 }

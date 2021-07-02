@@ -54,7 +54,6 @@ import com.phdtaui.helper.PhNXPJniHelper;
 import com.phdtaui.utils.PhUtilities;
 import com.phdtaui.messenger.PhMessengerService;
 import android.nfc.dta.NfcDta;
-import com.phdtaui.structure.PhDtaLibStructure;
 
 public class PhCustomSNEPRTD extends Dialog implements
         android.view.View.OnClickListener, CreateNdefMessageCallback,
@@ -67,7 +66,6 @@ public class PhCustomSNEPRTD extends Dialog implements
     private ProgressDialog loadingProgress;
     private CheckBox chkBoxShortRecordLayout;
     private TextView txtVwClientMsg,txtVwServerMsg;
-    private PhDtaLibStructure       phDtaLibStructureObj;
 
     /* constants*/
     private final String TAG = "SnepExtendedDTAServer";
@@ -107,7 +105,11 @@ public class PhCustomSNEPRTD extends Dialog implements
          * Setting the layout for Custom Exit Dialog
          */
         setContentView(R.layout.ph_custom_snep_rtd);
-
+        isNfcInitInDtaMode = true;
+        if (isNfcInitInDtaMode) {
+            isNfcInitInDtaMode=false;
+            new DeInitDTA().execute();
+        }
         setCanceledOnTouchOutside(false);
         runServerBtn = (Button) findViewById(R.id.run_server);
         runServerBtn.setOnClickListener(this);
@@ -144,10 +146,6 @@ public class PhCustomSNEPRTD extends Dialog implements
         strBuffer = new StringBuffer();
         mNfcAdapter   = NfcAdapter.getDefaultAdapter(this.mContext);
         mNfcDta = NfcDta.getInstance(mNfcAdapter);
-    }
-
-    public void setPhDtaLibStructure(PhDtaLibStructure phDtaLibStructureObj){
-        this.phDtaLibStructureObj=phDtaLibStructureObj;
     }
 
     @Override
@@ -497,11 +495,6 @@ public class PhCustomSNEPRTD extends Dialog implements
             try {
                 if(PhUtilities.NDK_IMPLEMENTATION==true){
                     PhNXPJniHelper phNXPJniHelper = PhNXPJniHelper.getInstance();
-                    if(!PhCustomSNEPRTD.this.isNfcInitInDtaMode)
-                        phNXPJniHelper.phDtaLibDeInit();
-                    phNXPJniHelper.startPhDtaLibInit();
-                    phNXPJniHelper.enableDiscovery(PhCustomSNEPRTD.this.phDtaLibStructureObj);
-                    phNXPJniHelper.phDtaLibDisableDiscovery();
                     phNXPJniHelper.phDtaLibDeInit();
                 }
             } catch (UnsatisfiedLinkError e) {
@@ -516,7 +509,6 @@ public class PhCustomSNEPRTD extends Dialog implements
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            PhCustomSNEPRTD.this.isNfcInitInDtaMode=false;
         }
     }
     @Override
@@ -644,10 +636,6 @@ public class PhCustomSNEPRTD extends Dialog implements
     }
 @Override
 protected void onStart() {
-     Log.d(PhUtilities.UI_TAG, "NxpNci PhCustomSNEPRTD OnCreate");
-    isNfcInitInDtaMode = true;
-    new DeInitDTA().execute();
-
     if(!mNfcAdapter.isEnabled()){
         /*Handle scenrio when Open App->Snep->Run Server->Home Btn->Settings->NfcSvc Off
          * ->BacktoApp*/
