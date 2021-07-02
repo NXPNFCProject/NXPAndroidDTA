@@ -234,6 +234,14 @@ public class PhDTAUIMainActivity extends Activity implements
     public final String BUNDLED_PARAMS_START_KEY = "start";
     public final String BUNDLED_PARAMS_STOP_KEY = "stop";
 
+    public final String BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_KEY = "initiator_active";
+    public final String BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_DISABLE_VALUE = "disable";
+
+    public final String BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_KEY = "target_active";
+    public final String BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_ENABLE_VALUE = "enable";
+    public final String BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_DISABLE_VALUE = "disable";
+
     public final String DTA_INTENT_RESPONSE = "nxp_dta_response";
     public final String DTA_INTENT_DONE_RESPONSE = "done";
 
@@ -475,6 +483,12 @@ public class PhDTAUIMainActivity extends Activity implements
             //** Handle SNEP commands received from AutomaTest */
             handleAutomaTestSNEPCommands(bundledParams);
 
+            //** CheckBox ENABLE  ACM POLLING Implemenatation for Automation */
+            handleAutomaTestACMInitiatorCommands(bundledParams);
+
+            //** CheckBox ENABLE  ACM POLLING Implemenatation for Automation */
+            handleAutomaTestACMTargetCommands(bundledParams);
+
             //** START & STOP button Implementaion for Automation */
             if (bundledParams.containsKey(BUNDLED_PARAMS_START_KEY)) {
               bIsInAutomationMode = true;
@@ -655,6 +669,42 @@ public class PhDTAUIMainActivity extends Activity implements
                     break;
             }
         }
+    }
+
+    //** ACM Initiator Implementaion for Automation */
+    private void handleAutomaTestACMInitiatorCommands(Bundle bundledParams) {
+      Log.d(PhUtilities.UI_TAG, "In handleAutomaTestACMInitiatorCommands");
+
+      if (bundledParams.containsKey(BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_KEY)) {
+        switch (bundledParams.getString(BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_KEY)) {
+          case BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_ENABLE_VALUE:
+            this.chkBoxP2pAcmIni.setChecked(true);
+            this.handleP2pAcmIniCheckBoxEvent();
+            break;
+          case BUNDLED_PARAMS_ACM_INITIATOR_P2P_ACTIVE_DISABLE_VALUE:
+            this.chkBoxP2pAcmIni.setChecked(false);
+            this.handleP2pAcmIniCheckBoxEvent();
+            break;
+        }
+      }
+    }
+
+    //** ACM Target Implementaion for Automation */
+    private void handleAutomaTestACMTargetCommands(Bundle bundledParams) {
+      Log.d(PhUtilities.UI_TAG, "In handleAutomaTestACMTargetCommands");
+
+      if (bundledParams.containsKey(BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_KEY)) {
+        switch (bundledParams.getString(BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_KEY)) {
+          case BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_ENABLE_VALUE:
+            this.chkBoxP2pAcmTar.setChecked(true);
+            this.handleP2pAcmTarCheckBoxEvent();
+            break;
+          case BUNDLED_PARAMS_ACM_TARGET_P2P_ACTIVE_DISABLE_VALUE:
+            this.chkBoxP2pAcmTar.setChecked(false);
+            this.handleP2pAcmTarCheckBoxEvent();
+            break;
+        }
+      }
     }
 
     //** LLCP Implementaion for Automation */
@@ -1640,10 +1690,23 @@ public class PhDTAUIMainActivity extends Activity implements
             nxpHelperMainActivity.setsPatternnumber(spinnerPatterNum.getSelectedItem().toString());
             break;
         case R.id.certification_version:
-            Log.d(PhUtilities.UI_TAG,
-                    "get certification version " + certificationVersion.getSelectedItem().toString());
-            nxpHelperMainActivity.setsCertificationVersion(certificationVersion.getSelectedItem().toString());
-            break;
+          Log.d(PhUtilities.UI_TAG,
+              "get certification version " + certificationVersion.getSelectedItem().toString());
+          nxpHelperMainActivity.setsCertificationVersion(
+              certificationVersion.getSelectedItem().toString());
+          if (nxpHelperMainActivity.getsCertificationVersion() != null) {
+            if (nxpHelperMainActivity.getsCertificationVersion().equals("CR11")) {
+              Log.d(PhUtilities.UI_TAG, "Type V poll unchecked for  CR11");
+              chkBoxPollRDWTV.setChecked(false);
+              chkBoxPollRDWTV.setEnabled(false);
+            } else {
+              Log.d(PhUtilities.UI_TAG, "Type V poll checked for  CR11");
+              chkBoxPollRDWTV.setChecked(true);
+              chkBoxPollRDWTV.setEnabled(true);
+            }
+          }
+
+          break;
         case R.id.timeslotnumber_options:
             Log.d(PhUtilities.UI_TAG,
                     "get timeslot number " + timeSlotNumberF.getSelectedItem().toString());
@@ -1751,7 +1814,12 @@ public class PhDTAUIMainActivity extends Activity implements
 
         phDtaLibStructureObj.enableLlcp = chkBoxLlcp.isChecked();
         phDtaLibStructureObj.enableSnep = chkBoxSnep.isChecked();
-        phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
+	try{
+            phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
+        }catch(NumberFormatException e){
+            Log.d(PhUtilities.UI_TAG,"Unable to parse sPatternNumber, setting this as default 0");
+            phDtaLibStructureObj.patternNum = 0;
+        }
         phDtaLibStructureObj.certificationVerNum = nxpHelperMainActivity.getsCertificationVersion();
         phDtaLibStructureObj.timeSlotNumberF = Integer.parseInt(nxpHelperMainActivity.getsTimeSlotNumberF(), 16);
         phDtaLibStructureObj.connectionDeviceLimit = Integer.parseInt(nxpHelperMainActivity.getsConnectionDeviceLimit(),16);
@@ -2538,11 +2606,13 @@ public class PhDTAUIMainActivity extends Activity implements
             try {
                 editTextCustomPatternNum.setEnabled(true);
                 spinnerPatterNum.setAdapter(adapterPatternNumberDefault);
+                getUpdatesFromView();
                 chkBoxLlcp.setChecked(false);
                 chkBoxSnep.setChecked(false);
                 if(phCustomSNEPRTD == null){
                     phCustomSNEPRTD = new PhCustomSNEPRTD(this);
                 }
+                phCustomSNEPRTD.setPhDtaLibStructure(phDtaLibStructureObj);
                 phCustomSNEPRTD.show();
             } catch (Exception e) {
             }

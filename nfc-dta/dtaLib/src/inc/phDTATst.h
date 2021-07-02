@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#define DTALIB_VERSION_STR "NFCDTA_12.12"
+#define DTALIB_VERSION_STR "NFCDTA_12.15"
 #define DTALIBVERSION_MAJOR (0x12)
-#define DTALIBVERSION_MINOR (0x12)
+#define DTALIBVERSION_MINOR (0x15)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -361,6 +361,7 @@ extern DTASTATUS phDtaLibi_UICCOperations();
  *
  */
 extern DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t sTestProfile);
+extern DTASTATUS phDtaLibi_T1TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTestProfile);
 
 /**
  * \ingroup grp_dta_lib internal function

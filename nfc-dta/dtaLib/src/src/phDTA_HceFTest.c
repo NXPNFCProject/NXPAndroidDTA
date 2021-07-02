@@ -99,6 +99,9 @@ DTASTATUS phDtaLibi_HceFOperations()
                 phOsal_LogDebug((const uint8_t*)"DTALib>psQueueData->uEvtType.eDpEvtType == PHMWIF_DEACTIVATED_EVT");
                 free(psQueueData);
                 return DTASTATUS_FAILED;
+            } else if(psQueueData->uEvtType.eDpEvtType == PHMWIF_CE_DEACTIVATED_EVT){
+                phOsal_LogDebugString((const uint8_t*)"DTALib> : phDtaLibi_HceFOperations PHMWIF_CE_DEACTIVATED_EVT success", (const uint8_t*)__FUNCTION__);
+                return DTASTATUS_SUCCESS;
             }
 
             sQueueData = *psQueueData;

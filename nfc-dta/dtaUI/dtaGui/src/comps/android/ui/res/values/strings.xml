@@ -29,8 +29,8 @@
     <string name="poll">Poll (Passive)</string>
     <string name="listen">Listen (Passive)</string>
     <string name="p2p_acm">P2P Active Communication Mode</string>
-    <string name="initiator">P2P-ACM (Initiator)</string>
-    <string name="target">P2P-ACM (Target)</string>
+    <string name="initiator_active">P2P-ACM (Initiator)</string>
+    <string name="target_active">P2P-ACM (Target)</string>
     <string name="pattern">Pattern Number</string>
     <string name="exit">Exit</string>
     <string name="uicc">UICC</string>

@@ -53,7 +53,6 @@ cc_library_shared {
         "-DANDROID_P=FALSE",
         "-DANDROID_R=FALSE",
         "-DANDROID_S=TRUE",
-        "-DENABLE_CR12_SUPPORT=TRUE",
         "-DNXP_QTAG=TRUE"
     ],
     srcs: [

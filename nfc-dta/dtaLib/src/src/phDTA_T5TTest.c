@@ -25,8 +25,6 @@
 /*
  * T5T is supported from CR12
  */
-#if(ENABLE_CR12_SUPPORT == TRUE)
-
 
 #ifdef WIN32
 #include <windows.h>
@@ -280,17 +278,19 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
         case 0x0012:
         {
           phOsal_LogDebug((const uint8_t*)"DTALib> : Type 5 Tag Operation WRITE Test Functionality");
-          /*Send Request Flag Type based on the Pattern Number selected depending the test case*/
-          if(TestProfile.Pattern_Number == 0x02)
-          {
-            T5T_REQ_FLAG_TYPE(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl, T5T_REQ_FLAG_NAMS)
+          /*Send Request Flag Type based on the Pattern Number selected
+           * depending the test case*/
+          if (TestProfile.Pattern_Number == 0x02) {
+            T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
+                              T5T_REQ_FLAG_NAMS)
           }
-#if(ENABLE_CR12_SUPPORT == FALSE) /* CR12_ON_AR12_CHANGE */
-          else if(TestProfile.Pattern_Number == 0x12)
-          {
-            T5T_REQ_FLAG_TYPE(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl, T5T_REQ_FLAG_AMS_OPFLAG)
-          }
-#endif /* CR12_ON_AR12_CHANGE */
+          if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") !=
+              0x00) { /* CR12_ON_AR12_CHANGE */
+            if (TestProfile.Pattern_Number == 0x12) {
+              T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
+                                T5T_REQ_FLAG_AMS_OPFLAG)
+            }
+          } /* CR12_ON_AR12_CHANGE */
 
           phOsal_LogDebug ((const uint8_t*)"DTALib>T5T:Perform NDEF Check \n");
           dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
@@ -344,9 +344,12 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
           uint8_t t5tUid1[] = {0xF0, 0x10, 0x32, 0x54, 0x76, 0x98, 0xAB, 0xE0}; /** T5T UID1*/
           uint8_t t5tUid2[] = {0xF1, 0x10, 0x32, 0x54, 0x76, 0x99, 0xAB, 0xE0}; /** T5T UID2*/
           phOsal_LogDebug((const uint8_t*)"DTALib> : T5T Pattern 0x0031, Read with 1 tag in QUIET state and 1 tag in SELECTED state");
-#if(ENABLE_CR12_SUPPORT == FALSE) /* CR12_ON_AR12_CHANGE */
-          T5T_REQ_FLAG_TYPE(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl, T5T_REQ_FLAG_SEL)
-#endif /* CR12_ON_AR12_CHANGE */
+          if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") !=
+              0x00) {
+            T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
+                              T5T_REQ_FLAG_SEL)
+          }
+
           //The sequence to be followed is Type V Sleep -> RF_DEACTIVATE_CMD(Sleep) -> RF_DISCOVER_SELECT_CMD -> Type V Select
           T5T_STAY_QUIET(dwMwIfStatus,psTagParams,dtaLibHdl->mwIfHdl,t5tUid2) // T5T Stay Quiet UID1
           phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_SLEEP); // RF Deactivate with Sleep
@@ -842,7 +845,4 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* (ENABLE_CR12_SUPPORT == TRUE) */
-
 

@@ -41,6 +41,7 @@ extern "C" {
 
 extern phDtaLib_sHandle_t g_DtaLibHdl;
 
+
 /**< Constant T1T Data Arrays for predefined memory layouts*/
 static const uint8_t gs_T1TStaticLayoutZeroLenTagData[] = { 0x01, 0x61, 0x62, 0x63,
         0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D,
@@ -236,6 +237,7 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
     phMwIf_uTagOpsParams_t sTagOpsParams;
     phMwIf_sBuffParams_t*  psBuffParams;
     phMwIf_sNdefDetectParams_t* psNdefDetectParams;
+    phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     uint8_t* pBuffer;
     uint32_t dwSizeOfBuffer;
     DTASTATUS dwDtaStatus;
@@ -336,8 +338,126 @@ DTASTATUS phDtaLibi_T1TOperations(phDtaLib_sTestProfile_t TestProfile)
         phOsal_LogError((const uint8_t*)"DTALib>T1T: Error  Pattern Number not valid for T1T !! \n");
         break;
     }
+    phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl, PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
     LOG_FUNCTION_EXIT;
     return dwDtaStatus;
+}
+
+/**
+*   T1T Tag read/write operations based on pattern number set by the user.
+*   Dynamic Execution refers to dynamically retrieving the data by tag read. Data retrieved is saved
+*   and used for tag write operations later as explained in the table of T1T tag test cases
+*   specifications.
+*/
+DTASTATUS  phDtaLibi_T1TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestProfile)
+{
+  MWIFSTATUS dwMwIfStatus = MWIFSTATUS_FAILED;
+  DTASTATUS  dwDtaStatus = DTASTATUS_FAILED;
+  phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
+  phMwIf_uTagParams_t   sTagParams;
+  phMwIf_sT2TParams_t*   psTagParams = (phMwIf_sT2TParams_t *)&sTagParams;
+  phMwIf_uTagOpsParams_t sTagOpsParams;
+  phMwIf_sNdefDetectParams_t* psNdefDetectParams;
+  uint8_t t1tBuff[512]  = {0};
+
+  LOG_FUNCTION_ENTRY;
+  memset(psTagParams, 0, sizeof(phMwIf_uTagParams_t));
+  sTagParams.sT1TPrms.sBuffParams.dwBuffLength = sizeof(t1tBuff);
+
+  phOsal_LogDebugString((const uint8_t*)"DTALib> :", (const uint8_t*)__FUNCTION__);
+  phOsal_LogDebugU32h((const uint8_t*)"PatternNum = ", TestProfile.Pattern_Number);
+  sTagOpsParams.sBuffParams.pbBuff = gs_ndefReadWriteBuff;
+  switch(TestProfile.Pattern_Number)
+  {
+
+    /* Pattern Numbers to test READ functionality */
+    case 0x0001:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T1T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T1T:Device is not NDEF Compliant\n");
+        break;
+      }
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T1T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib> T1T:Read NDEF \n");
+        dwDtaStatus = phDtaLibi_ReadNDEF(&sTagOpsParams);
+        if (dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib> T1T:Error Could not read data !!\n");
+          break;
+        }
+        memset(gs_ndefReadWriteBuff, 0, sizeof(gs_ndefReadWriteBuff));
+        memcpy(gs_ndefReadWriteBuff,sTagOpsParams.sBuffParams.pbBuff, sTagOpsParams.sBuffParams.dwBuffLength);
+        gs_sizeNdefRWBuff = sTagOpsParams.sBuffParams.dwBuffLength;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T1T:NDEF READ Length: ", gs_sizeNdefRWBuff);
+      }
+    }
+    break;
+
+    /* Pattern Numbers to test WRITE functionality */
+    case 0x0002:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T1T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T1T:Device is not NDEF Compliant\n");
+        break;
+      }
+
+      psNdefDetectParams = &sTagOpsParams.sNdefDetectParams;
+      if(!psNdefDetectParams->dwStatus)
+      {
+        phOsal_LogDebug((const uint8_t*)"DTALib> T1T:Tag is NDEF compliant \n");
+        phOsal_LogDebug((const uint8_t*)"DTALib>T1T:Write NDEF Message \n");
+        sTagOpsParams.sBuffParams.dwBuffLength = gs_sizeNdefRWBuff;
+        phOsal_LogDebugU32d((const uint8_t*)"DTALib>:T1T:NDEF WRITE Length: ", sTagOpsParams.sBuffParams.dwBuffLength);
+        dwDtaStatus = phDtaLibi_WriteNDEF(&sTagOpsParams);
+        if(dwDtaStatus != DTASTATUS_SUCCESS)
+        {
+          phOsal_LogError((const uint8_t*)"DTALib>T1T:Device is not NDEF Complaint\n");
+          break;
+        }
+      }
+    }
+    break;
+
+    /* Pattern Number to test Read/Write to Read Only Test functionality */
+    case 0x0003:
+    {
+      phOsal_LogDebug ((const uint8_t*)"DTALib>T1T:Perform NDEF Check \n");
+      dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib>T1T:Device is not NDEF Compliant\n");
+        break;
+      }
+      dwDtaStatus = phDtaLibi_SetTagReadOnly(&sTagOpsParams);
+      if (dwDtaStatus != DTASTATUS_SUCCESS)
+      {
+        phOsal_LogError((const uint8_t*)"DTALib> T1T:Error Could not set tag readonly !!\n");
+        break;
+      }
+    }
+    break;
+
+    default:
+      phOsal_LogError((const uint8_t*)"DTALib>T1T:Error Pattern Number not valid for T1T !! \n");
+    break;
+  }
+#ifdef WIN32
+  Sleep(4000);
+#else
+  usleep(4000000);
+#endif
+  phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
+  LOG_FUNCTION_EXIT;
+  return dwMwIfStatus;
 }
 
 #ifdef __cplusplus

@@ -123,11 +123,14 @@ tNFA_NDEF_DETECT    gx_ndef_detected;
 tNFA_NDEF_EVT_DATA  gx_ndef_data;/**< Variable containing NDEF data when Ndef RD/WR is performed */
 tNFA_HANDLE         gx_ndef_type_handle;
 tNFA_DISC_RESULT    gx_discovery_result[PHMWIF_MAX_DISC_DEVICES];
-#if(ENABLE_CR12_SUPPORT == TRUE)
-static uint8_t gs_Hce_Aid[] = {0x31,0x4E,0x46,0x43,0x2E,0x53,0x59,0x53,0x2E,0x44,0x44,0x46,0x30,0x31};
-#else
-static uint8_t gs_Hce_Aid[] = {0xA0,0x00,0x00,0x00,0x18,0x30,0x80,0x05,0x00,0x65,0x63,0x68,0x6F,0x00};
-#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
+static uint8_t gs_CR12_Hce_Aid[] = {
+    0x31, 0x4E, 0x46, 0x43, 0x2E, 0x53, 0x59,
+    0x53, 0x2E, 0x44, 0x44, 0x46, 0x30, 0x31}; /* HCE AID FOR CR12 */
+static uint8_t gs_Hce_Aid[] = {
+    0xA0, 0x00, 0x00, 0x00, 0x18, 0x30, 0x80, 0x05,
+    0x00, 0x65, 0x63, 0x68, 0x6F, 0x00}; /* HCE AID for all Certifications
+                                            except CR12  */
+
 uint8_t gs_Hce_Aid_len = 0x0E;
 tNFA_HANDLE NfaHostHandle           = 0x400; /*Handle For HCE/LLCP*/
 tNFA_HANDLE NfaHciHandle;
@@ -1437,6 +1440,7 @@ MWIFSTATUS phMwIf_TagCmd(void*                  mwIfHandle,
                          phMwIf_uTagParams_t*   psTagParams)
 {
     MWIFSTATUS dwMwIfStatus = MWIFSTATUS_FAILED;
+    phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
 
     if(!mwIfHandle)
@@ -1452,12 +1456,13 @@ MWIFSTATUS phMwIf_TagCmd(void*                  mwIfHandle,
     break;
     case PHMWIF_PROTOCOL_T3T:
     break;
-#if(ENABLE_CR12_SUPPORT == TRUE)
     case PHMWIF_PROTOCOL_T5T:
+      if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                 "CR12") == 0x00) {
         dwMwIfStatus = phMwIfi_HandleT5TCmd(mwIfHandle,
-                                            (phMwIf_sT5TParams_t*)psTagParams);
-    break;
-#endif /* #if(ENABLE_CR12_SUPPORT == TRUE) */
+                                            (phMwIf_sT5TParams_t *)psTagParams);
+      }
+      break;
     case PHMWIF_PROTOCOL_ISO_DEP:
     break;
     case PHMWIF_PROTOCOL_NFC_DEP:
@@ -1535,7 +1540,6 @@ MWIFSTATUS phMwIfi_HandleT2TCmd(void*                  mwIfHandle,
     return MWIFSTATUS_SUCCESS;
 }
 
-#if(ENABLE_CR12_SUPPORT == TRUE)
 /**
  * Handle commands specific to T5T Tags
  * */
@@ -1641,14 +1645,17 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_STAY_QUIET_CMD: /*T5T Stay Quiet Command*/
         {
             ALOGD("MwIf>%s: T5T Stay Quiet Command",__FUNCTION__);
-#if(ENABLE_CR12_SUPPORT == TRUE)
-            gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
-#else
-            gx_status = NFA_RwI93StayQuiet();
-#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
-            PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Stay Quiet!! \n");
-            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
-            "MwIf>Error in T5T Stay Quiet",&(mwIfHdl->sLastQueueData));
+            if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                       "CR12") == 0x00) {
+#if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+              gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
+#endif
+            }
+            PH_ON_ERROR_RETURN(NFA_STATUS_OK, gx_status,
+                               "MwIf> Error T5T Stay Quiet!! \n");
+            PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl, NFA_I93_CMD_CPLT_EVT,
+                                  5000, "MwIf>Error in T5T Stay Quiet",
+                                  &(mwIfHdl->sLastQueueData));
         }
         break;
 
@@ -1668,22 +1675,19 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_REQ_FLAG_CMD: /*T5T Request Flag Command*/
         {
             ALOGD("MwIf>%s: T5T Request Flag Command",__FUNCTION__);
-#if (ENABLE_CR12_SUPPORT == TRUE) /* CR12_ON_AR12_CHANGE */
-            if(psTagParams->reqFlag == 0x02/*T5T_REQ_FLAG_NAMS*/)
-            {
+            if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                       "CR12") == 0x00) {
+#if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+              if (psTagParams->reqFlag == 0x02 /*T5T_REQ_FLAG_NAMS*/) {
                 gx_status = NFA_RwI93SetAddressingMode(false);
-            }
-            else if(psTagParams->reqFlag == 0x22/*T5T_REQ_FLAG_AMS*/)
-            {
+              } else if (psTagParams->reqFlag == 0x22 /*T5T_REQ_FLAG_AMS*/) {
                 gx_status = NFA_RwI93SetAddressingMode(true);
-            }
-            else
-            {
-                ALOGE("MwIf>%s: Error T5T Request Flag!! not processed %d\n",__FUNCTION__, psTagParams->reqFlag);
-            }
-#else
-            gx_status = NFA_RwI93SetReqFlag((uint8_t)psTagParams->reqFlag);
+              } else {
+                ALOGE("MwIf>%s: Error T5T Request Flag!! not processed %d\n",
+                      __FUNCTION__, psTagParams->reqFlag);
+              }
 #endif
+            }
             PH_ON_ERROR_RETURN(NFA_STATUS_OK,gx_status,"MwIf> Error T5T Request Flag!! \n");
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_I93_CMD_CPLT_EVT,5000,
             "MwIf>Error in T5T Request Flag",&(mwIfHdl->sLastQueueData));
@@ -1697,7 +1701,6 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
-#endif /* #if(ENABLE_CR12_SUPPORT == TRUE) */
 
 /**
 * Read NDEF data from tag
@@ -2031,10 +2034,10 @@ tNFA_STATUS phMwIfi_SelectDevice(){
                 "MwIf> ERROR NFA Select",&(mwIfHdl->sLastQueueData));
         Pgu_disoveredDeviceCount = 0; /* Clear the Counter */
 
-        if(protocol == NFA_PROTOCOL_NFC_DEP)
-        {
-            phMwIf_DisableDiscovery(mwIfHdl);
-            phMwIf_EnableDiscovery(mwIfHdl);
+        if (protocol == NFA_PROTOCOL_NFC_DEP ||
+            protocol == NFA_PROTOCOL_ISO_DEP) {
+          phMwIf_DisableDiscovery(mwIfHdl);
+          phMwIf_EnableDiscovery(mwIfHdl);
         }
     }
     /*Restart the discovery*/
@@ -3609,7 +3612,14 @@ MWIFSTATUS phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle)
 MWIFSTATUS phMwIfi_CeRegisterAID(phMwIf_sHandle_t* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    gx_status = NFA_CeRegisterAidOnDH (gs_Hce_Aid, gs_Hce_Aid_len, phMwIfi_NfaConnCallback);
+    if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12") ==
+        0x00) {
+      gx_status = NFA_CeRegisterAidOnDH(gs_CR12_Hce_Aid, gs_Hce_Aid_len,
+                                        phMwIfi_NfaConnCallback);
+    } else {
+      gx_status = NFA_CeRegisterAidOnDH(gs_Hce_Aid, gs_Hce_Aid_len,
+                                        phMwIfi_NfaConnCallback);
+    }
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR Registering AID on DH !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_CE_REGISTERED_EVT, 5000,
             "MwIf> ERROR NFA Stop Register AID on DH",&(mwIfHdl->sLastQueueData));
@@ -3712,15 +3722,16 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
         ALOGD("MwIf>%s:Device Disconnected",__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
-#if (ENABLE_CR12_SUPPORT == TRUE) /* CR12_ON_AR12_CHANGE */
+    if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                 "CR12") == 0x00) {
     /*
      * Wait for either Data or CeData event for 10 minutes
      * If any error MW timeout will occur, so this time should cover
      * most wait times
      */
     PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,NFA_CE_DATA_EVT,10*60*1000,
-            "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
-#else
+            "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));}
+   else{
     /*
      * CR11 TC_T3T_NDA_BV_2_x are failing with above 10 min wait time
      * For CR11 and below, use old method of different wait time
@@ -3759,7 +3770,7 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
                     "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));
        break;
     }
-#endif /* !(ENABLE_CR12_SUPPORT == TRUE) */
+}
 
     if(((Pgu_event != NFA_CE_DATA_EVT)  &&   (Pgu_event != NFA_DATA_EVT)) || gx_status != NFA_STATUS_OK)
     {

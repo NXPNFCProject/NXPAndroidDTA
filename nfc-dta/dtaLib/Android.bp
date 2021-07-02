@@ -49,7 +49,6 @@ cc_library_shared {
     cflags: [
         "-DTHREAD_PRIO_SUPPORT=FALSE",
         "-DNFC_NXP_P2P_PERFORMANCE_TESTING=FALSE",
-        "-DENABLE_CR12_SUPPORT=TRUE",
     ],
     srcs: [
         "src/src/*.c",

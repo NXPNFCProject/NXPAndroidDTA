@@ -55,9 +55,16 @@ public class PhNXPHelperMainActivity {
         return sCertificationVersion;
     }
 
-    public void setsCertificationVersion(String sCertificationVersion){
-        this.sCertificationVersion = sCertificationVersion;
-        Log.d(PhUtilities.UI_TAG, "Set Certification Version = " + this.sCertificationVersion);
+    public void setsCertificationVersion(String sCertificationVersion) {
+      this.sCertificationVersion = sCertificationVersion;
+      Log.d(PhUtilities.UI_TAG, "Set Certification Version = " + this.sCertificationVersion);
+      if (this.sCertificationVersion.equals("CR11")) {
+        Log.d(PhUtilities.UI_TAG, "DTA Version Enable CR11");
+      } else if (this.sCertificationVersion.equals("CR12")) {
+        Log.d(PhUtilities.UI_TAG, "DTA Version Enable CR12");
+      } else {
+        Log.d(PhUtilities.UI_TAG, "Default DTA Version CR12");
+      }
     }
 
     public String getsTimeSlotNumberF(){

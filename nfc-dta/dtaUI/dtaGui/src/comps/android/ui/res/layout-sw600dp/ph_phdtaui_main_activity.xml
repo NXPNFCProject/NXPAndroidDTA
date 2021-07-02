@@ -836,7 +836,7 @@
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
                             android:contentDescription="@string/tv_rf_p2p_acm_initiator"
-                            android:text="@string/initiator"
+                            android:text="@string/initiator_active"
                             android:textColor="@android:color/black"
                             android:textSize="15sp" />
 
@@ -912,7 +912,7 @@
                                     android:layout_marginLeft="10dp"
                                     android:contentDescription="@string/cb_initiator_acm_p2p"
                                     android:text="@string/p2p_acm_text"
-                                    android:checked="true"
+                                    android:checked="false"
                                     android:textSize="15sp" />
 
                                 <CheckBox
@@ -968,7 +968,7 @@
                             android:layout_height="wrap_content"
                             android:layout_centerHorizontal="true"
                             android:contentDescription="@string/tv_rf_p2p_acm_target"
-                            android:text="@string/target"
+                            android:text="@string/target_active"
                             android:textColor="@android:color/black"
                             android:textSize="15sp" />
 
@@ -1044,7 +1044,7 @@
                                     android:layout_marginLeft="10dp"
                                     android:contentDescription="@string/cb_target_acm_p2p"
                                     android:text="@string/p2p_acm_text"
-                                    android:checked="true"
+                                    android:checked="false"
                                     android:textSize="15sp" />
 
                                 <CheckBox
