@@ -1814,7 +1814,12 @@ public class PhDTAUIMainActivity extends Activity implements
 
         phDtaLibStructureObj.enableLlcp = chkBoxLlcp.isChecked();
         phDtaLibStructureObj.enableSnep = chkBoxSnep.isChecked();
-        phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
+	try{
+            phDtaLibStructureObj.patternNum = Integer.parseInt(sPatternNumber,16);
+        }catch(NumberFormatException e){
+            Log.d(PhUtilities.UI_TAG,"Unable to parse sPatternNumber, setting this as default 0");
+            phDtaLibStructureObj.patternNum = 0;
+        }
         phDtaLibStructureObj.certificationVerNum = nxpHelperMainActivity.getsCertificationVersion();
         phDtaLibStructureObj.timeSlotNumberF = Integer.parseInt(nxpHelperMainActivity.getsTimeSlotNumberF(), 16);
         phDtaLibStructureObj.connectionDeviceLimit = Integer.parseInt(nxpHelperMainActivity.getsConnectionDeviceLimit(),16);
@@ -2601,11 +2606,13 @@ public class PhDTAUIMainActivity extends Activity implements
             try {
                 editTextCustomPatternNum.setEnabled(true);
                 spinnerPatterNum.setAdapter(adapterPatternNumberDefault);
+                getUpdatesFromView();
                 chkBoxLlcp.setChecked(false);
                 chkBoxSnep.setChecked(false);
                 if(phCustomSNEPRTD == null){
                     phCustomSNEPRTD = new PhCustomSNEPRTD(this);
                 }
+                phCustomSNEPRTD.setPhDtaLibStructure(phDtaLibStructureObj);
                 phCustomSNEPRTD.show();
             } catch (Exception e) {
             }

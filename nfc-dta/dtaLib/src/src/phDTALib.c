@@ -494,6 +494,8 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :Analog Test Mode",(const uint8_t*)__FUNCTION__);
     }
 
+ if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") ==
+                0x00) {
     if ((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
         (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
         (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL))
@@ -508,6 +510,16 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
         dtaLibHdl->sConfigPrms.bEnableLlcp = TRUE;
         dtaLibHdl->sConfigPrms.bPollBitRateTypeF = PHMWIF_NCI_BITRATE_424;
     }
+}
+else{
+    if ((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
+        (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
+        (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL))
+    {
+        dtaLibHdl->sConfigPrms.bEnableLlcp = TRUE;
+        dtaLibHdl->sConfigPrms.bPollBitRateTypeF = PHMWIF_NCI_BITRATE_212|PHMWIF_NCI_BITRATE_424;
+    }
+}
 
     if (strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR12") == 0x00)
     {
@@ -868,17 +880,17 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
         {
           case PHMWIF_T1T_TAG_ACTIVATED_EVT:
 
-#if (ENABLE_CR12_SUPPORT == TRUE)
-            phDtaLibi_T1TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
+            if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") ==
+                0x00) {
+              phDtaLibi_T1TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
+            } else {
+              phDtaLibi_T1TOperations(dtaLibHdl->sTestProfile);
+            }
             bDiscStartReqd = FALSE;
             bDiscStopReqd = FALSE;
             free(psQueueData);
             break;
-#else
-            phDtaLibi_T1TOperations(dtaLibHdl->sTestProfile);
-            free(psQueueData);
-            break;
-#endif
+
           case PHMWIF_T2T_TAG_ACTIVATED_EVT:
 
             if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)
