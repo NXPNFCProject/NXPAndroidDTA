@@ -34,8 +34,8 @@
 | aosp-master | 12.11 (SN100/SN110/SN220) | NFC_AR_00_E000_12.02.01_OpnSrc NFC_AR_00_E000_12.04.01_OpnSrc | DTA 12.11 |
 | android-11.0.0_r3 / aosp-master (12)    | 12.12 (SN1xx) | NFC_AR_00_6000_11.59.00_OpnSrc | DTA 12.12 |
 | aosp-master | 12.14 (SN100/SN110/SN220) | NFC_AR_00_E000_12.07.00_OpnSrc | DTA 12.14 |
-| aosp-master    | 12.15 (PN553/PN557/PN80T/PN81T) | NFC_AR_00_18C0_12.01.00_OpnSrc | DTA 12.15 |
-
+| aosp-master    | 12.15 (PN553/PN557/PN80T/PN81T/SN1xx/SN220) | NFC_AR_00_18C0_12.01.00_OpnSrc NFC_AR_00_E800_12.08.00 | DTA 12.15 |
+| aosp-master    | 12.16 (PN553/PN557/PN80T/PN81T/PN7160/SN1xx/SN220) | NFC_AR_00_E800_12.09.00 | DTA 12.16 |
 
 
 
