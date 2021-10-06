@@ -418,8 +418,6 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
 
     /*Do custom Set Config from MWIF*/
     abConfigIDData[0] = 0x00;
-    phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_TAG_DETECTOR_CFG, 0x01, abConfigIDData);
-    abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
     if(gs_nciVersion == NCI_VERSION_1_0)
     {
