@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2018,2021 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ DTASTATUS phDtaLibi_HceFOperations()
     /* end */
 
     /* Update command declarations */
-    uint8_t readUpdCmdBuffer[400];
+    uint8_t readUpdCmdBuffer[400] = {0};
     uint32_t dwSizeOfReadUpdCmdBuff=0;
     const int updCmdRsp[2] = {00,00}; /*Response data for update command*/
     uint8_t blkNum=0, chkCmdMask = 0x80;

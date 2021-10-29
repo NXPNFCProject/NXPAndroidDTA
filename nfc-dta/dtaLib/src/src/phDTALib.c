@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2021 NXP Semiconductors
+* Copyright 2015-2021 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -1214,9 +1214,10 @@ void phDtaLibi_LlcpEvtCb (void*                   pvMwIfHandle,
     psQueueData = (phDtaLib_sQueueData_t*)malloc(sizeof(phDtaLib_sQueueData_t));
     if (psQueueData)
     {
-        psQueueData->uEvtType.eLlcpEvtType = eLlcpEvtType;
-        if(puLlcpEvtInfo)
-            psQueueData->uEvtInfo.uLlcpEvtInfo = *puLlcpEvtInfo;
+      memset(psQueueData, 0, sizeof(phDtaLib_sQueueData_t));
+      psQueueData->uEvtType.eLlcpEvtType = eLlcpEvtType;
+      if (puLlcpEvtInfo)
+        psQueueData->uEvtInfo.uLlcpEvtInfo = *puLlcpEvtInfo;
     }
     else
     {
