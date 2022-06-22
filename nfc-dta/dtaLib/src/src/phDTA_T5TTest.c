@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2019 NXP Semiconductors
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 /* Preprocessor includes for different platform */
 
 /*
- * T5T is supported from CR12
+ * T5T is supported from CR12 and CR13
  */
 
 #ifdef WIN32
@@ -284,13 +284,12 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
             T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
                               T5T_REQ_FLAG_NAMS)
           }
-          if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") !=
-              0x00) { /* CR12_ON_AR12_CHANGE */
+          if (!(isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR12"))) { /* CR12_ON_AR12_CHANGE */
             if (TestProfile.Pattern_Number == 0x12) {
               T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
                                 T5T_REQ_FLAG_AMS_OPFLAG)
             }
-          } /* CR12_ON_AR12_CHANGE */
+          } /* CR12_ANND_CR13_ON_AR12_AND_AR13_CHANGE */
 
           phOsal_LogDebug ((const uint8_t*)"DTALib>T5T:Perform NDEF Check \n");
           dwDtaStatus = phDtaLibi_CheckNDEF(&sTagOpsParams);
@@ -344,8 +343,7 @@ DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_t TestP
           uint8_t t5tUid1[] = {0xF0, 0x10, 0x32, 0x54, 0x76, 0x98, 0xAB, 0xE0}; /** T5T UID1*/
           uint8_t t5tUid2[] = {0xF1, 0x10, 0x32, 0x54, 0x76, 0x99, 0xAB, 0xE0}; /** T5T UID2*/
           phOsal_LogDebug((const uint8_t*)"DTALib> : T5T Pattern 0x0031, Read with 1 tag in QUIET state and 1 tag in SELECTED state");
-          if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") !=
-              0x00) {
+          if (!(isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR12"))) {
             T5T_REQ_FLAG_TYPE(dwMwIfStatus, psTagParams, dtaLibHdl->mwIfHdl,
                               T5T_REQ_FLAG_SEL)
           }

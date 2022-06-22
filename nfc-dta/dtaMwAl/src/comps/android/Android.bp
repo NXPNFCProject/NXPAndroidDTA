@@ -1,5 +1,5 @@
 /*
-  Copyright 2020-2021 NXP
+  Copyright 2020-2022 NXP
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 
 /*
- * CR12_ON_AR12_CHANGE
+ * CR12_AND_CR13_ON_AR12_AND_A13_CHANGE
  * AOSP_MASTER_COMPILATION_SUPPORT
  *   Set it to TRUE if you are building with Vanilla AOSP
  */

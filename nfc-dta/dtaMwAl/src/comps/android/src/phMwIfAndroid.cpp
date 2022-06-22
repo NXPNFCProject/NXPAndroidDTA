@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2020 NXP Semiconductors
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -299,7 +299,8 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     else if((strcmp(sConfigParams->aCertRelease, "CR9") == 0x00) ||
             (strcmp(sConfigParams->aCertRelease, "CR10") == 0x00) ||
             (strcmp(sConfigParams->aCertRelease, "CR11") == 0x00) ||
-            (strcmp(sConfigParams->aCertRelease, "CR12") == 0x00))
+            (strcmp(sConfigParams->aCertRelease, "CR12") == 0x00) ||
+            (strcmp(sConfigParams->aCertRelease, "CR13") == 0x00))
     {
         abConfigIDData[0] = 0x03;
         phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_CERTIFICATION_RELEASE_CONFIG_PROP_CFG, 0x01, abConfigIDData);
@@ -380,40 +381,47 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_LN_WT, 0x01, abConfigIDData);
     }
 
-    if(strcmp(sConfigParams->aCertRelease, "CR12") == 0x00)
-    {
-        if(sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmIni)
+    if ((strcmp(sConfigParams->aCertRelease, "CR12") == 0x00) ||
+        (strcmp(sConfigParams->aCertRelease, "CR13") == 0x00)) {
+      if (sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmIni) {
+        phOsal_LogDebugString(
+            (const uint8_t *)"MwIf>:P2P-ACM Test Mode: Initiator",
+            (const uint8_t *)__FUNCTION__);
+        if (sConfigParams->bEnablePollBitRateTypeA_P2PACM == TRUE) {
+          abConfigIDData[0] = 0x00;
+          phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01,
+                            abConfigIDData);
+          phOsal_LogDebugString((const uint8_t *)"MwIf>:P2P-ACM Test Mode: 106",
+                                (const uint8_t *)__FUNCTION__);
+        } else if (sConfigParams->bEnablePollBitRateTypeF_P2PACM &
+                   PHMWIF_NCI_BITRATE_424) {
+          abConfigIDData[0] = 0x02;
+          phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01,
+                            abConfigIDData);
+          phOsal_LogDebugString((const uint8_t *)"MwIf>:P2P-ACM Test Mode: 424",
+                                (const uint8_t *)__FUNCTION__);
+        } else  // For P2PACM deafult bit-rate config is NFCF-212 as per NCI 2.1
         {
-            phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: Initiator",(const uint8_t*)__FUNCTION__);
-            if(sConfigParams->bEnablePollBitRateTypeA_P2PACM == TRUE)
-            {
-                abConfigIDData[0] = 0x00;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 106",(const uint8_t*)__FUNCTION__);
-            }
-            else if(sConfigParams->bEnablePollBitRateTypeF_P2PACM & PHMWIF_NCI_BITRATE_424)
-            {
-                abConfigIDData[0] = 0x02;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 424",(const uint8_t*)__FUNCTION__);
-            }
-            else // For P2PACM deafult bit-rate config is NFCF-212 as per NCI 2.1
-            {
-                abConfigIDData[0] = 0x01;
-                phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01, abConfigIDData);
-                phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: 212",(const uint8_t*)__FUNCTION__);
-            }
-
-            abConfigIDData[0] = 0x01;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_POLL_MODE, 0x01, abConfigIDData);
+          abConfigIDData[0] = 0x01;
+          phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PACM_BIT_RATE, 0x01,
+                            abConfigIDData);
+          phOsal_LogDebugString((const uint8_t *)"MwIf>:P2P-ACM Test Mode: 212",
+                                (const uint8_t *)__FUNCTION__);
         }
 
-        if(sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmTar)
-        {
-            abConfigIDData[0] = 0x01;
-            phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_LISTEN_MODE, 0x01, abConfigIDData);
-            phOsal_LogDebugString ((const uint8_t*)"MwIf>:P2P-ACM Test Mode: Target",(const uint8_t*)__FUNCTION__);
-        }
+        abConfigIDData[0] = 0x01;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_POLL_MODE, 0x01,
+                          abConfigIDData);
+      }
+
+      if (sConfigParams->sMwIfDiscCfgParams.discParams.dwP2pAcmTar) {
+        abConfigIDData[0] = 0x01;
+        phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFC_ACTIVE_LISTEN_MODE,
+                          0x01, abConfigIDData);
+        phOsal_LogDebugString(
+            (const uint8_t *)"MwIf>:P2P-ACM Test Mode: Target",
+            (const uint8_t *)__FUNCTION__);
+      }
     }
 
     /*Do custom Set Config from MWIF*/
@@ -804,6 +812,9 @@ MWIFSTATUS phMwIfi_SetDtaMode(void* mwIfHandle)
         dtaMode |= NFA_DTA_CR11;
     }
     else if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00){
+        dtaMode |= NFA_DTA_CR12;
+    }
+    else if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR13",4) == 0x00){
         dtaMode |= NFA_DTA_CR12;
     }
 
@@ -1213,39 +1224,18 @@ MWIFSTATUS phMwIfi_HceConfigure(void* mwIfHandle,
                                phMwIf_RfTechMask_t   dwRfTechMask)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    tNFA_TECHNOLOGY_MASK technologiesSwitchOn;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
     gx_status = NFA_STATUS_FAILED;
-    technologiesSwitchOn = dwRfTechMask;
 
     ALOGD("MwIf> Going for configure NCI params for HCE\n");
     phMwIfi_HceConfigNciParams(mwIfHdl);
 
-#if 0
-    /** Masking F technology as routing for F technology is done using different handle with same API **/
-    if(technologiesSwitchOn & NFA_TECHNOLOGY_MASK_F){
-        technologiesSwitchOn &= (~technologiesSwitchOn);
-    }
-    ALOGD("MwIf> Going for Tech Route Set\n");
-    gx_status = phMwIfi_EeSetDefaultTechRouting(NfaHostHandle,technologiesSwitchOn,0x0,0x0);
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Tech Route !!\n");
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_SET_TECH_CFG_EVT),5000,
-            "MwIf> ERROR in EeSetDefaultTechRouting",&(mwIfHdl->sLastQueueData));
-#endif
     ALOGD("MwIf> Going for Proto Route Set\n");
     gx_status = phMwIfi_EeSetDefaultProtoRouting(NfaHostHandle, NFA_PROTOCOL_MASK_ISO_DEP, 0x0, 0x0);
     PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Set Default Proto Route !!\n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET+NFA_EE_SET_PROTO_CFG_EVT),5000,
             "MwIf> ERROR in EeSetDefaultProtoRouting ",&(mwIfHdl->sLastQueueData));
     mwIfHdl->routingProtocols |= NFA_PROTOCOL_MASK_ISO_DEP;
-#if 0
-    ALOGD("MwIf> Going for EE Update Now\n");
-    gx_status = NFA_EeUpdateNow();
-    PH_ON_ERROR_EXIT(NFA_STATUS_OK, 2,"MwIf> ERROR EE Update Now !!\n");
-    ALOGD("MwIf>%s:Exit\n",__FUNCTION__);
-    PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_EE_EVT_OFFSET+NFA_EE_UPDATED_EVT,5000,
-            "MwIf> ERROR in NFA_EeUpdateNow",&(mwIfHdl->sLastQueueData));
-#endif
 
     return MWIFSTATUS_SUCCESS;
 }
@@ -1455,8 +1445,10 @@ MWIFSTATUS phMwIf_TagCmd(void*                  mwIfHandle,
     case PHMWIF_PROTOCOL_T3T:
     break;
     case PHMWIF_PROTOCOL_T5T:
-      if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
-                 "CR12") == 0x00) {
+      if ((strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                  "CR12") == 0x00) ||
+          (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                  "CR13") == 0x00)) {
         dwMwIfStatus = phMwIfi_HandleT5TCmd(mwIfHandle,
                                             (phMwIf_sT5TParams_t *)psTagParams);
       }
@@ -1643,8 +1635,10 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_STAY_QUIET_CMD: /*T5T Stay Quiet Command*/
         {
             ALOGD("MwIf>%s: T5T Stay Quiet Command",__FUNCTION__);
-            if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
-                       "CR12") == 0x00) {
+            if ((strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                        "CR12") == 0x00) ||
+                (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                        "CR13") == 0x00)) {
 #if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
               gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
 #endif
@@ -1673,8 +1667,10 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_REQ_FLAG_CMD: /*T5T Request Flag Command*/
         {
             ALOGD("MwIf>%s: T5T Request Flag Command",__FUNCTION__);
-            if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
-                       "CR12") == 0x00) {
+            if ((strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                        "CR12") == 0x00) ||
+                (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                        "CR13") == 0x00)) {
 #if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
               if (psTagParams->reqFlag == 0x02 /*T5T_REQ_FLAG_NAMS*/) {
                 gx_status = NFA_RwI93SetAddressingMode(false);
@@ -1783,10 +1779,13 @@ MWIFSTATUS phMwIfi_WriteNdef(void* mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter\n",__FUNCTION__);
-    if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
-    {
-        phMwIfi_PrintBuffer((uint8_t *)pData, (uint16_t)length, (const char *)"WriteNDEF Data  : ");
-        gx_status = NFA_RwWriteNDef(pData,length);
+    if ((strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",
+                 4) == 0x00) ||
+        (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR13",
+                 4) == 0x00)) {
+      phMwIfi_PrintBuffer((uint8_t *)pData, (uint16_t)length,
+                          (const char *)"WriteNDEF Data  : ");
+      gx_status = NFA_RwWriteNDef(pData, length);
     }
     else
     {
@@ -2067,11 +2066,13 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
 
     /*Set Polling Discovery configuration: Polling Mask is common for both
      * ReadWrite Mode as well as P2P mode*/
-    if (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
-    {
-        techMask = discCfgParams->discParams.dwPollP2P |
-                   discCfgParams->discParams.dwPollRdWrt |
-                   discCfgParams->discParams.dwP2pAcmIni;
+    if ((strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",
+                 4) == 0x00) ||
+        (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR13",
+                 4) == 0x00)) {
+      techMask = discCfgParams->discParams.dwPollP2P |
+                 discCfgParams->discParams.dwPollRdWrt |
+                 discCfgParams->discParams.dwP2pAcmIni;
     }
     else
     {
@@ -2105,10 +2106,12 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
     {
         ALOGD ("MwIf> %s: Configuring Listen Discovery \n",__FUNCTION__);
         /*Set P2P Configuration*/
-        if (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12",4) == 0x00)
-        {
-            techMask = discCfgParams->discParams.dwListenP2P |
-                       discCfgParams->discParams.dwP2pAcmTar;
+        if ((strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                     "CR12", 4) == 0x00) ||
+            (strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                     "CR13", 4) == 0x00)) {
+          techMask = discCfgParams->discParams.dwListenP2P |
+                     discCfgParams->discParams.dwP2pAcmTar;
         }
         else
         {
@@ -3610,11 +3613,14 @@ MWIFSTATUS phMwIfi_HceConfigNciParams(phMwIf_sHandle_t* mwIfHandle)
 MWIFSTATUS phMwIfi_CeRegisterAID(phMwIf_sHandle_t* mwIfHandle)
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
-    if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR12") ==
-        0x00) {
+    if ((strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                "CR12") == 0x00) ||
+        (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                "CR13") == 0x00)) {
       gx_status = NFA_CeRegisterAidOnDH(gs_CR12_Hce_Aid, gs_Hce_Aid_len,
                                         phMwIfi_NfaConnCallback);
-    } else {
+      }
+    else {
       gx_status = NFA_CeRegisterAidOnDH(gs_Hce_Aid, gs_Hce_Aid_len,
                                         phMwIfi_NfaConnCallback);
     }
@@ -3720,15 +3726,19 @@ MWIFSTATUS phMwIf_Transceive(void* mwIfHandle,
         ALOGD("MwIf>%s:Device Disconnected",__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
-    if (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
-                 "CR12") == 0x00) {
-    /*
-     * Wait for either Data or CeData event for 10 minutes
-     * If any error MW timeout will occur, so this time should cover
-     * most wait times
-     */
-    PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl,NFA_DATA_EVT,NFA_CE_DATA_EVT,10*60*1000,
-            "MwIf> Error in Transceive(RX) (SEM) !! \n",&(mwIfHdl->sLastQueueData));}
+    if ((strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                "CR12") == 0x00) ||
+        (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
+                "CR13") == 0x00)) {
+      /*
+       * Wait for either Data or CeData event for 10 minutes
+       * If any error MW timeout will occur, so this time should cover
+       * most wait times
+       */
+      PH_WAIT_FOR_CBACK_EVT2(mwIfHdl->pvQueueHdl, NFA_DATA_EVT, NFA_CE_DATA_EVT,
+                             10 * 60 * 1000,
+                             "MwIf> Error in Transceive(RX) (SEM) !! \n",
+                             &(mwIfHdl->sLastQueueData));}
    else{
     /*
      * CR11 TC_T3T_NDA_BV_2_x are failing with above 10 min wait time

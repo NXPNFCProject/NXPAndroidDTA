@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2018, 2022 NXP 
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -110,8 +110,8 @@ DTASTATUS phDtaLibi_HceOperations()
         else if((resultBuffer[0] == 0x80)&&(resultBuffer[1] == 0xEE)&&
         (resultBuffer[2] == 0x00)&&(resultBuffer[3] == 0x00))
         {
-          if (strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR12") == 0x00)
-          {
+          if ((strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR12") == 0x00) ||
+              (strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR13") == 0x00)) {
             phOsal_LogDebug((const uint8_t*)"DTALib> HCE Operations for loopback data");
             memcpy(bSendBuffer,resultBuffer,dwSizeOfResultBuff);
             bSendBuffer[dwSizeOfResultBuff] = 0x90;

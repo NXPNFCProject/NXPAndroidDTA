@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2021 NXP
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -71,6 +71,13 @@ static void      phDtaLibi_CbMsgHandleThrd(void *param);
 static void*     phDtaLibi_MemAllocCb(void* memHdl, uint32_t size);
 static int32_t   phDtaLibi_MemFreeCb(void* memHdl, void* ptrToMem);
 
+bool isCrGreaterThan(char *cr1, char *cr2) { return strcmp(cr1, cr2) > 0; }
+bool isCrGreaterThanOrEqual(char *cr1, char *cr2) {
+  return strcmp(cr1, cr2) >= 0;
+}
+bool isCrEqual(char *cr1, char *cr2) { return strcmp(cr1, cr2) == 0; }
+bool isCrLessThanOrEqual(char *cr1, char *cr2) { return strcmp(cr1, cr2) <= 0; }
+
 /**
  * Initialize DTA Lib
  */
@@ -80,7 +87,6 @@ DTASTATUS phDtaLib_Init() {
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     phOsal_QueueCreateParams_t sQueueCreatePrms;
     phOsal_Config_t config;
-    uint32_t dwThreadId = 0;
 
     config.dwCallbackThreadId = 0;
     config.pContext = NULL;
@@ -142,7 +148,6 @@ DTASTATUS phDtaLib_Init() {
         phOsal_LogError((const uint8_t*)"DTALib> Unable to set priority to Thread");
     }
 #endif
-    dwThreadId = phOsal_ThreadGetTaskId();
 
     phOsal_LogDebug((const uint8_t*)"DTALib> Calling MwIf Init\n");
     dwMwifStatus = phMwIf_Init(&dtaLibHdl->mwIfHdl);
@@ -317,13 +322,10 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         phMwIf_sLlcpInitParams_t sLlcpInitPrms;
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :LLCP Init",(const uint8_t*)__FUNCTION__);
         dtaLibHdl->bIsLlcpCoRemoteServerLinkCongested = FALSE;
-        if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR8") == 0x00){
+        if(isCrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR8")){
             PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x11;
             PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x11;
-        }else if((strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00) ||
-                 (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR10") == 0x00) ||
-                 (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR11") == 0x00) ||
-                 (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)){
+        }else if(isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR9")){
             PHDTALIB_LLCP_GEN_BYTES_INITIATOR[5] = 0x12;
             PHDTALIB_LLCP_GEN_BYTES_TARGET[5] = 0x12;
         }
@@ -494,12 +496,13 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :Analog Test Mode",(const uint8_t*)__FUNCTION__);
     }
 
- if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") ==
-                0x00) {
-    if ((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
-        (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
-        (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL))
-    {
+    if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR12")) {
+      if ((dtaLibHdl->sTestProfile.Pattern_Number ==
+           PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
+          (dtaLibHdl->sTestProfile.Pattern_Number ==
+           PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
+          (dtaLibHdl->sTestProfile.Pattern_Number ==
+           PHDTALIB_LLCP_CO_SET_SNL_OR_CL)) {
         dtaLibHdl->sConfigPrms.bEnableLlcp = TRUE;
         dtaLibHdl->sConfigPrms.bPollBitRateTypeF = PHMWIF_NCI_BITRATE_212;
     }
@@ -521,41 +524,45 @@ else{
     }
 }
 
-    if (strcmp(dtaLibHdl->sConfigPrms.aCertRelease, "CR12") == 0x00)
-    {
-        if(discParams->dwP2pAcmIni != 0)
-        {
-            phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Initiator Test Mode",(const uint8_t*)__FUNCTION__);
-            if((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_P2PACM_NFCA_PN_00) ||
-               (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_P2PACM_NFCA_PN_03) ||
-               (dtaLibHdl->sTestProfile.Pattern_Number == 0x05) ||
-               (dtaLibHdl->sTestProfile.Pattern_Number == 0x07))
-            {
-                dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeA_P2PACM = TRUE;
-                phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Test Mode NFCA : PN00 or PN03 or 0x05 or PN07",(const uint8_t*)__FUNCTION__);
-            }
-            else if(dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_P2PACM_NFCF_212_PN_01)
-            {
-                dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeF_P2PACM = PHMWIF_NCI_BITRATE_212;
-                phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Test Mode NFC-F 212 Bit Rate : PN01",(const uint8_t*)__FUNCTION__);
-            }
-            else if(dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_P2PACM_NFCF_424_PN_02)
-            {
-                dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeF_P2PACM = PHMWIF_NCI_BITRATE_424;
-                phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Test Mode NFC-F 424 Bit Rate : PN02",(const uint8_t*)__FUNCTION__);
-            }
-        }
+if (isCrGreaterThanOrEqual(dtaLibHdl->sConfigPrms.aCertRelease, "CR12")) {
+  if (discParams->dwP2pAcmIni != 0) {
+    phOsal_LogDebugString(
+        (const uint8_t *)"DTALib>:P2P-ACM Initiator Test Mode",
+        (const uint8_t *)__FUNCTION__);
+    if ((dtaLibHdl->sTestProfile.Pattern_Number ==
+         PHDTALIB_P2PACM_NFCA_PN_00) ||
+        (dtaLibHdl->sTestProfile.Pattern_Number ==
+         PHDTALIB_P2PACM_NFCA_PN_03) ||
+        (dtaLibHdl->sTestProfile.Pattern_Number == 0x05) ||
+        (dtaLibHdl->sTestProfile.Pattern_Number == 0x07)) {
+      dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeA_P2PACM = TRUE;
+      phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Test Mode NFCA : PN00 or PN03 or 0x05 or PN07",(const uint8_t*)__FUNCTION__);
+    } else if (dtaLibHdl->sTestProfile.Pattern_Number ==
+               PHDTALIB_P2PACM_NFCF_212_PN_01) {
+      dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeF_P2PACM =
+          PHMWIF_NCI_BITRATE_212;
+      phOsal_LogDebugString(
+          (const uint8_t
+               *)"DTALib>:P2P-ACM Test Mode NFC-F 212 Bit Rate : PN01",
+          (const uint8_t *)__FUNCTION__);
+    } else if (dtaLibHdl->sTestProfile.Pattern_Number ==
+               PHDTALIB_P2PACM_NFCF_424_PN_02) {
+      dtaLibHdl->sConfigPrms.bEnablePollBitRateTypeF_P2PACM =
+          PHMWIF_NCI_BITRATE_424;
+      phOsal_LogDebugString(
+          (const uint8_t
+               *)"DTALib>:P2P-ACM Test Mode NFC-F 424 Bit Rate : PN02",
+          (const uint8_t *)__FUNCTION__);
+    }
+  }
 
-        if(discParams->dwP2pAcmTar != 0)
-        {
-            phOsal_LogDebugString ((const uint8_t*)"DTALib>:P2P-ACM Target Test Mode",(const uint8_t*)__FUNCTION__);
-        }
+  if (discParams->dwP2pAcmTar != 0) {
+    phOsal_LogDebugString((const uint8_t *)"DTALib>:P2P-ACM Target Test Mode",
+                          (const uint8_t *)__FUNCTION__);
+  }
     }
 
-    if((strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR8") == 0x00) ||
-        (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR9") == 0x00) ||
-        (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR10") == 0x00) ||
-        (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR11") == 0x00))
+    if(isCrLessThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR11"))
     {
         /*As per NFC Forum CR11 spec and TCMT for PN05 NFCF-212 to be configured*/
         if(dtaLibHdl->sTestProfile.Pattern_Number == 0x05)
@@ -880,8 +887,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
         {
           case PHMWIF_T1T_TAG_ACTIVATED_EVT:
 
-            if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") ==
-                0x00) {
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12")) {
               phDtaLibi_T1TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
             } else {
               phDtaLibi_T1TOperations(dtaLibHdl->sTestProfile);
@@ -893,7 +900,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
 
           case PHMWIF_T2T_TAG_ACTIVATED_EVT:
 
-            if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12"))
             {
                 phDtaLibi_T2TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
             }
@@ -907,7 +915,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             break;
         case PHMWIF_T3T_TAG_ACTIVATED_EVT:
          {
-            if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12"))
             {
                 phDtaLibi_T3TOperations_DynamicExecution(dtaLibHdl->sTestProfile,
                                                          &(psQueueData->uEvtInfo.uDpEvtInfo.sActivationPrms));
@@ -922,8 +931,9 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
         }
 
         case PHMWIF_T5T_TAG_ACTIVATED_EVT: {
-          if (strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") ==
-              0x00) {
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12"))
+            {
             phDtaLibi_T5TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
             bDiscStartReqd = FALSE;
             bDiscStopReqd = FALSE;
@@ -933,7 +943,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
         }
 
         case PHMWIF_ISODEP_ACTIVATED_EVT:
-            if(strcmp(dtaLibHdl->sTestProfile.Certification_Release, "CR12") == 0x00)
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12"))
             {
                 phDtaLibi_T4TOperations_DynamicExecution(dtaLibHdl->sTestProfile);
                 bDiscStartReqd = FALSE;
@@ -963,8 +974,9 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                 phOsal_LogDebug((const uint8_t*)"DTALib> We are Initiator now !! \n");
                 dwDtaStatus = phDtaLibi_NfcdepTargetOperations(&bDiscStartReqd,&bDiscStopReqd);
 
-                if (strcmp(dtaLibHdl->sTestProfile.Certification_Release,
-                           "CR12") == 0x00) {
+            if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release,
+                        "CR12"))
+            {
                   if (dwDtaStatus != DTASTATUS_SUCCESS) {
                     bDiscStartReqd = FALSE;
                     bDiscStopReqd = FALSE;
@@ -1046,6 +1058,11 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                 if(dwDtaStatus != DTASTATUS_SUCCESS)
                 {
                     phOsal_LogError((const uint8_t*)"DTALib>Unable to complete HCE Operations");
+                    bDiscStartReqd = TRUE;
+                    bDiscStopReqd  = FALSE;
+                }
+                else
+                {
                     bDiscStartReqd = FALSE;
                     bDiscStopReqd  = FALSE;
                 }
@@ -1082,8 +1099,8 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             eDeactType = psQueueData->uEvtInfo.uDpEvtInfo.eDeactivateType;
             phOsal_LogDebugU32h((const uint8_t*)"DTALib> PHMWIF_CE_DEACTIVATED_EVT eDeactType = 0x%x", eDeactType);
             free(psQueueData);
-            bDiscStartReqd = FALSE;
-            bDiscStopReqd  = FALSE;
+            bDiscStartReqd = TRUE;
+            bDiscStopReqd  = TRUE;
             break;
         case PHMWIF_CE_DATA_EVT:
             /*CE DATA EVT will be read internal to HCE operations.So no

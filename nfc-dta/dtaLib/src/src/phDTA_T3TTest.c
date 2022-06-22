@@ -422,7 +422,6 @@ DTASTATUS phDtaLibi_T3TMinBlockCheck(void)
     phDtaLibi_sT3Tcmd_t sT3Tcmd;
     phDtaLibi_sT3Tcmd_t *psT3TcmdPrms = &sT3Tcmd;
     uint8_t bMiscBuffer[400];             /**< Misc buffer used for compare */
-    uint32_t dwMiscBufferLength;          /**< Length for Misc array  */
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
     LOG_FUNCTION_ENTRY;
 
@@ -434,7 +433,6 @@ DTASTATUS phDtaLibi_T3TMinBlockCheck(void)
 
     /*Save the Buffer*/
     memcpy(&bMiscBuffer,&psT3TcmdPrms->abResultBuffer,psT3TcmdPrms->dwResultBufLen);
-    dwMiscBufferLength = psT3TcmdPrms->dwResultBufLen;
 
     psT3TcmdPrms->bCmd = T3T_CHECK_CMD;
     psT3TcmdPrms->pbBuf = (uint8_t *)gs_abCheckMinBlkReadCmd;

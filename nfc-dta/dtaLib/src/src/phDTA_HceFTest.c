@@ -68,7 +68,6 @@ DTASTATUS phDtaLibi_HceFOperations()
 
     /* Update command declarations */
     uint8_t readUpdCmdBuffer[400] = {0};
-    uint32_t dwSizeOfReadUpdCmdBuff=0;
     const int updCmdRsp[2] = {00,00}; /*Response data for update command*/
     uint8_t blkNum=0, chkCmdMask = 0x80;
     /* end */
@@ -124,7 +123,6 @@ DTASTATUS phDtaLibi_HceFOperations()
         if(readBuffer[1] == 0x08){
             phOsal_LogDebug((const uint8_t*)"DEBUG DTALib> Update command received");
             memcpy(readUpdCmdBuffer, readBuffer, dwSizeOfReadBuff);
-            dwSizeOfReadUpdCmdBuff = dwSizeOfReadBuff;
             blkNum = readUpdCmdBuffer[14];
             writeBuffer[count++] = 0x00;
             writeBuffer[count++] = 0x09;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -62,8 +62,10 @@ public class PhNXPHelperMainActivity {
         Log.d(PhUtilities.UI_TAG, "DTA Version Enable CR11");
       } else if (this.sCertificationVersion.equals("CR12")) {
         Log.d(PhUtilities.UI_TAG, "DTA Version Enable CR12");
+      } else if (this.sCertificationVersion.equals("CR13")) {
+        Log.d(PhUtilities.UI_TAG, "DTA Version Enable CR13");
       } else {
-        Log.d(PhUtilities.UI_TAG, "Default DTA Version CR12");
+        Log.d(PhUtilities.UI_TAG, "Default DTA Version CR13");
       }
     }
 

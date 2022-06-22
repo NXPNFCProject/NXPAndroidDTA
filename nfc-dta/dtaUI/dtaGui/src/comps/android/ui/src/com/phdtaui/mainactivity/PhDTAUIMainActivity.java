@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2020 NXP Semiconductors
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class PhDTAUIMainActivity extends Activity implements
      */
     public static InetAddress inetAddress;
     public static int portNumber;
-    public final static String DTA_GUI_VERSION = "12.02";
+    public final static String DTA_GUI_VERSION = "13.00";
 
     /**
      * TO know whether Run button or Stop button is clicked
@@ -432,7 +432,7 @@ public class PhDTAUIMainActivity extends Activity implements
         adapterPatternNumberDefault.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapterPatternNumberLlcp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapterCleanPatternNumber.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        certificationVersion.setSelection(4); /** Set CR12 by default  */
+        certificationVersion.setSelection(5); /** Set CR13 by default  */
         timeSlotNumberF.setSelection(1); /** Set TSNF to F3 by default  */
         connectionDeviceLimit.setSelection(1); /** Set CDL to 01 by default  */
 

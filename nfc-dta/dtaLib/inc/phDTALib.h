@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2022 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "phDTAOSAL.h"
 
 #ifdef __cplusplus
@@ -55,7 +56,14 @@ typedef bool_t BOOLEAN;
     Status code for failure*/
 #define DTASTATUS_FAILED                0xFF
 typedef uint32_t DTASTATUS;
-
+/*To check Certification first is greater than second*/
+bool isCrGreaterThan(char* cr1, char* cr2);
+/*To check Certification first is greater than or equal to second*/
+bool isCrGreaterThanOrEqual(char* cr1, char* cr2);
+/*To check Certification first is equal to second*/
+bool isCrEqual(char* cr1, char* cr2);
+/*To check certification first is less than*/
+bool isCrLessThanOrEqual(char* cr1, char* cr2);
 /** \ingroup grp_dta_lib
     Data events sent to user of dtaLibIf*/
 typedef enum phdtaAppLib_eEvtType
@@ -64,6 +72,7 @@ typedef enum phdtaAppLib_eEvtType
     PHDTALIB_TEST_CASE_EXEC_COMPLETED  = 0x01,
     PHDTALIB_TEST_EXEC_DEINIT = 0x02
 }phdtaAppLib_eEvtType_t;
+
 
 
 /** \ingroup grp_dta_lib
