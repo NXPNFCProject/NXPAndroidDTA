@@ -7,7 +7,7 @@
 | :-------------: |:-------------:| 
 | NXPAndroidDTA    |  git clone https://github.com/NXPNFCProject/NXPAndroidDTA.git |
 
-#### Supported Android Versions (Android 11 onwards)
+#### Supported Android Versions 
 
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
@@ -26,7 +26,7 @@
 
 
 
-#### Legacy Android Versions (Prior to Android 11)
+#### Legacy Android Versions
 
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
