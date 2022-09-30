@@ -722,8 +722,6 @@ DTASTATUS phDtaLibi_T3TOperations_DynamicExecution(phDtaLib_sTestProfile_t sTest
   }
 #ifdef WIN32
   Sleep(4000);
-#else
-  usleep(4000000);
 #endif
   LOG_FUNCTION_EXIT;
   return dwDtaStatus;

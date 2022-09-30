@@ -223,6 +223,12 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
     {
         NfaUiccHandle = NfaUiccHandle_NCI_1_0;
     }
+    dwMwifStatus = NFA_ResumeP2p();
+    if(MWIFSTATUS_SUCCESS != dwMwifStatus)
+    {
+        ALOGD("MwIf>MwIf NFA_ResumeP2p Register callback Failed !\n");
+        return MWIFSTATUS_FAILED;
+    }
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -2717,6 +2723,10 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
             break;
             case NFA_SET_P2P_LISTEN_TECH_EVT :
             break;
+            case NFA_P2P_RESUMED_EVT:
+                ALOGE("MwIf>EVENT NFA_P2P_RESUMED_EVT !! \n");
+                bPushToQReqd = FALSE;
+            break;
             case NFA_RW_INTF_ERROR_EVT :
                 ALOGE("MwIf>EVENT NFA_RW_INTF_ERROR_EVT !! \n");
                 bPushToQReqd = TRUE;
@@ -2744,7 +2754,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
     }
     else
     {
-        ALOGE("Mwif>Skipping Event 0x%x not pushed to queue\n",uevent);
+        ALOGE("Mwif>Skipping Event %d not pushed to queue\n",uevent);
     }
 
     /*Update the users of Mwif about event received using callback*/

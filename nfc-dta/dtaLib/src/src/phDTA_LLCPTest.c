@@ -99,46 +99,54 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             phOsal_LogErrorString((const uint8_t*)"DTALib>LLCP::Could not Accept Connection", (const uint8_t*)__FUNCTION__);
             return dwMwIfStatus;
         }
-        if(psTestProfile->Pattern_Number == PHDTALIB_LLCP_CO_SET_NAME_OR_CL)
-        {/*Connect to server by Service name*/
-            phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:CO:Connect by name ");
-            /*Connect client to Remote Server*/
-            phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Connecting Client to LLCP Remote Server SAP=0x",PHDTALIB_SAP_LT_CO_OUT_DEST);
-            sConnectPrms.eConnectType         = PHMWIF_SERVER_CONNECT_BY_NAME;
-            sConnectPrms.bSap                 = 0;
-            sConnectPrms.pbServerServiceName  = (uint8_t *)gs_abOutboundCoService;
-            sConnectPrms.pfMwIfLlcpClientCb   = (phMWIf_LlcpEvtCb_t)phDtaLibi_EvtCb;
-            sConnectPrms.pvApplHdl            = (void*)psDtaLibHdl;
-            sConnectPrms.wClientMiu           = wClientMiu;
-            sConnectPrms.bClientRw            = PHDTALIB_CLIENT_RW;
-            dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(psDtaLibHdl->mwIfHdl,
-                                                    &sConnectPrms,
-                                                    (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
+        if ((psTestProfile->Pattern_Number ==
+             PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
+            (psTestProfile->Pattern_Number ==
+             PHDTALIB_LLCP_CO_SET_NAME_OR_CL_NFCF424)) {
+              /*Connect to server by Service name*/
+          phOsal_LogDebug((const uint8_t *)"DTALib>LLCP:CO:Connect by name ");
+          /*Connect client to Remote Server*/
+          phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Connecting Client to LLCP Remote Server SAP=0x",PHDTALIB_SAP_LT_CO_OUT_DEST);
+          sConnectPrms.eConnectType = PHMWIF_SERVER_CONNECT_BY_NAME;
+          sConnectPrms.bSap = 0;
+          sConnectPrms.pbServerServiceName = (uint8_t *)gs_abOutboundCoService;
+          sConnectPrms.pfMwIfLlcpClientCb = (phMWIf_LlcpEvtCb_t)phDtaLibi_EvtCb;
+          sConnectPrms.pvApplHdl = (void *)psDtaLibHdl;
+          sConnectPrms.wClientMiu = wClientMiu;
+          sConnectPrms.bClientRw = PHDTALIB_CLIENT_RW;
+          dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(
+              psDtaLibHdl->mwIfHdl, &sConnectPrms,
+              (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
 
-        }
-        else if(psTestProfile->Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL)
-        {/*If pattern is to get the SAP using SNL and then connect, Do SDP and get the SAP*/
-            phOsal_LogDebug((const uint8_t*)"DTALib>LLCP:CO:Getting SAP using SDP");
-            dwMwIfStatus = phMwIf_LlcpServiceDiscovery( psDtaLibHdl->mwIfHdl,
-                                                        (uint8_t *)"urn:nfc:sn:dta-co-echo-out",
-                                                        (uint8_t *)&bRemoteSapCoEchoOut);
-            if (dwMwIfStatus != MWIFSTATUS_SUCCESS)
-            {
-                phOsal_LogErrorString((const uint8_t*)"DTALib>LLCP::Could not connect to Remote client", (const uint8_t*)__FUNCTION__);
-                return dwMwIfStatus;
-            }
-            /*Connect client to Remote Server*/
-            phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Connecting Client to LLCP Remote Server SAP=0x",PHDTALIB_SAP_LT_CO_OUT_DEST);
-            sConnectPrms.eConnectType         = PHMWIF_SERVER_CONNECT_BY_SAP;
-            sConnectPrms.bSap                 = bRemoteSapCoEchoOut;
-            sConnectPrms.pbServerServiceName  = NULL;
-            sConnectPrms.pfMwIfLlcpClientCb   = (phMWIf_LlcpEvtCb_t)phDtaLibi_EvtCb;
-            sConnectPrms.pvApplHdl            = (void*)psDtaLibHdl;
-            sConnectPrms.wClientMiu           = wClientMiu;
-            sConnectPrms.bClientRw            = PHDTALIB_CLIENT_RW;
-            dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(psDtaLibHdl->mwIfHdl,
-                                                    &sConnectPrms,
-                                                    (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
+        } else if (
+            (psTestProfile->Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL ||
+             psTestProfile->Pattern_Number ==
+                 PHDTALIB_LLCP_CO_SET_SNL_OR_CL_NFCF424)) {
+                 /*If pattern is to  get the SAP using  SNL and then connect, Do SDP and get the SAP*/
+          phOsal_LogDebug(
+              (const uint8_t *)"DTALib>LLCP:CO:Getting SAP using SDP");
+          dwMwIfStatus = phMwIf_LlcpServiceDiscovery(
+              psDtaLibHdl->mwIfHdl, (uint8_t *)"urn:nfc:sn:dta-co-echo-out",
+              (uint8_t *)&bRemoteSapCoEchoOut);
+          if (dwMwIfStatus != MWIFSTATUS_SUCCESS) {
+            phOsal_LogErrorString(
+                (const uint8_t
+                     *)"DTALib>LLCP::Could not connect to Remote client",
+                (const uint8_t *)__FUNCTION__);
+            return dwMwIfStatus;
+          }
+          /*Connect client to Remote Server*/
+          phOsal_LogDebugU32h((const uint8_t*)"DTALib>LLCP:Connecting Client to LLCP Remote Server SAP=0x",PHDTALIB_SAP_LT_CO_OUT_DEST);
+          sConnectPrms.eConnectType = PHMWIF_SERVER_CONNECT_BY_SAP;
+          sConnectPrms.bSap = bRemoteSapCoEchoOut;
+          sConnectPrms.pbServerServiceName = NULL;
+          sConnectPrms.pfMwIfLlcpClientCb = (phMWIf_LlcpEvtCb_t)phDtaLibi_EvtCb;
+          sConnectPrms.pvApplHdl = (void *)psDtaLibHdl;
+          sConnectPrms.wClientMiu = wClientMiu;
+          sConnectPrms.bClientRw = PHDTALIB_CLIENT_RW;
+          dwMwIfStatus = phMwIf_LlcpConnOrientedClientConnect(
+              psDtaLibHdl->mwIfHdl, &sConnectPrms,
+              (void **)&psDtaLibHdl->pvCORemoteServerConnHandle);
 
         }
         else

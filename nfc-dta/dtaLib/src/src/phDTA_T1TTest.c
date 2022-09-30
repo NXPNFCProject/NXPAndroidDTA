@@ -452,8 +452,6 @@ DTASTATUS  phDtaLibi_T1TOperations_DynamicExecution(phDtaLib_sTestProfile_t Test
   }
 #ifdef WIN32
   Sleep(4000);
-#else
-  usleep(4000000);
 #endif
   phMwIf_NfcDeactivate(dtaLibHdl->mwIfHdl,PHMWIF_DEACTIVATE_TYPE_DISCOVERY);
   LOG_FUNCTION_EXIT;

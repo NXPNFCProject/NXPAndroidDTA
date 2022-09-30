@@ -563,8 +563,8 @@ public class PhDTAUIMainActivity extends Activity implements
 
         /* Certificaiton Release */
         if ( (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) &&
-                  (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) >= 13)) {
-            Log.d("Certificaiton Release is >= 13, so setting to CR8", bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY));
+                  (Integer.valueOf(bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY)) >= 14)) {
+            Log.d("Certificaiton Release is >= 14, so setting to CR8", bundledParams.getString(BUNDLED_PARAMS_CERT_REL_KEY));
             this.certificationVersion.setSelection(0);
         }
         else if (bundledParams.containsKey(BUNDLED_PARAMS_CERT_REL_KEY)) {
