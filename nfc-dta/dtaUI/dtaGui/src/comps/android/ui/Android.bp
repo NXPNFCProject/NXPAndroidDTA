@@ -33,6 +33,9 @@ android_app {
         "android-support-v4",
         "android-support-core-utils",
     ],
+    uses_libs: [
+        "com.nxp.nfc",
+    ],
 }
 
 //  Platform or chip specific build

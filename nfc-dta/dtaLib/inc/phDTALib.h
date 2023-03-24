@@ -375,7 +375,7 @@ void phDtaLib_RegisterCallback(void *dtaApplHdl, phdtaLib_EvtCb_t dtaApplCb);
  * \retval #DTASTATUS_FAILED   DTA LIB Failed to configure
  *
  */
-DTASTATUS phDtaLib_SetConfig();
+DTASTATUS phDtaLib_SetConfig(phDtaLib_sDiscParams_t* discParams);
 
 /**
  * \ingroup grp_dta_lib
