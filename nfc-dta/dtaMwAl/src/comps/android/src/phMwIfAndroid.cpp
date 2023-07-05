@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2022 NXP
+* Copyright 2015-2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -31,16 +31,9 @@
 #include "data_types.h"
 #if(ANDROID_O == TRUE)
 #include "_OverrideLog.h"
-#elif(ANDROID_P == TRUE)
-#include "logging.h"
-#elif(ANDROID_S == TRUE)
-#include "logging.h"
-#elif(ANDROID_R == TRUE)
-#include "logging.h"
 #else
-#include "OverrideLog.h"
+#include "logging.h"
 #endif
-
 
 #include <buildcfg.h>
 #include <nci_defs.h>
@@ -1177,7 +1170,7 @@ MWIFSTATUS phMwIfi_HceFInit(void* mwIfHandle)
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,(NFA_EE_EVT_OFFSET + NFA_EE_REGISTER_EVT),5000,
             "MwIf>ERROR in EE register",&(mwIfHdl->sLastQueueData));
 
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE)
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, mwIfHdl->t3tPMM ,phMwIfi_NfaConnCallback);
 #else
     gx_status = NFA_CeRegisterFelicaSystemCodeOnDH (mwIfHdl->systemCode, mwIfHdl->nfcid2, phMwIfi_NfaConnCallback);
@@ -1554,7 +1547,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Reading data from Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
 
-#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum);
 #else
             gx_status = NFA_RwI93ReadSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
@@ -1577,7 +1570,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Reading data from multiple Blocks =%d",__FUNCTION__,psTagParams->dwNumOfBlocks);
 
-#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks);
 #else
             gx_status = NFA_RwI93ReadMultipleBlocks((uint16_t)psTagParams->dwFirstBlockNum,(uint16_t)psTagParams->dwNumOfBlocks,(uint8_t)psTagParams->reqFlag);
@@ -1600,7 +1593,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         {
             ALOGD("MwIf>%s:Writing data to Block=%d",__FUNCTION__,psTagParams->dwBlockNum);
             phMwIfi_PrintBuffer(psTagParams->sBuffParams.pbBuff,4,"T5T Data Write:");
-#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff);
 #else
             gx_status = NFA_RwI93WriteSingleBlock((uint16_t)psTagParams->dwBlockNum,(uint8_t *)psTagParams->sBuffParams.pbBuff,(uint8_t)psTagParams->reqFlag);
@@ -1616,7 +1609,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
             uint8_t afi = 0x00;//[] = {0x00, 0x00};
             ALOGD("MwIf>%s: T5T Inventory Request Command",__FUNCTION__);
 
-#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid);
 #else
             gx_status = NFA_RwI93Inventory(FALSE,(uint8_t)afi,(uint8_t *)psTagParams->t5tUid,(uint8_t)psTagParams->reqFlag);
@@ -1645,7 +1638,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
                         "CR12") == 0x00) ||
                 (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
                         "CR13") == 0x00)) {
-#if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if (ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
               gx_status = NFA_RwI93StayQuiet((uint8_t *)psTagParams->t5tUid);
 #endif
             }
@@ -1660,7 +1653,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
         case PHMWIF_T5T_LOCK_SINGLE_BLOCK_CMD: /*T5T Lock Block Command*/
         {
             ALOGD("MwIf>%s: T5T Lock Block %d",__FUNCTION__,psTagParams->dwBlockNum);
-#if(ANDROID_R == TRUE || ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if(ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
             gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum);
 #else
             gx_status = NFA_RwI93LockBlock((uint8_t)psTagParams->dwBlockNum,(uint8_t)psTagParams->reqFlag);
@@ -1677,7 +1670,7 @@ MWIFSTATUS phMwIfi_HandleT5TCmd(void*                  mwIfHandle,
                         "CR12") == 0x00) ||
                 (strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
                         "CR13") == 0x00)) {
-#if (ANDROID_S == TRUE) /* CR12_ON_AR12_CHANGE */
+#if (ANDROID_S == TRUE || ANDROID_U == TRUE) /* CR12_ON_AR12_CHANGE */
               if (psTagParams->reqFlag == 0x02 /*T5T_REQ_FLAG_NAMS*/) {
                 gx_status = NFA_RwI93SetAddressingMode(false);
               } else if (psTagParams->reqFlag == 0x22 /*T5T_REQ_FLAG_AMS*/) {
@@ -2024,6 +2017,11 @@ tNFA_STATUS phMwIfi_SelectDevice(){
                 else if(gx_discovery_result[count-1].discovery_ntf.protocol == NFA_PROTOCOL_NFC_DEP)
                 {
                     count = 0;
+                   // Android14 P2P (NFC_DEP protocol) is not supported, count=1 is set to send ISO_DEP protocol
+                    #if(ANDROID_U == TRUE)
+                        if(strcmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,"CR13") == 0x00)
+                           count = 1;
+                    #endif
                     break;
                 }
             }
@@ -2517,7 +2515,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
 /*DATA chaining needs to be handled by Applicaion from L-release onwards
  * In KK release and before, it was handled in middleware*/
 #ifdef APP_HANDLE_DATA_CHAINING
-                        #if((ANDROID_P == TRUE) || (ANDROID_S == TRUE))
+                        #if((ANDROID_P == TRUE) || (ANDROID_S == TRUE) || (ANDROID_U == TRUE))
                         if(px_data->status == NFA_STATUS_CONTINUE)
                         #else
                         if(px_data->status == NFC_STATUS_CONTINUE)
@@ -4971,7 +4969,7 @@ MWIFSTATUS phMwIfi_SendNxpNciCommand(void *mwIfHandle,
 {
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     ALOGD("MwIf>%s:Enter",__FUNCTION__);
-#if (ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
+#if (ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE)
     gx_status = NFA_SendRawVsCommand (cmd_params_len, p_cmd_params, p_cback);
 #else
     gx_status = NFA_SendNxpNciCommand (cmd_params_len, p_cmd_params, p_cback);
@@ -5040,7 +5038,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultTechRouting (tNFA_HANDLE          ee_handle,
     return  NFA_EeSetDefaultTechRouting (ee_handle,technologies_switch_on,
                                          technologies_switch_off,technologies_battery_off,
                                          0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE)
                                         ,0x0
 #endif
                                         );
@@ -5061,7 +5059,7 @@ tNFA_STATUS phMwIfi_EeSetDefaultProtoRouting (tNFA_HANDLE         ee_handle,
     return NFA_EeSetDefaultProtoRouting (ee_handle,protocols_switch_on,
                                          protocols_switch_off,protocols_battery_off,
                                          0x0,0x0
-#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE)
+#if(ANDROID_O == TRUE || ANDROID_P == TRUE || ANDROID_R == TRUE || ANDROID_S == TRUE || ANDROID_U == TRUE)
                                          ,0x0
 #endif
                                          );

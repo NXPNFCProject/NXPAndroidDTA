@@ -52,8 +52,9 @@ cc_library_shared {
         "-DANDROID_O=FALSE",
         "-DANDROID_P=FALSE",
         "-DANDROID_R=FALSE",
-        "-DANDROID_S=TRUE",
-        "-DNXP_QTAG=TRUE"
+        "-DANDROID_S=FALSE",
+        "-DNXP_QTAG=TRUE",
+        "-DANDROID_U=TRUE"
     ],
     srcs: [
         "src/*.cpp"
