@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2018,2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if (P2P_ENABLE == TRUE)
 /* Snep Client config params */
 phMwIf_SnepConfig_t snepClientConfigInfo;
 /* Snep Client config params */
@@ -888,7 +888,7 @@ static void print_extended_server_caseID(phDtaLib_snepExtServerTestCases serverC
     }
     PH_LOG_DTALIB_INFO_STR("===================================================");
 }
-
+#endif
 #ifdef __cplusplus
 }
 #endif

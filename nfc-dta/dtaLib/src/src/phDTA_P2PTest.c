@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2018,2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if (P2P_ENABLE == TRUE)
 /*
  * TS-Digital V2.2
  * RWT :    17.11.2 Response Waiting Time
@@ -226,7 +226,7 @@ DTASTATUS phDtaLibi_NfcdepInitiatorOperations() {
     LOG_FUNCTION_EXIT;
     return gx_status;
 }
-
+#endif
 #ifdef __cplusplus
 }
 #endif

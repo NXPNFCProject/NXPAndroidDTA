@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2022 NXP
+* Copyright 2015-2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#define DTALIB_VERSION_STR "NFCDTA_13.04"
+#define DTALIB_VERSION_STR "NFCDTA_13.05"
 #define DTALIBVERSION_MAJOR (0x13)
-#define DTALIBVERSION_MINOR (0x04)
+#define DTALIBVERSION_MINOR (0x05)
 #define PHDTALIB_PATTERN_NUM_ANALOG_TEST 0x1000
 
 /**< Error Comparison with Return and Print */
@@ -85,6 +85,7 @@ static const char gs_abOutboundClService[]    = "urn:nfc:sn:dta-cl-echo-out";
 #define GET_REQ_RTD_OFFSET 4
 
 #endif
+#if (P2P_ENABLE == TRUE)
 /** \ingroup grp_dta_lib
     LLCP related constants */
 /**< LLCP Connection Oriented Functionality setting up by SAP or  Connection-less Functionality */
@@ -107,7 +108,7 @@ static const char gs_abOutboundClService[]    = "urn:nfc:sn:dta-cl-echo-out";
 #define    PHDTALIB_P2PACM_NFCF_424_PN_02  0x02
 /**< P2PACM NFCA 106 bit-rate to higher bit-rate Pattern Number as defined Test Case Mapping Table */
 #define    PHDTALIB_P2PACM_NFCA_PN_03      0x03
-
+#endif
 #define PHDTALIB_MAX_NDEFTAG_RW_BUFFER_SIZE   131076    /**< NDDEF Tag maximum buffer size (128KB)*/
 /**< Buffer for NDEF Read Write Data during operations */
 extern uint8_t gs_ndefReadWriteBuff[PHDTALIB_MAX_NDEFTAG_RW_BUFFER_SIZE];
@@ -121,9 +122,14 @@ typedef struct phDtaLib_sHandle {
     phDtaLib_sTestProfile_t         sTestProfile;
     phDtaLib_sDiscParams_t          sAppDiscCfgParams;
     phMwIf_sDiscCfgPrms_t           sPrevMwIfDiscCfgParams;
-    phDtaLib_eP2PType_t             p2pType;
     phMWIf_sActivatedEvtInfo_t      sT3TActivationParams;
     phdtaLib_EvtCb_t                dtaApplCb;                 /**<Callback interface between DTALIB and JNI layer*/
+    phMwIf_sConfigParams_t          sConfigPrms;                /** Underlying Configuration params */
+    BOOLEAN                         bDtaInitialized;            /**Flag to indicate DTA Initialization is  Done*/
+    BOOLEAN                         blStopCbMsgHandleThrd;      /**< Set to TRUE to stop Integration thread*/
+    void*                           qHdlCongestData;
+#if (P2P_ENABLE == TRUE)
+    phDtaLib_eP2PType_t             p2pType;
     void*                           pvCORemoteServerConnHandle; /**<Connection Oriented Remote Server Connection*/
     void*                           pvCORemoteClientConnHandle; /**<Connection Oriented Remote Client Connection*/
     void*                           pvCOServerHandle;           /**<Connection Oriented Server*/
@@ -131,28 +137,30 @@ typedef struct phDtaLib_sHandle {
     void*                           pvCLServerHandle;           /**<ConnectionLess Server*/
     void*                           pvCLRemoteClientConnLessHandle; /**<Connection Less Remote Client Handle*/
     uint8_t                         bRemoteSapClEchoOut;
-    BOOLEAN                         bDtaInitialized;            /**Flag to indicate DTA Initialization is  Done*/
-    BOOLEAN                         blStopCbMsgHandleThrd;      /**< Set to TRUE to stop Integration thread*/
     BOOLEAN                         bLlcpInitialized;           /**Flag to indicate LLCP Initialization is  Done*/
     BOOLEAN                         bIsLlcpCoRemoteServerLinkCongested;       /**Flag to indicate LLCP Particular link is congested or not*/
     uint16_t                        uLlcpLinkHdl;               /**Congested link handle*/
-    void*                           qHdlCongestData;
+
     BOOLEAN                         bIsLlcpCoRemoteClientDisconnected;      /**Flag to indicate the connection status of the remote client*/
-    phMwIf_sConfigParams_t          sConfigPrms;                /** Underlying Configuration params */
     uint8_t                         llcpConnStatus;             /** Check LLCP Connection Status */
+#endif
 } phDtaLib_sHandle_t;
 
 typedef union phDtaLib_eEvtType
 {
     phMWIf_eEvtType_t eDpEvtType;/**<  Digital Protocol related events */
+#if (P2P_ENABLE == TRUE)
     phMWIf_eLlcpEvtType_t eLlcpEvtType;/**< LLCP events*/
+#endif
 }phDtaLib_uEvtType_t;
 
 /*The events from Middleware interface. The event values shall be unique for each group*/
 typedef union phDtaLib_eEvtInfo
 {
     phMWIf_uEvtInfo_t      uDpEvtInfo;/**<  Digital Protocol related events */
+#if (P2P_ENABLE == TRUE)
     phMwIf_uLlcpEvtInfo_t  uLlcpEvtInfo;/**< LLCP events*/
+#endif
 }phDtaLib_uEvtInfo_t;
 
 /*This data is sent from Callback function to queue which will be handled by the
@@ -446,6 +454,7 @@ extern DTASTATUS phDtaLibi_T5TOperations_DynamicExecution(phDtaLib_sTestProfile_
  * \retval #DTASTATUS_FAILED            handle operations related to LLCP is Unsuccessful
  *
  */
+#if (P2P_ENABLE == TRUE)
 extern DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
                                           phMWIf_eLlcpEvtType_t    eLlcpEvtType,
                                           phMwIf_uLlcpEvtInfo_t*   puLlcpEvtInfo);
@@ -500,6 +509,7 @@ extern DTASTATUS phDtaLibi_LlcpHandleCoClientDisconnect(phDtaLib_sTestProfile_t*
  * \retval                            None
  *
  */
+#endif
 extern void phDtaLibi_EvtCb(void* mwIfHandle,
                             void* applHdl,
                             phMWIf_eEvtType_t evtType,
@@ -519,6 +529,7 @@ extern void phDtaLibi_EvtCb(void* mwIfHandle,
  * \retval                            None
  *
  */
+#if (P2P_ENABLE == TRUE)
 extern void phDtaLibi_LlcpEvtCb (void*                   pvMwIfHandle,
                                  void*                   pvApplHdl,
                                  phMWIf_eLlcpEvtType_t   eLlcpEvtType,
@@ -536,6 +547,7 @@ extern void phDtaLibi_LlcpEvtCb (void*                   pvMwIfHandle,
  * \retval #DTASTATUS_FAILED            Restart(Deinitialization and initialization) of middleware is Unsuccessful
  *
  */
+#endif
 extern DTASTATUS phDtaLibi_ReInit();
 
 /**
@@ -554,6 +566,7 @@ extern DTASTATUS phDtaLibi_ReInit();
  * \retval #DTASTATUS_FAILED            Data sending Un-succesful
  *
  */
+#if (P2P_ENABLE == TRUE)
 extern DTASTATUS phDtaLibi_LlcpHandleUncongestedEvent();
 
 /**
@@ -583,6 +596,7 @@ extern DTASTATUS phDtaLibi_LlcpHandleDeactivatedEvent();
  * \retval #DTASTATUS_FAILED            Flushing of Queue is Un-succesful
  *
  */
+#endif
 extern MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams);
 
 #ifdef WIN32

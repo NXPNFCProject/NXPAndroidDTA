@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2015-2018 NXP Semiconductors
+<!-- Copyright 2015-2018,2023 NXP
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -391,7 +391,7 @@
                                 android:contentDescription="@string/tv_poll_tech_v"/>
 
                             <RelativeLayout
-                                android:id="@+id/p2p_poll__layout"
+                                android:id="@+id/p2p_poll_layout"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/a_poll_technology_name"
@@ -443,7 +443,7 @@
                                 android:id="@+id/rd_wt_layout_layout"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/p2p_poll__layout"
+                                android:layout_below="@id/p2p_poll_layout"
                                 android:layout_marginTop="10dp"
                                 android:background="@drawable/ph_rectangular_border" >
 

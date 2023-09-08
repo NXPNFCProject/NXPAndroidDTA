@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2020 NXP Semiconductors
+* Copyright 2015-2020,2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -155,7 +155,9 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phDtaLib_sDiscParams_t discParams;
     phDtaJNI_sHandle_t *dtaJNIHdl = &g_dtaJNIHdl;
     phDtaLib_sTestProfile_t sTestProfile;
+#if (P2P_ENABLE == TRUE)
     jint p2pType;
+#endif
     LOG_FUNC_ENTRY;
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>obj", (size_t)&obj);
     jclass phdtaclass = env->GetObjectClass(phDtaLibsDiscParamst);
@@ -362,19 +364,22 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
 
     phOsal_LogDebug((const uint8_t*)"DTAJni> Calling Enable Discovery\n");
     memset(&discParams,0,sizeof(phDtaLib_sDiscParams_t));
+#if (P2P_ENABLE == TRUE)
     discParams.dwPollP2P =    pollP2p *
                               ((pollP2pRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (pollP2pRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
                               (pollP2pRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
+
+    discParams.dwListenP2P =  listenP2p *
+                              ((listenP2pRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
+                              (listenP2pRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
+                              (listenP2pRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
+#endif
     discParams.dwPollRdWrt =  pollRdWt *
                               ((pollRdWtRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (pollRdWtRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
                               (pollRdWtRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F) |
                               (pollRdWtRfTechTypeV * DTALIB_RFTECHNOLOGY_MASK_V));
-    discParams.dwListenP2P =  listenP2p *
-                              ((listenP2pRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
-                              (listenP2pRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
-                              (listenP2pRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
     discParams.dwListenHCE =  listenHce *
                               ((listenHceRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (listenHceRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
@@ -387,7 +392,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
                               ((listenEseRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A) |
                               (listenEseRfTechTypeB * DTALIB_RFTECHNOLOGY_MASK_B) |
                               (listenEseRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F));
-
+#if (P2P_ENABLE == TRUE)
     discParams.dwP2pAcmIni =  p2pAcmIni *
                               ((p2pAcmIniRfTechTypeA * DTALIB_RFTECHNOLOGY_MASK_A_ACTIVE) |
                               (p2pAcmIniRfTechTypeF * DTALIB_RFTECHNOLOGY_MASK_F_ACTIVE));
@@ -402,7 +407,7 @@ JNIEXPORT jint JNICALL Java_com_phdtaui_helper_PhNXPJniHelper_phDtaLibEnableDisc
     phOsal_LogDebugU32h((const uint8_t*)"DTAJni>p2pType.phDtaLib_LLCP_P2P:",p2pType);
     phOsal_LogDebug((const uint8_t*)"DTAJni>Calling DTALib Configure P2P LLCP & SENP \n");
     phDtaLib_ConfigureP2p((phDtaLib_eP2PType_t)p2pType);
-
+#endif
     if(phDtaLib_EnableDiscovery(&discParams) != DTASTATUS_SUCCESS){
         return DTASTATUS_FAILED;
     }

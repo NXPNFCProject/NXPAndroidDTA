@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2022 NXP
+* Copyright 2015-2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -46,14 +46,15 @@ extern "C" {
 
 phDtaLib_sHandle_t      g_DtaLibHdl;
 uint32_t gx_status = FALSE;   /**<(Check) change the type def.... also NFA_STATUS_FAILED */
-
+#if (P2P_ENABLE == TRUE)
 #define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
+#endif
 #define P2P_DISABLED    0
 
 /**< Buffer for NDEF Read Write Data during operations */
 uint8_t gs_ndefReadWriteBuff[PHDTALIB_MAX_NDEFTAG_RW_BUFFER_SIZE] = {0};
 uint32_t gs_sizeNdefRWBuff = 0;
-
+#if (P2P_ENABLE == TRUE)
 static uint8_t PHDTALIB_LLCP_GEN_BYTES_INITIATOR[]   = {0x46,0x66,0x6D, /**< LLCP magic bytes */
                                                         0x01,0x01,0x12, /**< major, minor Version TLV*/
                                                         0x02,0x02,0x07,0xFE, /**< MIUX TLV*/
@@ -66,7 +67,7 @@ static uint8_t PHDTALIB_LLCP_GEN_BYTES_TARGET[]   = {0x46,0x66,0x6D,     /**< LL
                                                      0x04,0x01,0x64};    /**< LTO TLV*/
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_INITIATOR = 0x11;
 static const uint8_t PHDTALIB_LLCP_GEN_BYTES_LEN_TARGET = 0x11;
-
+#endif
 static void      phDtaLibi_CbMsgHandleThrd(void *param);
 static void*     phDtaLibi_MemAllocCb(void* memHdl, uint32_t size);
 static int32_t   phDtaLibi_MemFreeCb(void* memHdl, void* ptrToMem);
@@ -232,7 +233,9 @@ DTASTATUS phDtaLib_DeInit() {
     }
 
     dtaLibHdl->bDtaInitialized = FALSE;
+#if (P2P_ENABLE == TRUE)
     dtaLibHdl->bLlcpInitialized = FALSE;
+#endif
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
@@ -286,6 +289,7 @@ DTASTATUS phDtaLib_EeInit(phDtaLib_eNfceeDevType_t DevType)
 /**
  * Apply Required configuration needed to work with P2P with LLCP & SNEP
  */
+#if (P2P_ENABLE == TRUE)
 DTASTATUS phDtaLib_ConfigureP2p(phDtaLib_eP2PType_t p2pType)
 {
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
@@ -294,14 +298,16 @@ DTASTATUS phDtaLib_ConfigureP2p(phDtaLib_eP2PType_t p2pType)
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
-
+#endif
 /**
  * Enable Discovery
  */
 DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
 {
     phDtaLib_sHandle_t *dtaLibHdl = &g_DtaLibHdl;
+#if (P2P_ENABLE == TRUE)
     phMwIf_sLlcpSrvrRegnParams_t sLlcpSrvrPrms;
+#endif
     MWIFSTATUS  dwMwIfStatus;
     LOG_FUNCTION_ENTRY;
 
@@ -310,7 +316,7 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
         phOsal_LogErrorString((const uint8_t*)"DTALib> :Error in Initializing",(const uint8_t*)__FUNCTION__);
         return MWIFSTATUS_FAILED;
     }
-
+#if (P2P_ENABLE == TRUE)
     if (((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
         (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_NAME_OR_CL) ||
         (dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SNL_OR_CL)  ||
@@ -368,6 +374,7 @@ DTASTATUS phDtaLib_EnableDiscovery(phDtaLib_sDiscParams_t* discParams)
                 (const uint8_t*)"DTALib> Error in registering Server Connection Less");
         dtaLibHdl->bLlcpInitialized = TRUE;
     }
+#endif
 
     phOsal_LogDebugU32h((const uint8_t*)"DEBUG> DTALib> :ESE Enabled",discParams->dwListenHCE);
     if(discParams->dwListenHCE)
@@ -431,14 +438,16 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
     }
     dtaLibHdl->sAppDiscCfgParams = *discParams;
     /*Reset all the disc configuration before updating it with new configuration provided by app*/
+#if (P2P_ENABLE == TRUE)
     dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwPollP2P    = discParams->dwPollP2P;
-    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwPollRdWrt  = discParams->dwPollRdWrt;
     dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwListenP2P  = discParams->dwListenP2P;
+    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwP2pAcmIni  = discParams->dwP2pAcmIni;
+    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwP2pAcmTar  = discParams->dwP2pAcmTar;
+#endif
+    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwPollRdWrt  = discParams->dwPollRdWrt;
     dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwListenUICC = discParams->dwListenUICC;
     dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwListenHCE  = discParams->dwListenHCE;
     dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwListenESE  = discParams->dwListenESE;
-    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwP2pAcmIni  = discParams->dwP2pAcmIni;
-    dtaLibHdl->sConfigPrms.sMwIfDiscCfgParams.discParams.dwP2pAcmTar  = discParams->dwP2pAcmTar;
 
     memcpy(dtaLibHdl->sConfigPrms.aCertRelease, dtaLibHdl->sTestProfile.Certification_Release, (strlen(dtaLibHdl->sTestProfile.Certification_Release)+1));
     dtaLibHdl->sConfigPrms.dwConnDeviceLimit = dtaLibHdl->sTestProfile.ConnDeviceLimit;
@@ -495,7 +504,7 @@ MWIFSTATUS phDtaLibi_UpdateConfigPrams(phDtaLib_sDiscParams_t* discParams)
         dtaLibHdl->sConfigPrms.bPollBitRateTypeF = (PHMWIF_NCI_BITRATE_212 | PHMWIF_NCI_BITRATE_424);
         phOsal_LogDebugString ((const uint8_t*)"DTALib> :Analog Test Mode",(const uint8_t*)__FUNCTION__);
     }
-
+#if (P2P_ENABLE == TRUE)
     if (isCrGreaterThanOrEqual(dtaLibHdl->sTestProfile.Certification_Release, "CR12")) {
       if ((dtaLibHdl->sTestProfile.Pattern_Number ==
            PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
@@ -578,7 +587,7 @@ if (isCrGreaterThanOrEqual(dtaLibHdl->sConfigPrms.aCertRelease, "CR12")) {
                                     (const uint8_t*)__FUNCTION__);
         }
     }
-
+#endif
     /*Configure API to configure the FW*/
     if(phMwIf_ConfigParams(dtaLibHdl->mwIfHdl, &dtaLibHdl->sConfigPrms) != MWIFSTATUS_SUCCESS )
     {
@@ -618,6 +627,7 @@ DTASTATUS phDtaLib_DisableDiscovery() {
     {
         phOsal_LogError((const uint8_t*)"DTALib> DTA may not exit Properly...\n");
     }
+#if (P2P_ENABLE == TRUE)
     if(dtaLibHdl->bLlcpInitialized == TRUE)
     {
         dwMwIfStatus = phDtaLibi_ReInit();
@@ -630,6 +640,7 @@ DTASTATUS phDtaLib_DisableDiscovery() {
             dtaLibHdl->bLlcpInitialized = FALSE;
         }
     }
+#endif
     LOG_FUNCTION_EXIT;
     return DTASTATUS_SUCCESS;
 }
@@ -956,6 +967,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             }
             free(psQueueData);
             break;
+#if (P2P_ENABLE == TRUE)
         case PHMWIF_NFCDEP_ACTIVATED_EVT:
             if((dtaLibHdl->p2pType == PHDTALIB_P2P_LLCP_WITHOUT_CONN_PARAMS)||
                (dtaLibHdl->p2pType == PHDTALIB_P2P_LLCP_WITH_CONN_PARAMS))
@@ -1025,10 +1037,12 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             }
             free(psQueueData);
             break;
+#endif
         case PHMWIF_DEACTIVATED_EVT:
             eDeactType = psQueueData->uEvtInfo.uDpEvtInfo.eDeactivateType;
             phOsal_LogDebugU32h((const uint8_t*)"DTALib> PHMWIF_DEACTIVATED_EVT eDeactType = 0x%x", eDeactType);
             free(psQueueData);
+#if (P2P_ENABLE == TRUE)
             /*FIXME: LLCP tests require Stop/Start after each TC execution and deactivation,
              * else we get RFlinkloss and RFStuck issue*/
             if ((dtaLibHdl->sTestProfile.Pattern_Number == PHDTALIB_LLCP_CO_SET_SAP_OR_CL) ||
@@ -1042,6 +1056,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
                 bDiscStopReqd  = TRUE;
             }
             else
+#endif
             {
                 bDiscStartReqd = FALSE;
                 bDiscStopReqd  = FALSE;
@@ -1109,6 +1124,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             bDiscStartReqd = FALSE;
             bDiscStopReqd  = FALSE;
             break;
+#if (P2P_ENABLE == TRUE)
         case PHMWIF_LLCP_ACTIVATED_EVT:
             phOsal_LogDebug((const uint8_t*)"DTALib>LLCP ACTIVATED EVT not processed");
             bDiscStartReqd = FALSE;
@@ -1169,6 +1185,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
             bDiscStopReqd  = FALSE;
             free(psQueueData);
             break;
+#endif
         default:
             phOsal_LogError((const uint8_t*)"DTALib> Invalid event received");
             bDiscStartReqd = FALSE;
@@ -1212,7 +1229,7 @@ void phDtaLibi_CbMsgHandleThrd(void *param) {
     LOG_FUNCTION_EXIT;
     return;
 }
-
+#if (P2P_ENABLE == TRUE)
 /**
  * DTA Library call back events for LLCP
  */
@@ -1294,7 +1311,7 @@ void phDtaLibi_LlcpEvtCb (void*                   pvMwIfHandle,
     LOG_FUNCTION_EXIT;
     return;
 }
-
+#endif
 /**
  * Common Memory allocation/Free  callback functions
  */

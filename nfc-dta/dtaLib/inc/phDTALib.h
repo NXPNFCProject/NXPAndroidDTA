@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2022 NXP
+* Copyright 2015-2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ typedef enum phDtaLib_eNfceeDevType
 
 /** \ingroup grp_dta_lib
      LLCP & SNEP selection in P2P*/
+#if (P2P_ENABLE == TRUE)
 typedef enum phDtaLib_eP2PType
 {
      PHDTALIB_P2P_DEFAULT                   = 0x00,     /**< Enable default P2P without LLCP or SNEP */
@@ -100,7 +101,7 @@ typedef enum phDtaLib_eP2PType
      PHDTALIB_P2P_LLCP_WITHOUT_CONN_PARAMS  = 0x02,     /**< Enable LLCP without parameters in connect PDU*/
      PHDTALIB_P2P_SNEP                      = 0x03      /**< Enable SNEP*/
 }phDtaLib_eP2PType_t;
-
+#endif
 /** \ingroup grp_dta_lib
     Definitions for phDtaLib_RfTech
     Specifies set of technologies */
@@ -118,13 +119,15 @@ typedef uint32_t phDtaLib_RfTechMask;
 typedef struct phDtaLib_sDiscParams
 {
     phDtaLib_RfTechMask dwPollRdWrt; /**< Technologies to enable for Read/Write in Poll Mode*/
+#if (P2P_ENABLE == TRUE)
     phDtaLib_RfTechMask dwPollP2P;    /**< Technologies to enable for P2P in Poll Mode*/
     phDtaLib_RfTechMask dwListenP2P;  /**< Technologies to enable for P2P in Listen Mode*/
+    phDtaLib_RfTechMask dwP2pAcmIni;  /**< Technologies to enable for P2P-ACM in Initiator Mode*/
+    phDtaLib_RfTechMask dwP2pAcmTar;  /**< Technologies to enable for P2P-ACM in Target Mode*/
+#endif
     phDtaLib_RfTechMask dwListenHCE;  /**< Technologies to enable for Host Card Emulation in Listen Mode*/
     phDtaLib_RfTechMask dwListenESE;  /**< Technologies to enable for Card Emulation from Ese in Listen Mode*/
     phDtaLib_RfTechMask dwListenUICC; /**< Technologies to enable for Card Emulation from UICC in Listen Mode*/
-    phDtaLib_RfTechMask dwP2pAcmIni;  /**< Technologies to enable for P2P-ACM in Initiator Mode*/
-    phDtaLib_RfTechMask dwP2pAcmTar;  /**< Technologies to enable for P2P-ACM in Target Mode*/
 }phDtaLib_sDiscParams_t;
 
 typedef struct phDtaLib_sIUTInfo
@@ -154,6 +157,7 @@ typedef struct phDtaLib_sTestProfile
 #define DTALIB_LIB_EXTEND extern
 #endif
 
+#if (P2P_ENABLE == TRUE)
 /* Response field values */
 #define DTASTATUS_SNEP_INVALID_PROTOCOL_DATA    0x59
 
@@ -227,6 +231,7 @@ typedef enum phDtaLib_snepDefServerTestCases
     PH_DTA_TC_S_ACC_BV_07,
     PH_DTA_TC_S_RET_BV_04
 }phDtaLib_snepDefServerTestCases;
+#endif
 #endif
 /**< End */
 
@@ -331,7 +336,7 @@ DTALIB_LIB_EXTEND DTASTATUS phDtaLib_GetIUTInfo(phDtaLib_sIUTInfo_t* psIUTInfo);
  *
  */
 DTALIB_LIB_EXTEND DTASTATUS phDtaLib_SetTestProfile(phDtaLib_sTestProfile_t TestProfile);
-
+#if (P2P_ENABLE == TRUE)
 /**
  * \ingroup grp_dta_lib
  * \brief Configure type of P2P: LLCP or SNEP or defaultP2P.
@@ -346,8 +351,9 @@ DTALIB_LIB_EXTEND DTASTATUS phDtaLib_SetTestProfile(phDtaLib_sTestProfile_t Test
  * \retval #DTASTATUS_FAILED            P2P type configuration failed
  *
  */
-DTALIB_LIB_EXTEND DTASTATUS phDtaLib_ConfigureP2p(phDtaLib_eP2PType_t p2pType);
 
+DTALIB_LIB_EXTEND DTASTATUS phDtaLib_ConfigureP2p(phDtaLib_eP2PType_t p2pType);
+#endif
 /**
  * \ingroup grp_dta_lib
  * \brief Register callbacks which will be invoked when required data is available.

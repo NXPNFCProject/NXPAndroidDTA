@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2019 NXP Semiconductors
+* Copyright 2015-2019,2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#if (P2P_ENABLE == TRUE)
 #define PHDTALIB_SERVER_MIU ((uint16_t)0x87E) /*IUT srever Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
 #define PHDTALIB_SERVER_RW  ((uint8_t)01)
 #define PHDTALIB_CLIENT_MIU ((uint16_t)0x87E)/*IUT client Maximum Information Unit supported (MIUX = 0x07FF, MIU = MIUX + 128).*/
@@ -69,7 +69,6 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
     uint16_t                    wClientMiu;
     uint16_t                    wServerMiu;
     LOG_FUNCTION_ENTRY;
-
     if(eLlcpEvtType == PHMWIF_LLCP_SERVER_CONN_REQ_EVT)
     {
         /*Accept the connection request*/
@@ -179,7 +178,7 @@ DTASTATUS phDtaLibi_LlcpOperations(phDtaLib_sTestProfile_t* psTestProfile,
             }
         }
     }
-
+    
     if(eLlcpEvtType == PHMWIF_LLCP_SERVER_CONN_ORIENTED_DATA_EVT)
     {
         /*Accept the connection request*/
@@ -453,7 +452,7 @@ DTASTATUS phDtaLibi_LlcpHandleDeactivatedEvent()
 
     LOG_FUNCTION_EXIT;
 }
-
 #ifdef __cplusplus
 }
+#endif
 #endif

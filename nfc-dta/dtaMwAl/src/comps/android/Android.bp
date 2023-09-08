@@ -1,5 +1,5 @@
 /*
-  Copyright 2020-2022 NXP
+  Copyright 2020-2023 NXP
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -54,7 +54,8 @@ cc_library_shared {
         "-DANDROID_R=FALSE",
         "-DANDROID_S=FALSE",
         "-DNXP_QTAG=TRUE",
-        "-DANDROID_U=TRUE"
+        "-DANDROID_U=TRUE",
+        "-DP2P_ENABLE=TRUE",
     ],
     srcs: [
         "src/*.cpp"

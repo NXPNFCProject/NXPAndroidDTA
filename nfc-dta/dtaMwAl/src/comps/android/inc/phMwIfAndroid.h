@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015-2018 NXP Semiconductors
+* Copyright 2015-2018,2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -91,7 +91,9 @@ typedef union phMwIf_uCbEvtData
     tNFA_CONN_EVT_DATA sConnCbData;
     tNFA_DM_CBACK_DATA sDevMgmtCbData;
     tNFA_NDEF_EVT_DATA sNdefEvtData;
+#if (P2P_ENABLE == TRUE)
     tNFA_P2P_EVT_DATA  sP2pEvtData;
+#endif
     tNFA_NXPCFG_EVT_DATA sNxpCfgEvtData;
 }phMwIf_uCbEvtData_t;
 
@@ -225,6 +227,7 @@ typedef struct nci_datax
     unsigned char nciBuffer[256];
 }tNCI_Data;
 
+#if (P2P_ENABLE == TRUE)
 typedef struct phMwIf_llcpServerPrms
 {
     phMwIf_sLlcpSrvrRegnParams_t      sSrvrRegnPrms;
@@ -252,6 +255,7 @@ typedef struct phMwIf_llcpPrms
     phMwIf_llcpClientPrms_t     sConnLessSDPClient;
     phMwIf_sLlcpInitParams_t    sLlcpInitPrms;
 }phMwIf_sLlcpPrms_t;
+#endif
 
 typedef struct phMwIf_sHandle
 {
@@ -263,14 +267,18 @@ typedef struct phMwIf_sHandle
     void*                       appCbHdl;
     phMWIf_EvtCb_t              mwIfCb;
     phMwIf_sNdefDetectParams_t  sNdefDetectParams;
-    void*                       pvQueueHdl;
+#if (P2P_ENABLE == TRUE)
     phMwIf_sLlcpPrms_t          sLlcpPrms;
+#endif
+    void*                       pvQueueHdl;
     phMwIf_sQueueData_t         sLastQueueData;       /**< Last data fetched from queue*/
     void*                       pvSemIntgrnThrd;      /**< Semaphore to sync between Integration and MW callback */
     pthread_t                   sIntegrationThrdHdl;  /**< Integration thread handles the required functionality after discovery and before activation*/
     bool                        blStopIntegrationThrd;/**< Set to TRUE to stop Integration thread*/
     bool                        blStopAgcDbgThrd;     /**< Set to TRUE to stop Agc thread */
+#if (P2P_ENABLE == TRUE)
     bool                        bLlcpEnabled;         /**< TRUE If LLCP enabled, FALSE If LLCP disabled*/
+#endif
     uint16_t                    systemCode;           /**< System code used ofr HCE-F command/response */
     eDtaDeviceState_t           eDeviceState;
     pthread_t                   sAgcDbgThrdHdl;       /**< Debug thread gets the AgcDebug Values periodically*/
@@ -279,8 +287,9 @@ typedef struct phMwIf_sHandle
     uint16_t                    nfcHceFHandle;        /**< Handle used for HCEF operations */
     uint32_t                    routingProtocols;     /**< Contains the details of protocols routing */
     phMwIf_sDiscCfgPrms_t       sPrevMwIfDiscCfgParams;
-
+#if (P2P_ENABLE == TRUE)
     uint8_t                     u8NfcDepLnWtConfigVal;  /**< Contains NFC-DEP Listen Mode Wait Time Config Value*/
+#endif
 }phMwIf_sHandle_t;
 
 #define NCI_MSG_TYPE_MASK         0xE0
@@ -348,15 +357,18 @@ void        phMwIfi_NfaDevMgmtCallback(uint8_t DevMgmtCb_Event,
 
 void        phMwIfi_NfaEeCallback(tNFA_EE_EVT xevent,tNFA_EE_CBACK_DATA *px_data);
 void        phMwIfi_NfaHciCallback(tNFA_HCI_EVT xevent, tNFA_HCI_EVT_DATA *px_data);
+#if (P2P_ENABLE == TRUE)
 void        phMwIfi_NfaLlcpServerCallback(tNFA_P2P_EVT xevent,tNFA_P2P_EVT_DATA *px_data);
 void        phMwIfi_NfaLlcpClientCallback(tNFA_P2P_EVT xevent,tNFA_P2P_EVT_DATA *px_data);
 void        phMwIfi_NfaLlcpConnLessServerCallback(tNFA_P2P_EVT eP2pEvent,tNFA_P2P_EVT_DATA *psP2pEventData);
+
 MWIFSTATUS  phMwIfi_RegisterServer(phMwIf_sHandle_t *mwIfHdl,
                                   uint8_t bSap,
                                   tNFA_P2P_LINK_TYPE linkType,
                                   char *serviceName);
 MWIFSTATUS  phMwIfi_RegisterClient(phMwIf_sHandle_t *mwIfHdl,
                                  tNFA_P2P_LINK_TYPE linkType);
+#endif
 MWIFSTATUS  phMwIfi_CreateNdefMsg(phMwIf_sHandle_t *mwIfHdl,
                                  uint8_t* pData,
                                  uint32_t dwLength);

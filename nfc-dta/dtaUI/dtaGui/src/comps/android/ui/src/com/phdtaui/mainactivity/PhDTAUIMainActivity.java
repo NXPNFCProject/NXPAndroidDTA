@@ -1,5 +1,5 @@
 /*
-* Copyright 2015-2022 NXP
+* Copyright 2015-2023 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -248,6 +248,7 @@ public class PhDTAUIMainActivity extends Activity implements
     /** Varaible to check and control Automa Test application is running or not
      */
     public boolean bIsInAutomationMode = false;
+    private boolean isP2PEnabled = true;
 
     /**
      * Load Library
@@ -2015,6 +2016,21 @@ public class PhDTAUIMainActivity extends Activity implements
         chkBoxP2pAcmTARB= (CheckBox) findViewById(R.id.b_p2p_acm_target_check_box);
         chkBoxP2pAcmTARF= (CheckBox) findViewById(R.id.f_p2p_acm_target_check_box);
         chkBoxP2pAcmTARV= (CheckBox) findViewById(R.id.v_p2p_acm_target_check_box);
+
+
+        isP2PEnabled = this.getResources().getBoolean(R.bool.p2p_enabled);
+
+        RelativeLayout p2pPollLayout = (RelativeLayout) findViewById(R.id.p2p_poll_layout);
+        RelativeLayout p2pListenLayout = (RelativeLayout) findViewById(R.id.p2p_listen_layout);
+        RelativeLayout acmInitiatorLayoutP2p = (RelativeLayout) findViewById(R.id.acm_initiator_layout);
+        RelativeLayout acmTargetLayoutP2p = (RelativeLayout) findViewById(R.id.acm_target_layout);
+        RelativeLayout p2pLayout = (RelativeLayout) findViewById(R.id.p2p_layout);
+
+        if (p2pPollLayout != null) p2pPollLayout.setVisibility(isP2PEnabled? View.VISIBLE : View.GONE);
+        if (p2pListenLayout != null) p2pListenLayout.setVisibility(isP2PEnabled? View.VISIBLE : View.GONE);
+        if (acmInitiatorLayoutP2p != null) acmInitiatorLayoutP2p.setVisibility(isP2PEnabled? View.VISIBLE : View.GONE);
+        if (acmTargetLayoutP2p != null) acmTargetLayoutP2p.setVisibility(isP2PEnabled? View.VISIBLE : View.GONE);
+        if (p2pLayout != null) p2pLayout.setVisibility(isP2PEnabled? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -2836,7 +2852,8 @@ public class PhDTAUIMainActivity extends Activity implements
                 chkBoxListenP2PA.setEnabled(false);
                 chkBoxListenP2PF.setEnabled(false);
                 chkBoxListenP2PV.setEnabled(false);
-                Toast.makeText(PhDTAUIMainActivity.this, "P2P Listen is disabled, when HCE-F is selected", Toast.LENGTH_SHORT).show();
+                if(isP2PEnabled)
+                    Toast.makeText(PhDTAUIMainActivity.this, "P2P Listen is disabled, when HCE-F is selected", Toast.LENGTH_SHORT).show();
             }else if(chkBoxListenHCEA.isChecked() || chkBoxListenHCEB.isChecked()
                     || chkBoxListenHCEV.isChecked()){
                 Toast.makeText(PhDTAUIMainActivity.this, "HCE-A and HCE-B is disabled, when HCE-F is selected ", Toast.LENGTH_SHORT).show();

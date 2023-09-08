@@ -1,5 +1,5 @@
 /*
-  Copyright 2020 NXP
+  Copyright 2020,2023 NXP
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ cc_library_shared {
     cflags: [
         "-DTHREAD_PRIO_SUPPORT=FALSE",
         "-DNFC_NXP_P2P_PERFORMANCE_TESTING=FALSE",
+        "-DP2P_ENABLE=TRUE",
     ],
     srcs: [
         "src/src/*.c",

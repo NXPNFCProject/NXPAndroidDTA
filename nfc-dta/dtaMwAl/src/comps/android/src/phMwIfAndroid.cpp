@@ -44,7 +44,9 @@
 #include <nfa_ce_api.h>
 #include <nfa_ee_api.h>
 #include <nfa_hci_api.h>
+#if (P2P_ENABLE == TRUE)
 #include <nfa_p2p_api.h>
+#endif
 #include <ndef_utils.h>
 #include <nfc_config.h>
 #include "dlfcn.h"
@@ -86,7 +88,9 @@ EE events*/
 #define  NCI_RSP_EVT 0x42
 #define  NCI_AGC_DBG_RSP_EVT 0x73
 #define  DISCOVERY_LOOP_DURATION_IN_MILLISEC 1000
+#if (P2P_ENABLE == TRUE)
 #define  PHMWIF_LLCP_MAX_MIU (LLCP_MAX_MIU-1)
+#endif
 #define  PHMWIF_DEFAULT_PROTO_ROUTING 00
 #define  PHMWIF_MAX_DISC_DEVICES 05
 
@@ -128,8 +132,10 @@ uint8_t gs_Hce_Aid_len = 0x0E;
 tNFA_HANDLE NfaHostHandle           = 0x400; /*Handle For HCE/LLCP*/
 tNFA_HANDLE NfaHciHandle;
 
+#if (P2P_ENABLE == TRUE)
 /*LLCP related constants*/
 #define LLCP_DATA_LINK_TIMEOUT    2000
+#endif
 /*P2p/LLCP enable/disable constants to configure routing*/
 #define P2P_ENABLED     1 /*in case of enable, P2P flag will have 1,2,4 or addition of these values*/
 #define P2P_DISABLED    0
@@ -216,12 +222,14 @@ MWIFSTATUS phMwIf_Init(void** mwIfHandle)
     {
         NfaUiccHandle = NfaUiccHandle_NCI_1_0;
     }
+#if (P2P_ENABLE == TRUE)
     dwMwifStatus = NFA_ResumeP2p();
     if(MWIFSTATUS_SUCCESS != dwMwifStatus)
     {
         ALOGD("MwIf>MwIf NFA_ResumeP2p Register callback Failed !\n");
         return MWIFSTATUS_FAILED;
     }
+#endif
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
@@ -355,7 +363,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
         abConfigIDData[0] = 0x01;
         phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_BIT_RATE, 0x01, abConfigIDData);
     }
-
+#if (P2P_ENABLE == TRUE)
     if(sConfigParams->bNfcdepPollBitRateHigh == TRUE)
     {
         abConfigIDData[0] = 0x00;
@@ -422,7 +430,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
             (const uint8_t *)__FUNCTION__);
       }
     }
-
+#endif
     /*Do custom Set Config from MWIF*/
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfigProp(mwIfHdl, PHMWIF_NCI_CONFIG_PROP_READER_JEWEL_RID_CFG, 0x01, abConfigIDData);
@@ -492,8 +500,10 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_RF_FIELD_INFO, 0x01, abConfigIDData);
     abConfigIDData[0] = 0x01;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_RF_NFCEE_ACTION, 0x01, abConfigIDData);
+#if (P2P_ENABLE == TRUE)
     abConfigIDData[0] = 0x0E;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_NFCDEP_OP, 0x01, abConfigIDData);
+#endif
     abConfigIDData[0] = 0x00;
     phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CONFIG_PF_RC_CODE, 0x01, abConfigIDData);
     abConfigIDData[0] = 0xE8;
@@ -512,6 +522,7 @@ MWIFSTATUS phMwIf_ConfigParams(void* mwIfHandle, phMwIf_sConfigParams_t *sConfig
     return MWIFSTATUS_SUCCESS;
 }
 
+#if (P2P_ENABLE == TRUE)
 /**
 * Get NFC-DEP Listen mode Wait Time Value
 */
@@ -526,7 +537,7 @@ MWIFSTATUS phMwIf_GetNfcDepLnWtConfigVal(void* mwIfHandle, uint8_t *pu8LnWtVal)
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
-
+#endif
 /**
 * De-Initialize Middle-ware Interface Library
 */
@@ -543,7 +554,9 @@ MWIFSTATUS phMwIf_DeInit(void* mwIfHandle)
      abConfigIDData[0] = 0x03;
      phMwIfi_SetConfig(mwIfHdl, PHMWIF_NCI_CON_DEVICES_LIMIT_ENABLE, 0x01, abConfigIDData);
 //#endif
+#if (P2P_ENABLE == TRUE)
     mwIfHdl->bLlcpEnabled = FALSE;
+#endif
     dwMwIfStatus = phMwIfi_StackDeInit();
     if(dwMwIfStatus != MWIFSTATUS_SUCCESS)
     {
@@ -748,12 +761,13 @@ MWIFSTATUS phMwIf_EnableDiscovery(void* mwIfHandle)
     }
 
     phMwIfi_SetDtaMode(mwIfHdl);
-
+#if (P2P_ENABLE == TRUE)
     if(discCfgParams->discParams.dwListenP2P != P2P_DISABLED)
     {
         ALOGD ("MwIf> configuring Routing for P2P \n");
         phMwIfi_P2pRoutingConfigure(mwIfHandle, (phMwIf_eProtocolType_t)NFA_PROTOCOL_MASK_NFC_DEP);
     }
+#endif
     /*** Since NFA_EeUpdateNow() function was called from different functions some of the routing was overwriting
      * So, removed all other calls and after all the routing configuration is done this function has been called to avoid overwrite ***/
     phMwIfi_RoutingUpdate(mwIfHdl);
@@ -795,10 +809,10 @@ MWIFSTATUS phMwIfi_SetDtaMode(void* mwIfHandle)
     phMwIf_sHandle_t *mwIfHdl = (phMwIf_sHandle_t *) mwIfHandle;
     uint32_t dtaMode = NFA_DTA_DEFAULT_MODE;
     ALOGD ("MwIf>%s:Enter\n",__FUNCTION__);
-
+#if (P2P_ENABLE == TRUE)
     if(mwIfHdl->bLlcpEnabled)
         dtaMode = NFA_DTA_LLCP_MODE;
-
+#endif
     if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR8",3) == 0x00){
         dtaMode |= NFA_DTA_CR8;
     }else if(strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release, "CR9",3) == 0x00){
@@ -2109,6 +2123,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
     else
     {
         ALOGD ("MwIf> %s: Configuring Listen Discovery \n",__FUNCTION__);
+#if (P2P_ENABLE == TRUE)
         /*Set P2P Configuration*/
         if ((strncmp(mwIfHdl->sPrevMwIfDiscCfgParams.Certification_Release,
                      "CR12", 4) == 0x00) ||
@@ -2140,7 +2155,7 @@ tNFA_STATUS phMwIfi_SetDiscoveryConfig(phMwIf_sDiscCfgPrms_t* discCfgParams,
             PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SET_P2P_LISTEN_TECH_EVT,5000,
                     "MwIf> ERROR SetP2pListen",&(mwIfHdl->sLastQueueData));
         }
-
+#endif
         /*Set UICC Listen Configuration*/
         techMask = discCfgParams->discParams.dwListenUICC;
         if(!techMask)
@@ -2232,7 +2247,8 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
     PH_ON_ERROR_EXIT(NFA_STATUS_OK,2,"MwIf> Error Could not stop DisableListening !! \n");
     PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_LISTEN_DISABLED_EVT,5000,
             "MwIf> ERROR Listening Disable",&(mwIfHdl->sLastQueueData));
-
+    
+#if (P2P_ENABLE == TRUE)
     /*Disable P2P Listen techs*/
     if(mwIfHdl->sDiscCfg.discParams.dwListenP2P)
     {
@@ -2241,7 +2257,7 @@ tNFA_STATUS phMwIfi_ResetDiscoveryConfig(phMwIf_sHandle_t *mwIfHdl)
         PH_WAIT_FOR_CBACK_EVT(mwIfHdl->pvQueueHdl,NFA_SET_P2P_LISTEN_TECH_EVT,5000,
                 "MwIf> ERROR disable P2P listening) !! \n",&(mwIfHdl->sLastQueueData));
     }
-
+#endif
     /*Disable Listen techs for Card Emulation from UICC */
     if(mwIfHdl->sDiscCfg.discParams.dwListenUICC)
     {
@@ -2551,12 +2567,14 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
             break;
             case NFA_WRITE_CPLT_EVT:
             break;
+        #if (P2P_ENABLE == TRUE)
             case NFA_LLCP_ACTIVATED_EVT:
             {
                 phMWIf_eLlcpEvtType_t  eLlcpEvtType;
                 phMwIf_uLlcpEvtInfo_t  sLlcpEvtInfo;
                 bCallbackReqd = FALSE;
                 ALOGD ("MwIf>Calling LLCP ACTIVATED EVENT");
+
                 eLlcpEvtType = PHMWIF_LLCP_ACTIVATED_EVT;
                  if(mwIfHdl->sLlcpPrms.sLlcpInitPrms.pfMwIfLlcpCb != NULL)
                   {
@@ -2592,6 +2610,7 @@ void phMwIfi_NfaConnCallback (uint8_t uevent, tNFA_CONN_EVT_DATA *px_data)
                       ALOGE("MwIf>App Callback not registered");
                   }
             }
+        #endif
             break;
             case NFA_PRESENCE_CHECK_EVT :
             break;
@@ -3865,12 +3884,12 @@ void phMwIfi_MapRfInterface(uint8_t* protocol, int *rf_interface)
             *rf_interface = NFA_INTERFACE_FRAME;
             ALOGE("T3T - FRAME interface");
             break;
-
+#if (P2P_ENABLE == TRUE)
         case NFA_PROTOCOL_NFC_DEP:
             *rf_interface = NFA_INTERFACE_NFC_DEP;
             ALOGE("NFC-DEP interface");
             break;
-
+#endif
         case NFA_PROTOCOL_ISO_DEP:
             *rf_interface = NFA_INTERFACE_ISO_DEP;
             ALOGE("ISO-DEP interface");
@@ -3890,6 +3909,7 @@ void phMwIfi_MapRfInterface(uint8_t* protocol, int *rf_interface)
 /**
  * Initialize LLCP stack
  */
+#if (P2P_ENABLE == TRUE)
 MWIFSTATUS phMwIf_LlcpInit(void*                     pvMwIfHandle,
                            phMwIf_sLlcpInitParams_t* psLlcpInitPrms)
 {
@@ -3976,10 +3996,12 @@ MWIFSTATUS phMwIf_LlcpInit(void*                     pvMwIfHandle,
     ALOGD("MwIf>%s:exit",__FUNCTION__);
     return MWIFSTATUS_SUCCESS;
 }
+#endif
 
 /**
  * Register connection oriented server with service name and sap
  */
+#if (P2P_ENABLE == TRUE)
 MWIFSTATUS  phMwIf_LlcpRegisterServerConnOriented(void*                         pvMwIfHandle,
                                                   phMwIf_sLlcpSrvrRegnParams_t* psLlcpSrvrPrms,
                                                   void**                        ppvServerHandle)
@@ -4674,7 +4696,7 @@ void phMwIfi_NfaLlcpClientCallback(tNFA_P2P_EVT eP2pEvent,tNFA_P2P_EVT_DATA *psP
     ALOGD("MwIf>%s:Exit",__FUNCTION__);
     return;
 }
-
+#endif
 /**
 * Copy Activation parameters received to event Info structure which will passed with ACTIVATED event
 */

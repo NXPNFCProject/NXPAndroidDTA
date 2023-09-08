@@ -297,6 +297,7 @@ typedef enum phMWIf_eEvtType
     PHMWIF_THREAD_DELETE_DUMMY_EVT = 0xFF
 }phMWIf_eEvtType_t;
 
+#if (P2P_ENABLE == TRUE)
 /** \ingroup grp_mwif_lib
     LLCP events sent to user of MwIf */
 typedef enum phMWIf_eLlcpEvtType
@@ -311,6 +312,7 @@ typedef enum phMWIf_eLlcpEvtType
     PHMWIF_LLCP_P2P_LINK_CONGESTED_EVT            = 107,/**<Congest info event for particular link*/
     PHMWIF_LLCP_P2P_LINK_UNCONGESTED_EVT          = 108 /**<Congest info event for particular link*/
 }phMWIf_eLlcpEvtType_t;
+#endif
 
 typedef enum phMWIf_eDiscType
 {
@@ -424,6 +426,7 @@ typedef struct phMwIf_sNciRfIntfIsoDepListenBParams
     uint8_t       bNfcid0[PHMWIF_NCI_NFCID0_MAX_LEN];             /**< NFCID0                    */
 }phMwIf_sNciRfIntfIsoDepListenBParams_t;
 
+#if (P2P_ENABLE == TRUE)
 /** \ingroup grp_mwif_lib
     NFCDEP RF Interface  parameters for Tech type Poll A  sent during activation*/
 typedef struct phMwIf_sNciRfIntfNfcDepPollAParams
@@ -448,6 +451,7 @@ typedef struct phMwIf_sNciRfIntfNfcDepListenAParams
     uint8_t       abGenBytes[PHMWIF_NCI_MAX_GEN_BYTES_LEN];/**< general bytes           */
 }phMwIf_sNciRfIntfNfcDepListenAParams_t;
 typedef phMwIf_sNciRfIntfNfcDepListenAParams_t phMwIf_sNciRfIntfNfcDepListenFParams_t;
+#endif
 
 /** \ingroup grp_mwif_lib
     Raw Frame RF Interface  parameters*/
@@ -465,10 +469,12 @@ typedef union phMwIf_uNciRfIntfParams
     phMwIf_sNciRfIntfIsoDepListenAParams_t sIsoDepLisAPrms;
     phMwIf_sNciRfIntfIsoDepPollBParams_t   sIsoDepPollBPrms;
     phMwIf_sNciRfIntfIsoDepListenBParams_t sIsoDepLisBPrms;
+#if (P2P_ENABLE == TRUE)
     phMwIf_sNciRfIntfNfcDepPollAParams_t   sNfcDepPollAPrms;
     phMwIf_sNciRfIntfNfcDepListenAParams_t sNfcDepLisAPrms;
     phMwIf_sNciRfIntfNfcDepPollFParams_t   sNfcDepPollFPrms;
     phMwIf_sNciRfIntfNfcDepListenFParams_t sNfcDepLisFPrms;
+#endif
     phMwIf_sNciRfIntfRawFrameParams_t      sRawFramePrms;
 }phMwIf_uNciRfIntfParams_t;
 
@@ -502,7 +508,7 @@ typedef void (*phMWIf_EvtCb_t)( void*              pvMwIfHandle,
                                 void*              pvApplHdl,
                                 phMWIf_eEvtType_t  eEvtType,
                                 phMWIf_uEvtInfo_t* puEvtInfo);
-
+#if (P2P_ENABLE == TRUE)
 /** \ingroup grp_mwif_lib
     parameters passed along with PHMWIF_LLCP_SERVER_CONN_REQ_EVT callback to user of mwif*/
 typedef struct phMwIf_sLlcpConnReqParams
@@ -559,6 +565,7 @@ typedef void (*phMWIf_LlcpEvtCb_t) (void*                   pvMwIfHandle,
                                     void*                   pvApplHdl,
                                     phMWIf_eLlcpEvtType_t   eLlcpEvtType,
                                     phMwIf_uLlcpEvtInfo_t*  puLlcpEvtInfo);
+#endif
 
 /** \ingroup grp_mwif_lib
     RF Discovery Technology and Mode*/
@@ -620,6 +627,7 @@ typedef enum phMWIf_eMwEvtType
     PHMWIF_LLCP_EVT,
 }phMWIf_eMwEvtType_t;
 
+#if (P2P_ENABLE == TRUE)
 /** \ingroup grp_mwif_lib
     LLCP initialization parameters*/
 typedef struct phMwIf_sLlcpInitParams
@@ -652,6 +660,7 @@ typedef struct phMwIf_sLlcpClientConnectParams
     uint16_t                    wClientMiu;
     uint8_t                     bClientRw;
 } phMwIf_sLlcpClientConnectParams_t;
+#endif
 
 /** \ingroup grp_mwif_lib
     Parameters for Configuration */
@@ -738,7 +747,7 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_RegisterCallback(void* mwIfHandle,
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_ConfigParams( void* mwIfHandle,
                                                 phMwIf_sConfigParams_t *sConfigParams);
-
+#if (P2P_ENABLE == TRUE)
 /**
  * \ingroup grp_mwif_lib
  * \brief Get NFC-DEP Listen Mode Wait Time Config Value
@@ -754,6 +763,7 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_ConfigParams( void* mwIfHandle,
  */
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_GetNfcDepLnWtConfigVal( void* mwIfHandle,
                                                 uint8_t *pu8LnWtVal);
+#endif
 
 /**
  * \ingroup grp_mwif_lib
@@ -989,7 +999,7 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_ReceiveData(void *mwIfHandle,
  */
 MWIFSTATUS phMwIf_ConsumeDeactivatedEvent(void *mwIfHandle, uint32_t uwTimeoutMs);
 
-
+#if (P2P_ENABLE == TRUE)
 /**
  * \ingroup grp_mwif_lib
  * \brief Initialize LLCP stack
@@ -1193,7 +1203,7 @@ MWIF_LIB_EXTEND MWIFSTATUS phMwIf_LlcpConnOrientedClientDisconnect( void*     pv
 MWIF_LIB_EXTEND MWIFSTATUS phMwIf_LlcpServiceDiscovery( void*     pvMwIfHandle,
                                                         uint8_t*  pbServiceName,
                                                         uint8_t*  pbSAP);
-
+#endif
 #ifdef __cplusplus
 }
 #endif
