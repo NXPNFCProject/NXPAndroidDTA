@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">NXP DTA</string>
+    <string name="tag_pat">Pattern No</string>
+    <string name="swcdl_label">CDL</string>
+    <string name="swcdl_on">MDR</string>
+    <string name="swcdl_off">SDR</string>
+    <string name="card_title">DTA Card</string>
+    <string name="service_name">DTA CardEmulation</string>
+    <string name="ppdta">PPDTA</string>
+    <string name="cb_ce">HCE</string>
+    <string name="swtest_label">TEST</string>
+    <string name="swtest_on">Running</string>
+    <string name="swtest_off">Stopped</string>
+    <string name="btn_exit">Exit</string>
+    <string name="iv_nxp_logo">IV_NXP_LOGO</string>
+    <string name="tv_app_name">TV_APP_NAME</string>
+    <string name="dta_test_app">NXP DTA</string>
+    <string name="copyright_nxp_semiconductors">Copyright NXP Semiconductors</string>
+
+    <string-array name="dta_pattern">
+        <item>0000</item>
+        <item>0001</item>
+        <item>0002</item>
+        <item>0003</item>
+        <item>0004</item>
+        <item>0005</item>
+        <item>0006</item>
+        <item>0007</item>
+        <item>0008</item>
+        <item>0009</item>
+        <item>000A</item>
+        <item>000B</item>
+        <item>000C</item>
+        <item>000D</item>
+        <item>000E</item>
+        <item>000F</item>
+        <item>0011</item>
+        <item>0012</item>
+        <item>0021</item>
+        <item>0031</item>
+        <item>1200</item>
+        <item>1201</item>
+        <item>1240</item>
+        <item>1241</item>
+        <item>1280</item>
+        <item>1281</item>
+    </string-array>
+</resources>
