@@ -7,25 +7,19 @@
 | :-------------: |:-------------:| 
 | NXPAndroidDTA    |  git clone https://github.com/NXPNFCProject/NXPAndroidDTA.git |
 
-#### Supported Android Versions 
+#### Supported Android Versions on branch br_ar_new_dta_arch
 
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
-| android-12.0.0_r2/android-13-preview-1  | 13.00 (PN553/PN557/PN560/PN80T/PN81T/SN100/SN110/SN220) | NFC_AR_00_E800_12.14.00_OpnSrc NFC_AR_00_18C0_13.01.00_OpnSrc  NFC_AR_00_1E800_13.09.00_OpnSrc | DTA 13.00 |
-| android-13.0.0_r3   | 13.02 (PN553/PN557/PN80T/PN81T/PN557/SN100/SN110/SN220) | NFC_AR_00_18C0_13.02.00_OpnSrc NFC_AR_00_1E800_13.0B.00_OpnSrc | DTA 13.02 |
-| aosp-master | 13.02 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_14.02.00_OpnSrc NFC_AR_00_1E800_14.03.00_OpnSrc NFC_AR_00_1E800_14.04.00_OpnSrc | DTA 13.02 |
-| aosp-master | 13.03 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_13.0D.01_OpnSrc NFC_AR_00_1E800_14.05.00_OpnSrc | DTA 13.03 |
-| aosp-master | 13.04 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_13.0E.00_OpnSrc NFC_AR_00_3E800_14.08.00_OpnSrc | DTA 13.04 |
-| aosp-master | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0B.00_OpnSrc | DTA 13.05 |
-| android-14.0.0_r2 | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0E.00_OpnSrc | DTA 13.05 |
-| aosp-main | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_15.02.00_OpnSrc | DTA 13.05 |
-| aosp-main | 13.05 (PN557/SN100/SN110/SN220/SN300) | NFC_AR_00_7E800_15.04.00_OpnSrc | DTA 13.05 |
-| android-14.0.0_r2 | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0F.00_OpnSrc | DTA 13.05 |
+| aosp-main | TR13.2_DTA_1.0_OpnSrc (PN557/SN100/SN110/SN220/SN300) | NFC_AR_00_7E800_15.0B.00_OpnSrc | TR13.2_DTA_1.0 |
 
 
 
 
-#### Legacy Android Versions
+
+
+
+#### Legacy Android Versions on branch master
 
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
@@ -58,3 +52,13 @@
 | android-12.0.0_r2    | 12.18 (SN100/SN110/SN220) | NFC_AR_00_E800_12.10.00_OpnSrc | DTA 12.18 |
 | android-12.0.0_r2    | 12.18 (PN557/SN100/SN110/SN220) | NFC_AR_00_E800_12.12.00_OpnSrc | DTA 12.18 |
 | aosp-master    | 12.18 (SN100/SN110/SN220) | NFC_AR_00_E800_13.02.01_OpnSrc NFC_AR_00_E800_13.03.00_OpnSrc | DTA 12.18 |
+| android-12.0.0_r2/android-13-preview-1  | 13.00 (PN553/PN557/PN560/PN80T/PN81T/SN100/SN110/SN220) | NFC_AR_00_E800_12.14.00_OpnSrc NFC_AR_00_18C0_13.01.00_OpnSrc  NFC_AR_00_1E800_13.09.00_OpnSrc | DTA 13.00 |
+| android-13.0.0_r3   | 13.02 (PN553/PN557/PN80T/PN81T/PN557/SN100/SN110/SN220) | NFC_AR_00_18C0_13.02.00_OpnSrc NFC_AR_00_1E800_13.0B.00_OpnSrc | DTA 13.02 |
+| aosp-master | 13.02 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_14.02.00_OpnSrc NFC_AR_00_1E800_14.03.00_OpnSrc NFC_AR_00_1E800_14.04.00_OpnSrc | DTA 13.02 |
+| aosp-master | 13.03 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_13.0D.01_OpnSrc NFC_AR_00_1E800_14.05.00_OpnSrc | DTA 13.03 |
+| aosp-master | 13.04 (PN557/SN100/SN110/SN220) | NFC_AR_00_1E800_13.0E.00_OpnSrc NFC_AR_00_3E800_14.08.00_OpnSrc | DTA 13.04 |
+| aosp-master | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0B.00_OpnSrc | DTA 13.05 |
+| android-14.0.0_r2 | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0E.00_OpnSrc | DTA 13.05 |
+| aosp-main | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_15.02.00_OpnSrc | DTA 13.05 |
+| aosp-main | 13.05 (PN557/SN100/SN110/SN220/SN300) | NFC_AR_00_7E800_15.04.00_OpnSrc | DTA 13.05 |
+| android-14.0.0_r2 | 13.05 (PN557/SN100/SN110/SN220) | NFC_AR_00_3E800_14.0F.00_OpnSrc | DTA 13.05 |
