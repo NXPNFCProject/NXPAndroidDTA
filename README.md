@@ -12,7 +12,7 @@
 | Android Version        | NXP Release          | NXP Tag  | DTA Version |
 | :-------------: |:-------------:| :-----:| :------:|
 | aosp-main | TR13.2_DTA_1.0_OpnSrc (PN557/SN100/SN110/SN220/SN300) | NFC_AR_00_7E800_15.0B.00_OpnSrc | TR13.2_DTA_1.0 |
-
+| android-15.0.0_r1 | TR13.2_DTA_1.1_OpnSrc (PN557/SN100/SN110/SN220/SN300) | NFC_AR_00_7E800_15.0C.00_OpnSrc | TR13.2_DTA_1.1 |
 
 
 
