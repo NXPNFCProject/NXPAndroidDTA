@@ -1,5 +1,5 @@
 android_app {
-    name: "TR13.2_NXPDTA",
+    name: "NXPDTA",
 
     srcs: ["java/**/*.java"],
     static_libs: ["androidx-constraintlayout_constraintlayout"],
