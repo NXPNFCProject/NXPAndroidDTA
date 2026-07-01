@@ -1,5 +1,5 @@
 /*
-* Copyright 2024 NXP
+* Copyright 2024, 2026 NXP
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 import android.os.Message;
 import android.os.Handler;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
   private static final String TAG = "DTA_Main";
@@ -127,7 +128,20 @@ public class MainActivity extends Activity {
     mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
     if (mNfcAdapter != null) {
       mNfcCardEmulation = CardEmulation.getInstance(mNfcAdapter);
-      mNfcFCardEmulation = NfcFCardEmulation.getInstance(mNfcAdapter);
+
+      if (mNfcAdapter.isReaderModeAnnotationSupported()) {
+        mExtras.putByteArray("android.nfc.extra.READER_TECH_A_POLLING_LOOP_ANNOTATION", new byte[] {});
+      }
+
+      PackageManager pm = getPackageManager();
+      boolean isHceFCapable = pm.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION_NFCF);
+      if (isHceFCapable) {
+          Log.d("NFC", "NFC F HCE is supported");
+          mNfcFCardEmulation = NfcFCardEmulation.getInstance(mNfcAdapter);
+      } else {
+          Log.e("NFC", "NFC-F HCE not supported");
+      }
+
       ComponentName hceService =
               new ComponentName(getPackageName(), NfcCardService.class.getName());
       if (!mNfcCardEmulation.isDefaultServiceForCategory(
@@ -269,7 +283,7 @@ public class MainActivity extends Activity {
       setNfcDisable();
       setNfcEnable();
       try {
-        Thread.sleep(300);
+        Thread.sleep(1200);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -277,7 +291,7 @@ public class MainActivity extends Activity {
     super.onStop();
     if (mNfcAdapter != null) {
       mNfcAdapter.disableForegroundDispatch(this);
-      if (mNfcAdapter.isEnabled()) {
+      if (mNfcAdapter.isEnabled() && (mNfcFCardEmulation != null)) {
         boolean ceFStatus = mNfcFCardEmulation.disableService(this);
         Log.i(TAG, "disableNfcFService status: " + ceFStatus);
       }
@@ -434,7 +448,7 @@ public class MainActivity extends Activity {
             if (!mPatternNo.isEmpty()) {
               String msg = "NFC ON";
               try {
-                Thread.sleep(300);
+                Thread.sleep(1200);
               } catch (InterruptedException e) {
                 e.printStackTrace();
               }
@@ -487,10 +501,7 @@ public class MainActivity extends Activity {
     boolean status = false;
     if (mNfcAdapter != null) {
       try {
-        Class NfcManager = Class.forName(mNfcAdapter.getClass().getName());
-        Method setEnable = NfcManager.getDeclaredMethod("enable");
-        setEnable.setAccessible(true);
-        status = (Boolean) setEnable.invoke(mNfcAdapter);
+        status = (Boolean) mNfcAdapter.enable();
       } catch (Exception e) {
         Log.d(TAG, "setNfcEnable exception");
         e.printStackTrace();
@@ -503,10 +514,7 @@ public class MainActivity extends Activity {
     boolean status = false;
     if (mNfcAdapter != null) {
       try {
-        Class NfcManager = Class.forName(mNfcAdapter.getClass().getName());
-        Method setDisable = NfcManager.getDeclaredMethod("disable");
-        setDisable.setAccessible(true);
-        status = (Boolean) setDisable.invoke(mNfcAdapter);
+        status = (Boolean) mNfcAdapter.disable();
       } catch (Exception e) {
         Log.d(TAG, "setNfcDisable exception");
         e.printStackTrace();
@@ -532,12 +540,11 @@ public class MainActivity extends Activity {
                         .makeText(getApplicationContext(), "Tag detected",
                                 Toast.LENGTH_SHORT)
                         .show();
-                mTagOp.processDetectedTag(tag);
-                listenTagRemoved(tag);
-                Toast
-                        .makeText(getApplicationContext(), "Test Execution Completed",
-                                Toast.LENGTH_SHORT)
-                        .show();
+                Executors.newSingleThreadExecutor().execute(() -> {
+                        mTagOp.processDetectedTag(tag);
+                        listenTagRemoved(tag);
+                        Log.d(TAG, "Test Execution Completed");
+                });
               } else {
                 Toast
                         .makeText(getApplicationContext(), "Test is not running",
@@ -571,7 +578,9 @@ public class MainActivity extends Activity {
         Log.i(TAG, "HCE setPreferredService status: " + ceStatus);
         ComponentName hceFService = new ComponentName(
                 getPackageName(), NfcFCardService.class.getName());
-        ceStatus = mNfcFCardEmulation.enableService(this, hceFService);
+        if (mNfcFCardEmulation != null) {
+          ceStatus = mNfcFCardEmulation.enableService(this, hceFService);
+        }
         Log.i(TAG, "enableNfcFService status: " + ceStatus);
         ceStatus = mNfcCardEmulation.setPreferredService(this, hceFService);
         Log.i(TAG, "HCEF setPreferredService status: " + ceStatus);
@@ -801,8 +810,8 @@ public class MainActivity extends Activity {
       mFrameDebugThread = new Thread() {
         public void run() {
           Log.i(TAG, "FrameDebugThread started");
-          mDebugThreadExit = false;
           synchronized (mFrameDebugThread) {
+            mDebugThreadExit = false;
             while (!mDebugThreadExit) {
               try {
                 Log.i(TAG, "Waiting");

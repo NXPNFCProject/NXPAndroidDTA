@@ -3,8 +3,6 @@ android_app {
 
     srcs: ["java/**/*.java"],
     static_libs: ["androidx-constraintlayout_constraintlayout"],
-    //platform_apis: true,
-    sdk_version: "current",
-    vendor:true,
+    platform_apis: true,
     certificate: "platform",
 }
